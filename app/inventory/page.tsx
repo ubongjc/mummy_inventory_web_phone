@@ -420,22 +420,15 @@ export default function InventoryPage() {
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
               <button
                 onClick={() => setShowItemSummary(!showItemSummary)}
-                className="w-full flex items-center justify-between p-3 hover:bg-blue-50 transition-colors"
+                className="w-full px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded hover:from-blue-700 hover:to-purple-700 font-semibold shadow-md transition-all flex items-center justify-center gap-2 text-sm"
               >
-                <div className="flex items-center gap-2">
-                  <Package className="w-5 h-5 text-blue-600" />
-                  <h2 className="text-sm font-bold text-black">Item Summary</h2>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-600 font-medium">
-                    {showItemSummary ? "Hide" : "Show"}
-                  </span>
-                  {showItemSummary ? (
-                    <ChevronDown className="w-4 h-4 text-gray-600" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4 text-gray-600" />
-                  )}
-                </div>
+                <Package className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">📊 ITEM SUMMARY</span>
+                {showItemSummary ? (
+                  <ChevronDown className="w-4 h-4 flex-shrink-0" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 flex-shrink-0" />
+                )}
               </button>
               {showItemSummary && (
                 <div className="border-t border-gray-200">
