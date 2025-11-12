@@ -1,15 +1,15 @@
 // Script to populate test data
 const customers = [
-  { firstName: "John", lastName: "Smith", phone: "+1234567890", email: "john.smith@email.com", address: "123 Main Street" },
-  { firstName: "Sarah", lastName: "Johnson", phone: "+1234567891", email: "sarah.j@email.com", address: "456 Oak Avenue" },
-  { firstName: "Michael", lastName: "Brown", phone: "+1234567892", email: "mbrown@email.com", address: "789 Pine Road" },
-  { firstName: "Emily", lastName: "Davis", phone: "+1234567893", email: "emily.d@email.com", address: "321 Elm Street" },
-  { firstName: "David", lastName: "Wilson", phone: "+1234567894", email: "david.w@email.com", address: "654 Maple Drive" },
-  { firstName: "Jessica", lastName: "Martinez", phone: "+1234567895", email: "jess.m@email.com", address: "987 Cedar Lane" },
-  { firstName: "James", lastName: "Anderson", phone: "+1234567896", email: "james.a@email.com", address: "147 Birch Court" },
-  { firstName: "Lisa", lastName: "Taylor", phone: "+1234567897", email: "lisa.t@email.com", address: "258 Spruce Way" },
-  { firstName: "Robert", lastName: "Thomas", phone: "+1234567898", email: "robert.t@email.com", address: "369 Willow Path" },
-  { firstName: "Amanda", lastName: "Moore", phone: "+1234567899", email: "amanda.m@email.com", address: "741 Ash Boulevard" }
+  { name: "John Smith", firstName: "John", lastName: "Smith", phone: "+1234567890", email: "john.smith@email.com", address: "123 Main Street" },
+  { name: "Sarah Johnson", firstName: "Sarah", lastName: "Johnson", phone: "+1234567891", email: "sarah.j@email.com", address: "456 Oak Avenue" },
+  { name: "Michael Brown", firstName: "Michael", lastName: "Brown", phone: "+1234567892", email: "mbrown@email.com", address: "789 Pine Road" },
+  { name: "Emily Davis", firstName: "Emily", lastName: "Davis", phone: "+1234567893", email: "emily.d@email.com", address: "321 Elm Street" },
+  { name: "David Wilson", firstName: "David", lastName: "Wilson", phone: "+1234567894", email: "david.w@email.com", address: "654 Maple Drive" },
+  { name: "Jessica Martinez", firstName: "Jessica", lastName: "Martinez", phone: "+1234567895", email: "jess.m@email.com", address: "987 Cedar Lane" },
+  { name: "James Anderson", firstName: "James", lastName: "Anderson", phone: "+1234567896", email: "james.a@email.com", address: "147 Birch Court" },
+  { name: "Lisa Taylor", firstName: "Lisa", lastName: "Taylor", phone: "+1234567897", email: "lisa.t@email.com", address: "258 Spruce Way" },
+  { name: "Robert Thomas", firstName: "Robert", lastName: "Thomas", phone: "+1234567898", email: "robert.t@email.com", address: "369 Willow Path" },
+  { name: "Amanda Moore", firstName: "Amanda", lastName: "Moore", phone: "+1234567899", email: "amanda.m@email.com", address: "741 Ash Boulevard" }
 ];
 
 const items = [
