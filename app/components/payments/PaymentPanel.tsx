@@ -122,13 +122,13 @@ export function PaymentPanel({
             type="text"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            maxLength={20}
+            maxLength={50}
             placeholder="e.g., Cash payment, Bank transfer..."
             disabled={loading}
             className="w-full h-11 px-3 border-2 border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
           />
           <p className="text-xs text-gray-600 mt-1">
-            {notes.length}/20 characters
+            {notes.length}/50 characters
           </p>
         </div>
 
