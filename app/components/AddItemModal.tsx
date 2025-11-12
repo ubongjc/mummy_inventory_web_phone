@@ -11,7 +11,7 @@ interface AddItemModalProps {
   onSuccess: () => void;
 }
 
-const NOTES_CHAR_LIMIT = 500;
+const NOTES_CHAR_LIMIT = 20;
 
 export default function AddItemModal({
   isOpen,

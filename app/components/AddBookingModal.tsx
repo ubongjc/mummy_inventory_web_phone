@@ -985,6 +985,7 @@ export default function AddBookingModal({
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
+                maxLength={20}
                 className="w-full px-2 py-1.5 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm"
                 rows={2}
               />

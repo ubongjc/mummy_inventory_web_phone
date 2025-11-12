@@ -581,6 +581,7 @@ export default function InventoryPage() {
                             onChange={(e) =>
                               setEditData({ ...editData, notes: e.target.value })
                             }
+                            maxLength={20}
                             className="w-full px-1 py-0.5 border border-gray-400 rounded text-black font-semibold text-[10px]"
                           />
                         </td>
@@ -829,6 +830,7 @@ export default function InventoryPage() {
                                     onChange={(e) =>
                                       setEditData({ ...editData, notes: e.target.value })
                                     }
+                                    maxLength={20}
                                     className="w-full px-2 py-1 border border-gray-400 rounded text-black font-semibold text-[10px]"
                                     rows={2}
                                   />
