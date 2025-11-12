@@ -40,10 +40,12 @@ export function useSettings() {
     }
   };
 
-  const formatCurrency = (amount: number | null | undefined): string => {
+  const formatCurrency = (amount: number | null | undefined | any): string => {
     if (amount === null || amount === undefined) return "-";
-    if (!settings) return `$${amount.toFixed(2)}`;
-    return `${settings.currencySymbol}${amount.toFixed(2)}`;
+    // Convert Decimal objects to numbers
+    const numAmount = typeof amount === 'number' ? amount : Number(amount);
+    if (!settings) return `$${numAmount.toFixed(2)}`;
+    return `${settings.currencySymbol}${numAmount.toFixed(2)}`;
   };
 
   return {
