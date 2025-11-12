@@ -14,22 +14,22 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Find all rentals without a color
-  const rentalsWithoutColor = await prisma.rental.findMany({
+  const bookingsWithoutColor = await prisma.booking.findMany({
     where: {
       color: null,
     },
   });
 
-  console.log(`Found ${rentalsWithoutColor.length} rentals without colors`);
+  console.log(`Found ${bookingsWithoutColor.length} rentals without colors`);
 
-  // Update each rental with a random color
-  for (const rental of rentalsWithoutColor) {
+  // Update each booking with a random color
+  for (const booking of bookingsWithoutColor) {
     const color = getRandomRentalColor();
-    await prisma.rental.update({
-      where: { id: rental.id },
+    await prisma.booking.update({
+      where: { id: booking.id },
       data: { color },
     });
-    console.log(`Updated rental ${rental.id} with color ${color}`);
+    console.log(`Updated booking ${booking.id} with color ${color}`);
   }
 
   console.log('Done!');

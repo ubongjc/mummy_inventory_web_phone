@@ -7,8 +7,8 @@ async function seedTestData() {
 
   // Clear existing data
   await prisma.payment.deleteMany();
-  await prisma.rentalItem.deleteMany();
-  await prisma.rental.deleteMany();
+  await prisma.bookingItem.deleteMany();
+  await prisma.booking.deleteMany();
   await prisma.customer.deleteMany();
   await prisma.item.deleteMany();
 
@@ -105,7 +105,7 @@ async function seedTestData() {
 
   console.log('✅ Created 3 test customers');
 
-  // Create test rentals with overlaps
+  // Create test bookings with overlaps
   const nov4 = new Date(Date.UTC(2025, 10, 4, 0, 0, 0)); // Nov 4
   const nov8 = new Date(Date.UTC(2025, 10, 8, 0, 0, 0)); // Nov 8
   const nov6 = new Date(Date.UTC(2025, 10, 6, 0, 0, 0)); // Nov 6
@@ -116,7 +116,7 @@ async function seedTestData() {
   const nov3 = new Date(Date.UTC(2025, 10, 3, 0, 0, 0)); // Nov 3
 
   // Rental A: Chairs x40 (Nov 4-8, CONFIRMED)
-  const rentalA = await prisma.rental.create({
+  const bookingA = await prisma.booking.create({
     data: {
       customerId: customer1.id,
       startDate: nov4,
@@ -146,7 +146,7 @@ async function seedTestData() {
   });
 
   // Rental B: Chairs x70 (Nov 6-11, CONFIRMED) - triggers overlap
-  const rentalB = await prisma.rental.create({
+  const bookingB = await prisma.booking.create({
     data: {
       customerId: customer2.id,
       startDate: nov6,
@@ -166,7 +166,7 @@ async function seedTestData() {
   });
 
   // Rental C: Tables x5, Plates x50 (Nov 9-29, OUT)
-  const rentalC = await prisma.rental.create({
+  const bookingC = await prisma.booking.create({
     data: {
       customerId: customer3.id,
       startDate: nov9,
@@ -206,7 +206,7 @@ async function seedTestData() {
   });
 
   // Rental D: Canopy x1 (Nov 15, RETURNED)
-  const rentalD = await prisma.rental.create({
+  const bookingD = await prisma.booking.create({
     data: {
       customerId: customer1.id,
       startDate: nov15,
@@ -235,7 +235,7 @@ async function seedTestData() {
   });
 
   // Rental E: Forks x100, Spoons x100 (Nov 4-8, CONFIRMED)
-  const rentalE = await prisma.rental.create({
+  const bookingE = await prisma.booking.create({
     data: {
       customerId: customer2.id,
       startDate: nov4,
@@ -259,7 +259,7 @@ async function seedTestData() {
   });
 
   // Rental F: Tables x3 (Nov 15-20, CANCELLED)
-  const rentalF = await prisma.rental.create({
+  const bookingF = await prisma.booking.create({
     data: {
       customerId: customer3.id,
       startDate: nov15,
@@ -279,7 +279,7 @@ async function seedTestData() {
     },
   });
 
-  console.log('✅ Created 6 test rentals with overlaps and various statuses');
+  console.log('✅ Created 6 test bookings with overlaps and various statuses');
   console.log('');
   console.log('📊 Test Data Summary:');
   console.log('   - Rental A: Chairs x40 (Nov 4-8, CONFIRMED) with payment');

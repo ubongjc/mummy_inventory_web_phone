@@ -19,7 +19,7 @@ async function exportData() {
     const customers = await prisma.customer.findMany({
       orderBy: { createdAt: "asc" },
     });
-    const rentals = await prisma.rental.findMany({
+    const bookings = await prisma.booking.findMany({
       include: {
         items: true,
         payments: true,
@@ -31,7 +31,7 @@ async function exportData() {
     const data = {
       items,
       customers,
-      rentals,
+      bookings,
       settings,
     };
 
@@ -45,7 +45,7 @@ async function exportData() {
     console.log("Summary:");
     console.log(`- ${items.length} items`);
     console.log(`- ${customers.length} customers`);
-    console.log(`- ${rentals.length} rentals`);
+    console.log(`- ${bookings.length} bookings`);
     console.log(`- ${settings.length} settings records`);
   } catch (error) {
     console.error("❌ Export failed:");

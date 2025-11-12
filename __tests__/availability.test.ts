@@ -16,8 +16,8 @@ describe('Availability Engine', () => {
   beforeAll(async () => {
     // Setup test data
     await prisma.payment.deleteMany();
-    await prisma.rentalItem.deleteMany();
-    await prisma.rental.deleteMany();
+    await prisma.bookingItem.deleteMany();
+    await prisma.booking.deleteMany();
     await prisma.customer.deleteMany();
     await prisma.item.deleteMany();
 
@@ -51,7 +51,7 @@ describe('Availability Engine', () => {
     const nov12 = new Date(Date.UTC(2025, 10, 12, 0, 0, 0));
 
     // Create rentals with different statuses
-    await prisma.rental.create({
+    await prisma.booking.create({
       data: {
         customerId: customer1Id,
         startDate: nov10,
@@ -61,7 +61,7 @@ describe('Availability Engine', () => {
       },
     });
 
-    await prisma.rental.create({
+    await prisma.booking.create({
       data: {
         customerId: customer1Id,
         startDate: nov10,
@@ -71,7 +71,7 @@ describe('Availability Engine', () => {
       },
     });
 
-    await prisma.rental.create({
+    await prisma.booking.create({
       data: {
         customerId: customer1Id,
         startDate: nov10,
@@ -81,7 +81,7 @@ describe('Availability Engine', () => {
       },
     });
 
-    await prisma.rental.create({
+    await prisma.booking.create({
       data: {
         customerId: customer1Id,
         startDate: nov10,
@@ -92,7 +92,7 @@ describe('Availability Engine', () => {
     });
 
     // Check availability - should only count CONFIRMED (20) + OUT (30) = 50
-    const overlapping = await prisma.rental.findMany({
+    const overlapping = await prisma.booking.findMany({
       where: {
         AND: [
           { startDate: { lte: nov12 } },
@@ -108,8 +108,8 @@ describe('Availability Engine', () => {
     });
 
     const reserved = overlapping.reduce(
-      (sum, rental) =>
-        sum + rental.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
+      (sum, booking) =>
+        sum + booking.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
       0
     );
 
@@ -117,10 +117,10 @@ describe('Availability Engine', () => {
     expect(100 - reserved).toBe(50); // Available = 100 - 50
   });
 
-  test('Single-day rental (start == end) works correctly', async () => {
+  test('Single-day booking (start == end) works correctly', async () => {
     const nov15 = new Date(Date.UTC(2025, 10, 15, 0, 0, 0));
 
-    const rental = await prisma.rental.create({
+    const booking = await prisma.booking.create({
       data: {
         customerId: customer1Id,
         startDate: nov15,
@@ -130,10 +130,10 @@ describe('Availability Engine', () => {
       },
     });
 
-    expect(rental.startDate).toEqual(rental.endDate);
+    expect(booking.startDate).toEqual(booking.endDate);
 
     // Check it counts in availability
-    const overlapping = await prisma.rental.findMany({
+    const overlapping = await prisma.booking.findMany({
       where: {
         AND: [
           { startDate: { lte: nov15 } },
@@ -147,8 +147,8 @@ describe('Availability Engine', () => {
     });
 
     const reserved = overlapping.reduce(
-      (sum, rental) =>
-        sum + rental.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
+      (sum, booking) =>
+        sum + booking.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
       0
     );
 
@@ -162,7 +162,7 @@ describe('Availability Engine', () => {
     const nov27 = new Date(Date.UTC(2025, 10, 27, 0, 0, 0));
 
     // Rental 1: Nov 20-25, 40 chairs
-    await prisma.rental.create({
+    await prisma.booking.create({
       data: {
         customerId: customer1Id,
         startDate: nov20,
@@ -173,7 +173,7 @@ describe('Availability Engine', () => {
     });
 
     // Rental 2: Nov 22-27, 50 chairs (overlaps Nov 22-25)
-    await prisma.rental.create({
+    await prisma.booking.create({
       data: {
         customerId: customer2Id,
         startDate: nov22,
@@ -185,7 +185,7 @@ describe('Availability Engine', () => {
 
     // Check Nov 23 (middle of overlap)
     const nov23 = new Date(Date.UTC(2025, 10, 23, 0, 0, 0));
-    const overlapping = await prisma.rental.findMany({
+    const overlapping = await prisma.booking.findMany({
       where: {
         AND: [
           { startDate: { lte: nov23 } },
@@ -199,8 +199,8 @@ describe('Availability Engine', () => {
     });
 
     const reserved = overlapping.reduce(
-      (sum, rental) =>
-        sum + rental.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
+      (sum, booking) =>
+        sum + booking.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
       0
     );
 
@@ -208,11 +208,11 @@ describe('Availability Engine', () => {
     expect(100 - reserved).toBe(10); // Only 10 chairs available
   });
 
-  test('Editing rental excludes itself from availability check', async () => {
+  test('Editing booking excludes itself from availability check', async () => {
     const nov1 = new Date(Date.UTC(2025, 11, 1, 0, 0, 0));
     const nov5 = new Date(Date.UTC(2025, 11, 5, 0, 0, 0));
 
-    const rental = await prisma.rental.create({
+    const booking = await prisma.booking.create({
       data: {
         customerId: customer1Id,
         startDate: nov1,
@@ -222,11 +222,11 @@ describe('Availability Engine', () => {
       },
     });
 
-    // Check availability excluding this rental
-    const overlapping = await prisma.rental.findMany({
+    // Check availability excluding this booking
+    const overlapping = await prisma.booking.findMany({
       where: {
         AND: [
-          { id: { not: rental.id } }, // Exclude self
+          { id: { not: booking.id } }, // Exclude self
           { startDate: { lte: nov5 } },
           { endDate: { gte: nov1 } },
           { status: { in: ['CONFIRMED', 'OUT'] } },
@@ -238,12 +238,12 @@ describe('Availability Engine', () => {
     });
 
     const reserved = overlapping.reduce(
-      (sum, rental) =>
-        sum + rental.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
+      (sum, booking) =>
+        sum + booking.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
       0
     );
 
-    // Should not include the 8 from this rental
+    // Should not include the 8 from this booking
     expect(reserved).not.toContain(8);
   });
 
@@ -251,7 +251,7 @@ describe('Availability Engine', () => {
     const dec10 = new Date(Date.UTC(2025, 11, 10, 0, 0, 0));
     const dec15 = new Date(Date.UTC(2025, 11, 15, 0, 0, 0));
 
-    await prisma.rental.create({
+    await prisma.booking.create({
       data: {
         customerId: customer1Id,
         startDate: dec10,
@@ -262,7 +262,7 @@ describe('Availability Engine', () => {
     });
 
     // Check Dec 10 (start date) - should be included
-    const checkStart = await prisma.rental.findMany({
+    const checkStart = await prisma.booking.findMany({
       where: {
         AND: [
           { startDate: { lte: dec10 } },
@@ -276,7 +276,7 @@ describe('Availability Engine', () => {
     expect(checkStart.length).toBeGreaterThan(0);
 
     // Check Dec 15 (end date) - should be included
-    const checkEnd = await prisma.rental.findMany({
+    const checkEnd = await prisma.booking.findMany({
       where: {
         AND: [
           { startDate: { lte: dec15 } },
@@ -291,7 +291,7 @@ describe('Availability Engine', () => {
 
     // Check Dec 9 (before start) - should not be included
     const dec9 = new Date(Date.UTC(2025, 11, 9, 0, 0, 0));
-    const checkBefore = await prisma.rental.findMany({
+    const checkBefore = await prisma.booking.findMany({
       where: {
         AND: [
           { startDate: { lte: dec9 } },
@@ -303,16 +303,16 @@ describe('Availability Engine', () => {
     });
 
     const reservedBefore = checkBefore.reduce(
-      (sum, rental) =>
-        sum + rental.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
+      (sum, booking) =>
+        sum + booking.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
       0
     );
 
-    expect(reservedBefore).not.toBe(5); // Should not include this rental
+    expect(reservedBefore).not.toBe(5); // Should not include this booking
 
     // Check Dec 16 (after end) - should not be included
     const dec16 = new Date(Date.UTC(2025, 11, 16, 0, 0, 0));
-    const checkAfter = await prisma.rental.findMany({
+    const checkAfter = await prisma.booking.findMany({
       where: {
         AND: [
           { startDate: { lte: dec16 } },
@@ -324,11 +324,11 @@ describe('Availability Engine', () => {
     });
 
     const reservedAfter = checkAfter.reduce(
-      (sum, rental) =>
-        sum + rental.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
+      (sum, booking) =>
+        sum + booking.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
       0
     );
 
-    expect(reservedAfter).not.toBe(5); // Should not include this rental
+    expect(reservedAfter).not.toBe(5); // Should not include this booking
   });
 });

@@ -10,8 +10,8 @@ async function main() {
   console.log("🌱 Starting seed...");
 
   // Clear existing data (optional, remove if you want to preserve data)
-  await prisma.rentalItem.deleteMany();
-  await prisma.rental.deleteMany();
+  await prisma.bookingItem.deleteMany();
+  await prisma.booking.deleteMany();
   await prisma.customer.deleteMany();
   await prisma.item.deleteMany();
 
@@ -107,7 +107,7 @@ async function main() {
 
   console.log(`✅ Created ${customers.length} customers`);
 
-  // Create sample rentals
+  // Create sample bookings
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
@@ -132,7 +132,7 @@ async function main() {
   };
 
   // Rental 1: Starting today
-  const rental1 = await prisma.rental.create({
+  const booking1 = await prisma.booking.create({
     data: {
       customerId: customers[0].id,
       startDate: toUTC(today),
@@ -152,7 +152,7 @@ async function main() {
   });
 
   // Rental 2: Next week
-  const rental2 = await prisma.rental.create({
+  const booking2 = await prisma.booking.create({
     data: {
       customerId: customers[1].id,
       startDate: toUTC(nextWeek),
@@ -172,7 +172,7 @@ async function main() {
   });
 
   // Rental 3: Last week (already out)
-  const rental3 = await prisma.rental.create({
+  const booking3 = await prisma.booking.create({
     data: {
       customerId: customers[2].id,
       startDate: toUTC(lastWeek),
@@ -192,7 +192,7 @@ async function main() {
     },
   });
 
-  console.log(`✅ Created 3 sample rentals`);
+  console.log(`✅ Created 3 sample bookings`);
   console.log("\n🎉 Seed completed successfully!\n");
   console.log("Sample data:");
   console.log(`- ${items.length} inventory items`);
