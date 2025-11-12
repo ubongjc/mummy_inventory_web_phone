@@ -127,6 +127,9 @@ export function PaymentPanel({
             disabled={loading}
             className="w-full h-11 px-3 border-2 border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
           />
+          <p className="text-xs text-gray-600 mt-1">
+            {notes.length}/20 characters
+          </p>
         </div>
 
         <button

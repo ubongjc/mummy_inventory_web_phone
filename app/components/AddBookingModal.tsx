@@ -989,6 +989,9 @@ export default function AddBookingModal({
                 className="w-full px-2 py-1.5 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm"
                 rows={2}
               />
+              <p className="text-xs text-gray-600 mt-1">
+                {notes.length}/20 characters
+              </p>
             </div>
 
             <div className="flex gap-2 pt-2 sticky bottom-0 bg-white border-t mt-2 -mx-3 -mb-3 px-3 py-2">
