@@ -62,6 +62,8 @@ export default function AddBookingModal({
   const [newPaymentNotes, setNewPaymentNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [customerError, setCustomerError] = useState("");
+  const [itemsError, setItemsError] = useState("");
   const [showNewCustomer, setShowNewCustomer] = useState(false);
   const [manualTotalPrice, setManualTotalPrice] = useState(false);
   const [availabilityStatus, setAvailabilityStatus] = useState<{
@@ -495,7 +497,33 @@ export default function AddBookingModal({
     isSubmitting.current = true;
     setLoading(true);
     setError("");
+    setCustomerError("");
+    setItemsError("");
     console.log('[FORM] Starting submission...');
+
+    // Validate customer selection
+    if (!showNewCustomer && !selectedCustomerId) {
+      setCustomerError("*Please select a customer or create a new one");
+      setLoading(false);
+      isSubmitting.current = false;
+      return;
+    }
+
+    if (showNewCustomer && !newCustomerFirstName.trim()) {
+      setCustomerError("*Enter customer first name");
+      setLoading(false);
+      isSubmitting.current = false;
+      return;
+    }
+
+    // Validate at least one item is selected
+    const validItems = bookingItems.filter((item) => item.itemId && item.quantity);
+    if (validItems.length === 0) {
+      setItemsError("*Please select at least one item with quantity");
+      setLoading(false);
+      isSubmitting.current = false;
+      return;
+    }
 
     // Validate return date is not before start date
     if (endDate < startDate) {
@@ -708,6 +736,7 @@ export default function AddBookingModal({
                         // Prevent selecting the "Select" option
                         if (e.target.value !== "") {
                           updateBookingItem(index, "itemId", e.target.value);
+                          setItemsError("");
                         }
                       }}
                       className="flex-1 min-w-0 px-1 py-1 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-xs truncate"
@@ -794,6 +823,9 @@ export default function AddBookingModal({
                   </div>
                 )}
               </div>
+              {itemsError && (
+                <p className="text-red-600 text-xs mt-1 font-semibold">{itemsError}</p>
+              )}
             </div>
 
             {/* Availability Status */}
@@ -843,8 +875,13 @@ export default function AddBookingModal({
                 <div className="space-y-1">
                   <select
                     value={selectedCustomerId}
-                    onChange={(e) => setSelectedCustomerId(e.target.value)}
-                    className="w-full px-2 py-1.5 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm"
+                    onChange={(e) => {
+                      setSelectedCustomerId(e.target.value);
+                      setCustomerError("");
+                    }}
+                    className={`w-full px-2 py-1.5 border-2 ${
+                      customerError ? "border-red-500" : "border-gray-400"
+                    } rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm`}
                     required={!showNewCustomer}
                   >
                     <option value="">Select a customer</option>
@@ -868,9 +905,14 @@ export default function AddBookingModal({
                     <input
                       type="text"
                       value={newCustomerFirstName}
-                      onChange={(e) => setNewCustomerFirstName(e.target.value)}
+                      onChange={(e) => {
+                        setNewCustomerFirstName(e.target.value);
+                        setCustomerError("");
+                      }}
                       placeholder="First Name *"
-                      className="w-full px-2 py-1.5 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm"
+                      className={`w-full px-2 py-1.5 border-2 ${
+                        customerError ? "border-red-500" : "border-gray-400"
+                      } rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm`}
                       required
                     />
                     <input
@@ -910,6 +952,9 @@ export default function AddBookingModal({
                     ← Back to customer list
                   </button>
                 </div>
+              )}
+              {customerError && (
+                <p className="text-red-600 text-xs mt-1 font-semibold">{customerError}</p>
               )}
             </div>
 
