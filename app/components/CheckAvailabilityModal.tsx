@@ -325,7 +325,7 @@ export default function CheckAvailabilityModal({
 
           <div className="p-3 space-y-2.5 overflow-y-auto flex-1">
             {/* Dates */}
-            <div className="grid grid-cols-2 gap-4 px-2">
+            <div className="grid grid-cols-2 gap-4">
               <div className="min-w-0">
                 <DatePicker
                   value={startDate}
@@ -350,7 +350,7 @@ export default function CheckAvailabilityModal({
 
             {/* Date Error Warning */}
             {dateError && (
-              <div className="bg-red-50 border border-red-200 rounded p-2 mx-2">
+              <div className="bg-red-50 border border-red-200 rounded p-2">
                 <p className="text-red-600 text-xs font-semibold">⚠️ {dateError}</p>
               </div>
             )}
