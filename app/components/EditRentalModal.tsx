@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { X, Plus } from "lucide-react";
 import { useSettings } from "@/app/hooks/useSettings";
 import DatePicker from "./DatePicker";
+import { PaymentPanel } from "./payments/PaymentPanel";
 
 interface RentalItem {
   id: string;
