@@ -671,7 +671,7 @@ export default function AddRentalModal({
                           updateRentalItem(index, "itemId", e.target.value);
                         }
                       }}
-                      className="w-[calc(100%-5.5rem)] px-1 py-1 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-xs truncate"
+                      className="flex-1 min-w-0 px-1 py-1 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-xs truncate"
                       required
                     >
                       <option value="" disabled>Select Item</option>
