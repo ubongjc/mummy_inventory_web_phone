@@ -914,13 +914,13 @@ export default function AddRentalModal({
             </div>
 
             {/* Pricing Information */}
-            <div className="border-t pt-2">
-              <h4 className="text-xs font-bold mb-2 text-black">Pricing Information</h4>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <h4 className="text-xs font-bold mb-2 text-green-800">Pricing Information</h4>
               <div className="space-y-3">
                 {/* Total and Advance Row */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col min-w-0">
-                    <label className="block text-xs font-bold mb-1 text-black">
+                    <label className="block text-xs font-bold mb-1 text-green-800">
                       Total
                     </label>
                     <div className="flex items-center min-w-0">
@@ -945,7 +945,7 @@ export default function AddRentalModal({
                     </div>
                   </div>
                   <div className="flex flex-col min-w-0">
-                    <label className="block text-xs font-bold mb-1 text-black">
+                    <label className="block text-xs font-bold mb-1 text-green-800">
                       Advance
                     </label>
                     <div className="flex items-center min-w-0">

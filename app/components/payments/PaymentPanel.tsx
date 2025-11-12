@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toYmd } from "@/app/lib/dateUtils";
 import { useSettings } from "@/app/hooks/useSettings";
+import DatePicker from "../DatePicker";
 
 interface PaymentPanelProps {
   onSubmit: (amount: number, date: Date, notes?: string) => void | Promise<void>;
@@ -62,15 +63,15 @@ export function PaymentPanel({
   };
 
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
+    <div className="bg-green-50 border border-green-200 rounded-lg overflow-hidden">
       {/* Green header with emoji */}
-      <div className="bg-green-50 border-b border-green-200 px-4 py-3">
+      <div className="bg-green-100 border-b border-green-300 px-4 py-3">
         <h3 className="text-base font-semibold text-green-800">
           💰 Record New Payment
         </h3>
       </div>
 
-      {/* Form content */}
+      {/* Form content with green background */}
       <form onSubmit={handleSubmit} className="p-4 space-y-3">
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm text-red-700">
@@ -80,7 +81,7 @@ export function PaymentPanel({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="w-full min-w-0">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-green-800 mb-1">
               Amount
             </label>
             <div className="flex items-center">
@@ -104,23 +105,18 @@ export function PaymentPanel({
           </div>
 
           <div className="w-full min-w-0">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Payment Date
-            </label>
-            <input
-              type="date"
+            <DatePicker
               value={date}
-              onChange={(e) => setDate(e.target.value)}
-              max={toYmd(new Date())}
-              required
+              onChange={(date) => setDate(date)}
+              label="Payment Date"
+              maxDate={toYmd(new Date())}
               disabled={loading}
-              className="w-full h-11 px-3 border-2 border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
             />
           </div>
         </div>
 
         <div className="w-full min-w-0">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-green-800 mb-1">
             Notes (optional)
           </label>
           <input

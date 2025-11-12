@@ -418,8 +418,8 @@ export default function RentalsPage() {
   };
 
   const handleAddPayment = async (rentalId: string) => {
-    if (!paymentAmount || parseFloat(paymentAmount) <= 0) {
-      setPaymentError("Please enter a valid payment amount");
+    if (!paymentAmount || parseFloat(paymentAmount) < 0.01) {
+      setPaymentError("Please enter a valid payment amount (minimum 0.01)");
       return;
     }
 
