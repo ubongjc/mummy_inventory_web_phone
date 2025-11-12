@@ -584,6 +584,9 @@ export default function InventoryPage() {
                             maxLength={20}
                             className="w-full px-1 py-0.5 border border-gray-400 rounded text-black font-semibold text-[10px]"
                           />
+                          <p className="text-[9px] text-gray-600 mt-0.5">
+                            {(editData.notes ?? item.notes ?? "").length}/20
+                          </p>
                         </td>
                         <td className="px-2 py-1 text-right space-x-1">
                           <button
@@ -834,6 +837,9 @@ export default function InventoryPage() {
                                     className="w-full px-2 py-1 border border-gray-400 rounded text-black font-semibold text-[10px]"
                                     rows={2}
                                   />
+                                  <p className="text-[9px] text-gray-600 mt-0.5">
+                                    {(editData.notes ?? customer.notes ?? "").length}/20 characters
+                                  </p>
                                 </div>
                                 <div className="flex gap-2">
                                   <button
