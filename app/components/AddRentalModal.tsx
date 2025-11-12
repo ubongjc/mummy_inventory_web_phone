@@ -730,7 +730,7 @@ export default function AddRentalModal({
                   (() => {
                     // Check if the last rental item has both itemId and quantity filled
                     const lastItem = rentalItems[rentalItems.length - 1];
-                    const isLastItemComplete = lastItem.itemId && lastItem.quantity && lastItem.quantity !== "";
+                    const isLastItemComplete = !!lastItem.itemId && !!lastItem.quantity;
 
                     return (
                       <button
