@@ -85,9 +85,6 @@ export default function EditRentalModal({
   const [advancePayment, setAdvancePayment] = useState("");
   const [paymentDueDate, setPaymentDueDate] = useState("");
   const [payments, setPayments] = useState<Payment[]>([]);
-  const [newPaymentAmount, setNewPaymentAmount] = useState("");
-  const [newPaymentDate, setNewPaymentDate] = useState("");
-  const [newPaymentNotes, setNewPaymentNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { formatCurrency } = useSettings();
@@ -275,51 +272,6 @@ export default function EditRentalModal({
     setRentalItems(updated);
   };
 
-  const handleAddPayment = async () => {
-    if (!newPaymentAmount || parseFloat(newPaymentAmount) <= 0) {
-      setError("Please enter a valid payment amount");
-      return;
-    }
-
-    // Validate overpayment
-    const parsedTotalPrice = totalPrice ? parseFloat(totalPrice) : 0;
-    const parsedAdvancePayment = advancePayment ? parseFloat(advancePayment) : 0;
-    const newPaymentAmountNum = parseFloat(newPaymentAmount);
-    const existingPaymentsTotal = payments.reduce((sum, p) => sum + p.amount, 0);
-    const totalPayments = parsedAdvancePayment + existingPaymentsTotal + newPaymentAmountNum;
-
-    if (parsedTotalPrice > 0 && totalPayments > parsedTotalPrice) {
-      const remainingBalance = parsedTotalPrice - parsedAdvancePayment - existingPaymentsTotal;
-      setError(`Total payments (${formatCurrency(totalPayments)}) cannot exceed total price (${formatCurrency(parsedTotalPrice)}). Remaining balance: ${formatCurrency(remainingBalance)}`);
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/rentals/${rental?.id}/payments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: parseFloat(newPaymentAmount),
-          paymentDate: newPaymentDate || new Date().toISOString(),
-          notes: newPaymentNotes,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Failed to add payment" }));
-        throw new Error(errorData.error || "Failed to add payment");
-      }
-
-      const newPayment = await response.json();
-      setPayments([newPayment, ...payments]);
-      setNewPaymentAmount("");
-      setNewPaymentDate("");
-      setNewPaymentNotes("");
-      setError("");
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -374,8 +326,14 @@ export default function EditRentalModal({
         throw new Error(errorData.error || "Failed to update rental");
       }
 
+      // Trigger data refresh
       onSuccess();
       onClose();
+
+      // Force page refresh to update calendar immediately
+      if (typeof window !== 'undefined') {
+        window.location.reload();
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -629,52 +587,44 @@ export default function EditRentalModal({
             <div className="border-t pt-2">
               <h4 className="text-xs font-bold mb-2 text-black">Additional Payments</h4>
 
-              {/* Add New Payment Form */}
-              <div className="bg-gray-50 border border-gray-300 rounded p-3 mb-3">
-                <div className="grid grid-cols-2 gap-2 mb-2">
-                  <div>
-                    <label className="block text-xs font-bold mb-1 text-black">
-                      Amount
-                    </label>
-                    <input
-                      type="number"
-                      value={newPaymentAmount}
-                      onChange={(e) => setNewPaymentAmount(e.target.value)}
-                      placeholder="0.00"
-                      step="0.01"
-                      min="0"
-                      className="h-9 w-full px-2 py-1.5 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm"
-                    />
-                  </div>
-                  <div className="min-w-0">
-                    <DatePicker
-                      value={newPaymentDate}
-                      onChange={(date) => setNewPaymentDate(date)}
-                      label="Date:"
-                      className="text-xs"
-                    />
-                  </div>
-                </div>
-                <div className="mb-2">
-                  <label className="block text-xs font-bold mb-1 text-black">
-                    Notes (optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={newPaymentNotes}
-                    onChange={(e) => setNewPaymentNotes(e.target.value)}
-                    placeholder="Payment notes..."
-                    className="w-full px-2 py-1.5 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={handleAddPayment}
-                  className="w-full flex items-center justify-center gap-1 px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-semibold"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Payment
-                </button>
+              {/* Add New Payment Form - Using PaymentPanel */}
+              <div className="mb-3">
+                <PaymentPanel
+                  onSubmit={async (amount, paymentDate, notes) => {
+                    // Validate overpayment
+                    const parsedTotalPrice = totalPrice ? parseFloat(totalPrice) : 0;
+                    const parsedAdvancePayment = advancePayment ? parseFloat(advancePayment) : 0;
+                    const existingPaymentsTotal = payments.reduce((sum, p) => sum + p.amount, 0);
+                    const totalPayments = parsedAdvancePayment + existingPaymentsTotal + amount;
+
+                    if (parsedTotalPrice > 0 && totalPayments > parsedTotalPrice) {
+                      const remainingBalance = parsedTotalPrice - parsedAdvancePayment - existingPaymentsTotal;
+                      throw new Error(`Total payments (${formatCurrency(totalPayments)}) cannot exceed total price (${formatCurrency(parsedTotalPrice)}). Remaining balance: ${formatCurrency(remainingBalance)}`);
+                    }
+
+                    const response = await fetch(`/api/rentals/${rental?.id}/payments`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        amount,
+                        paymentDate: paymentDate.toISOString(),
+                        notes,
+                      }),
+                    });
+
+                    if (!response.ok) {
+                      const errorData = await response.json().catch(() => ({ error: "Failed to add payment" }));
+                      throw new Error(errorData.error || "Failed to add payment");
+                    }
+
+                    const newPayment = await response.json();
+                    setPayments([newPayment, ...payments]);
+                    setError("");
+                  }}
+                  onSuccess={() => {
+                    setError("");
+                  }}
+                />
               </div>
 
               {/* Payment History & Summary */}
