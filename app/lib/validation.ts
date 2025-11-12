@@ -28,7 +28,7 @@ export const rentalItemSchema = z.object({
 });
 
 export const initialPaymentSchema = z.object({
-  amount: z.number().min(0, "Payment amount must be non-negative"),
+  amount: z.number().min(0.01, "Payment amount must be at least 0.01"),
   paymentDate: z.string().or(z.date()),
   notes: z.string().optional(),
 });
@@ -38,7 +38,7 @@ const baseRentalSchema = z.object({
   customerId: z.string().cuid(),
   startDate: z.string().or(z.date()),
   endDate: z.string().or(z.date()),
-  status: z.enum(["DRAFT", "CONFIRMED", "OUT", "RETURNED", "CANCELLED"]).optional(),
+  status: z.enum(["CONFIRMED", "OUT", "RETURNED", "CANCELLED"]).optional(),
   reference: z.string().optional(),
   notes: z.string().optional(),
   items: z.array(rentalItemSchema).min(1, "At least one item is required"),
@@ -71,7 +71,7 @@ export const createRentalSchema = baseRentalSchema.refine(
 export const updateRentalSchema = baseRentalSchema.partial();
 
 export const updateRentalStatusSchema = z.object({
-  status: z.enum(["DRAFT", "CONFIRMED", "OUT", "RETURNED", "CANCELLED"]),
+  status: z.enum(["CONFIRMED", "OUT", "RETURNED", "CANCELLED"]),
 });
 
 // Utility function to convert string to title case

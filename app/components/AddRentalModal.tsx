@@ -38,7 +38,7 @@ export default function AddRentalModal({
   onClose,
   onSuccess,
 }: AddRentalModalProps) {
-  const { settings } = useSettings();
+  const { settings, formatCurrency } = useSettings();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
@@ -289,6 +289,16 @@ export default function AddRentalModal({
     value: any
   ) => {
     const updated = [...rentalItems];
+
+    // If changing itemId, check for duplicates
+    if (field === "itemId" && value) {
+      const isDuplicate = rentalItems.some((item, i) => i !== index && item.itemId === value);
+      if (isDuplicate) {
+        setError("This item is already added. Please select a different item or adjust the quantity of the existing item.");
+        return;
+      }
+    }
+
     if (field === "quantity") {
       // Allow empty string while typing, will validate on submit
       updated[index] = { ...updated[index], [field]: value === "" ? "" : parseInt(value) || "" };
@@ -449,7 +459,7 @@ export default function AddRentalModal({
 
     if (parsedTotalPrice > 0 && totalPayments > parsedTotalPrice) {
       const remainingBalance = parsedTotalPrice - parsedAdvancePayment - existingPaymentsTotal;
-      setError(`Total payments ($${totalPayments.toFixed(2)}) cannot exceed total price ($${parsedTotalPrice.toFixed(2)}). Remaining balance: $${remainingBalance.toFixed(2)}`);
+      setError(`Total payments (${formatCurrency(totalPayments)}) cannot exceed total price (${formatCurrency(parsedTotalPrice)}). Remaining balance: ${formatCurrency(remainingBalance)}`);
       return;
     }
 

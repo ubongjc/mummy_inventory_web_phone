@@ -38,14 +38,6 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    // Reject Draft status
-    if (body.status === "DRAFT") {
-      return NextResponse.json(
-        { error: "Draft status is not allowed" },
-        { status: 400 }
-      );
-    }
-
     // Build update data object with only provided fields
     const updateData: any = {};
     if (body.status !== undefined) updateData.status = body.status;
@@ -85,14 +77,6 @@ export async function PUT(
     const { id: rentalId } = await params;
     const body = await request.json();
 
-    // Reject Draft status
-    if (body.status === "DRAFT") {
-      return NextResponse.json(
-        { error: "Draft status is not allowed" },
-        { status: 400 }
-      );
-    }
-
     const startDate = toUTCMidnight(body.startDate);
     const endDate = toUTCMidnight(body.endDate);
 
@@ -128,29 +112,42 @@ export async function PUT(
         },
       });
 
-      const reserved = overlappingRentals.reduce(
-        (sum, rental) =>
-          sum +
-          rental.items.reduce(
-            (itemSum, item) => itemSum + item.quantity,
-            0
-          ),
-        0
-      );
+      // Check availability day-by-day
+      const currentDate = new Date(startDate);
+      const endDateCheck = new Date(endDate);
 
-      const available = item.totalQuantity - reserved;
+      while (currentDate <= endDateCheck) {
+        // Calculate reserved quantity on this specific day
+        const reservedOnDay = overlappingRentals.reduce((sum, rental) => {
+          const rentalStart = new Date(rental.startDate);
+          const rentalEnd = new Date(rental.endDate);
 
-      if (available < rentalItem.quantity) {
-        return NextResponse.json(
-          {
-            error: "Insufficient availability",
-            itemName: item.name,
-            requested: rentalItem.quantity,
-            available,
-            total: item.totalQuantity,
-          },
-          { status: 409 }
-        );
+          // Check if this rental overlaps with current day
+          if (currentDate >= rentalStart && currentDate <= rentalEnd) {
+            return sum + rental.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
+          }
+          return sum;
+        }, 0);
+
+        const availableOnDay = item.totalQuantity - reservedOnDay;
+
+        if (availableOnDay < rentalItem.quantity) {
+          return NextResponse.json(
+            {
+              error: "Insufficient availability",
+              itemName: item.name,
+              date: currentDate.toISOString().split('T')[0],
+              requested: rentalItem.quantity,
+              available: availableOnDay,
+              reserved: reservedOnDay,
+              total: item.totalQuantity,
+            },
+            { status: 409 }
+          );
+        }
+
+        // Move to next day
+        currentDate.setUTCDate(currentDate.getUTCDate() + 1);
       }
     }
 

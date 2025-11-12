@@ -269,6 +269,16 @@ export default function EditRentalModal({
 
   const updateRentalItem = (index: number, field: "itemId" | "quantity", value: any) => {
     const updated = [...rentalItems];
+
+    // If changing itemId, check for duplicates
+    if (field === "itemId" && value) {
+      const isDuplicate = rentalItems.some((item, i) => i !== index && item.itemId === value);
+      if (isDuplicate) {
+        setError("This item is already added. Please select a different item or adjust the quantity of the existing item.");
+        return;
+      }
+    }
+
     updated[index] = { ...updated[index], [field]: value };
     setRentalItems(updated);
   };

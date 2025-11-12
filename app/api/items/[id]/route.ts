@@ -11,6 +11,47 @@ export async function PATCH(
     const body = await request.json();
     const validated = updateItemSchema.parse(body);
 
+    // If totalQuantity is being updated, check that it's not below current reservations
+    if (validated.totalQuantity !== undefined) {
+      // Get current and future rentals using this item
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      const overlappingRentals = await prisma.rental.findMany({
+        where: {
+          AND: [
+            { endDate: { gte: now } },
+            { status: { in: ["CONFIRMED", "OUT"] } },
+          ],
+        },
+        include: {
+          items: {
+            where: { itemId: id },
+          },
+        },
+      });
+
+      const maxReserved = overlappingRentals.reduce(
+        (max, rental) =>
+          Math.max(
+            max,
+            rental.items.reduce((sum, item) => sum + item.quantity, 0)
+          ),
+        0
+      );
+
+      if (validated.totalQuantity < maxReserved) {
+        return NextResponse.json(
+          {
+            error: `Cannot reduce total quantity to ${validated.totalQuantity}. Currently ${maxReserved} units are reserved in active/future rentals. Please cancel or modify those rentals first.`,
+            maxReserved,
+            requestedQuantity: validated.totalQuantity,
+          },
+          { status: 409 }
+        );
+      }
+    }
+
     const item = await prisma.item.update({
       where: { id },
       data: validated,
