@@ -17,6 +17,11 @@ interface Item {
   totalQuantity: number;
 }
 
+interface ItemReservation {
+  itemId: string;
+  reserved: number;
+}
+
 export default function Home() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -30,6 +35,8 @@ export default function Home() {
   const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
   const [itemSearchQuery, setItemSearchQuery] = useState("");
   const [itemSortBy, setItemSortBy] = useState<"name-asc" | "name-desc" | "quantity-desc" | "quantity-asc" | "unit">("name-asc");
+  const [itemReservations, setItemReservations] = useState<Map<string, number>>(new Map());
+  const [calendarDateRange, setCalendarDateRange] = useState<{ start: string; end: string } | null>(null);
 
   // Fetch items on mount
   useEffect(() => {
@@ -47,6 +54,27 @@ export default function Home() {
       console.error("Error fetching items:", error);
     }
   };
+
+  const fetchItemReservations = async (start: string, end: string) => {
+    try {
+      const response = await fetch(`/api/availability/summary?start=${start}&end=${end}`);
+      const data: ItemReservation[] = await response.json();
+      const reservationMap = new Map<string, number>();
+      data.forEach((item) => {
+        reservationMap.set(item.itemId, item.reserved);
+      });
+      setItemReservations(reservationMap);
+    } catch (error) {
+      console.error("Error fetching item reservations:", error);
+    }
+  };
+
+  // Fetch reservations when calendar date range changes
+  useEffect(() => {
+    if (calendarDateRange) {
+      fetchItemReservations(calendarDateRange.start, calendarDateRange.end);
+    }
+  }, [calendarDateRange, refreshKey]);
 
   const toggleItem = (itemId: string) => {
     setSelectedItemIds(prev =>
@@ -293,7 +321,14 @@ export default function Home() {
                           <Square className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                         )}
                         <div className="flex-1 text-left">
-                          <div className="font-bold text-black text-[10px] leading-tight">{item.name}</div>
+                          <div className="font-bold text-black text-[10px] leading-tight">
+                            {item.name}
+                            {itemReservations.has(item.id) && itemReservations.get(item.id)! > 0 && (
+                              <span className="text-orange-600 ml-1">
+                                ({itemReservations.get(item.id)})
+                              </span>
+                            )}
+                          </div>
                           <div className="text-[9px] text-gray-600">
                             {item.totalQuantity} {item.unit}
                           </div>
@@ -368,6 +403,7 @@ export default function Home() {
             key={refreshKey}
             onDateClick={handleDateClick}
             selectedItemIds={selectedItemIds}
+            onDateRangeChange={(start, end) => setCalendarDateRange({ start, end })}
           />
         </div>
       </main>

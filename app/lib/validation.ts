@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const createItemSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  unit: z.string().min(1, "Unit is required"),
+  unit: z.string().min(1, "Unit is required").max(10, "Unit must be 10 characters or less").regex(/^[A-Za-z\s]+$/, "Unit must contain only letters"),
   totalQuantity: z.number().int().min(0, "Total quantity must be non-negative"),
   price: z.number().min(0).optional(),
   notes: z.string().optional(),
@@ -45,7 +45,23 @@ export const createRentalSchema = z.object({
   advancePayment: z.number().min(0).optional(),
   paymentDueDate: z.string().or(z.date()).optional(),
   initialPayments: z.array(initialPaymentSchema).optional(),
-});
+}).refine(
+  (data) => {
+    // Parse dates and ensure endDate >= startDate
+    const start = typeof data.startDate === 'string'
+      ? new Date(data.startDate)
+      : data.startDate;
+    const end = typeof data.endDate === 'string'
+      ? new Date(data.endDate)
+      : data.endDate;
+
+    return end >= start;
+  },
+  {
+    message: "Return date cannot be before start date",
+    path: ["endDate"],
+  }
+);
 
 export const updateRentalSchema = createRentalSchema.partial();
 

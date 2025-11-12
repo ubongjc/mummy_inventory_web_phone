@@ -4,13 +4,15 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useEffect, useState, useRef } from "react";
+import { textColorFor } from "@/app/lib/contrast";
 
 interface CalendarProps {
   onDateClick: (date: Date) => void;
   selectedItemIds: string[];
+  onDateRangeChange?: (start: string, end: string) => void;
 }
 
-export default function Calendar({ onDateClick, selectedItemIds }: CalendarProps) {
+export default function Calendar({ onDateClick, selectedItemIds, onDateRangeChange }: CalendarProps) {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const isFetchingRef = useRef(false);
@@ -29,6 +31,11 @@ export default function Calendar({ onDateClick, selectedItemIds }: CalendarProps
     try {
       const startStr = start.toISOString().split("T")[0];
       const endStr = end.toISOString().split("T")[0];
+
+      // Notify parent about date range change
+      if (onDateRangeChange) {
+        onDateRangeChange(startStr, endStr);
+      }
 
       const response = await fetch(
         `/api/rentals?start=${startStr}&end=${endStr}`
@@ -63,7 +70,14 @@ export default function Calendar({ onDateClick, selectedItemIds }: CalendarProps
           console.log(`  - "${event.title.substring(0, 30)}...": ${event.start} to ${event.end} (${daysDiff} days) [allDay=${event.allDay}]`);
         });
       }
-      setEvents(data);
+
+      // Apply appropriate text color based on background
+      const eventsWithTextColor = data.map((event: any) => ({
+        ...event,
+        textColor: textColorFor(event.backgroundColor || "#3b82f6"),
+      }));
+
+      setEvents(eventsWithTextColor);
     } catch (error) {
       console.error("Error fetching events:", error);
     } finally {
