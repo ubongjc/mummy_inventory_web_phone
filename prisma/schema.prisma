@@ -1,0 +1,103 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Item {
+  id             String   @id @default(cuid())
+  name           String
+  unit           String   // "pcs" etc.
+  totalQuantity  Int      // authoritative stock count
+  price          Float?   // default rental price per unit
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  rentalItems    RentalItem[]
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String   // Will be deprecated, keeping for backward compatibility
+  firstName String?  // Will become required after migration
+  lastName  String?
+  phone     String?
+  email     String?
+  address   String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rentals   Rental[]
+}
+
+model Rental {
+  id              String        @id @default(cuid())
+  customerId      String
+  startDate       DateTime      // store date at 00:00Z
+  endDate         DateTime      // inclusive range
+  status          String        @default("CONFIRMED") // DRAFT, CONFIRMED, OUT, RETURNED, CANCELLED
+  reference       String?       // human-friendly code (e.g., RNT-000123)
+  notes           String?
+  color           String?       // hex color for calendar display (e.g., #3b82f6)
+  totalPrice      Float?        // total agreed rental price
+  advancePayment  Float?        // initial advance payment
+  paymentDueDate  DateTime?     // date when complete payment is due
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  customer        Customer      @relation(fields: [customerId], references: [id])
+  items           RentalItem[]
+  payments        Payment[]     // track all payments made
+
+  @@index([startDate])
+  @@index([endDate])
+  @@index([status])
+}
+
+model RentalItem {
+  id        String  @id @default(cuid())
+  rentalId  String
+  itemId    String
+  quantity  Int
+
+  rental    Rental  @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+  item      Item    @relation(fields: [itemId], references: [id])
+
+  @@index([itemId])
+  @@unique([rentalId, itemId])
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  rentalId    String
+  amount      Float
+  paymentDate DateTime @default(now())
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  rental      Rental   @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+
+  @@index([rentalId])
+}
+
+model Settings {
+  id                    String   @id @default(cuid())
+  businessName          String   @default("My Rental Business")
+  currency              String   @default("USD")
+  currencySymbol        String   @default("$")
+  businessPhone         String?
+  businessEmail         String?
+  businessAddress       String?
+  taxRate               Float?   // percentage (e.g., 10 for 10%)
+  lowStockThreshold     Int      @default(5)
+  defaultRentalDays     Int      @default(1)
+  dateFormat            String   @default("MM/DD/YYYY")
+  timezone              String   @default("UTC")
+  updatedAt             DateTime @updatedAt
+}

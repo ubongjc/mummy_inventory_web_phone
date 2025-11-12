@@ -1,0 +1,788 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { X, Plus } from "lucide-react";
+import { useSettings } from "@/app/hooks/useSettings";
+import DatePicker from "./DatePicker";
+
+interface RentalItem {
+  id: string;
+  itemId: string;
+  quantity: number;
+  item?: {
+    id: string;
+    name: string;
+    unit: string;
+  };
+}
+
+interface Payment {
+  id: string;
+  amount: number;
+  paymentDate: string;
+  notes?: string;
+}
+
+interface Rental {
+  id: string;
+  customerId: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  notes?: string;
+  totalPrice?: number;
+  advancePayment?: number;
+  paymentDueDate?: string;
+  items: RentalItem[];
+  payments?: Payment[];
+  customer: {
+    id: string;
+    name: string; // For backward compatibility
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    email?: string;
+  };
+}
+
+interface EditRentalModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+  rental: Rental | null;
+}
+
+interface Item {
+  id: string;
+  name: string;
+  totalQuantity: number;
+  unit: string;
+  available?: number;
+}
+
+interface Customer {
+  id: string;
+  name: string; // For backward compatibility
+  firstName?: string;
+  lastName?: string;
+}
+
+export default function EditRentalModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  rental,
+}: EditRentalModalProps) {
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
+  const [selectedCustomerId, setSelectedCustomerId] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [rentalItems, setRentalItems] = useState<{ itemId: string; quantity: number }[]>([]);
+  const [notes, setNotes] = useState("");
+  const [status, setStatus] = useState("CONFIRMED");
+  const [totalPrice, setTotalPrice] = useState("");
+  const [advancePayment, setAdvancePayment] = useState("");
+  const [paymentDueDate, setPaymentDueDate] = useState("");
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [newPaymentAmount, setNewPaymentAmount] = useState("");
+  const [newPaymentDate, setNewPaymentDate] = useState("");
+  const [newPaymentNotes, setNewPaymentNotes] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const { formatCurrency } = useSettings();
+  const itemSelectRefs = useRef<{ [key: number]: HTMLSelectElement | null }>({});
+  const previousItemsLength = useRef(rentalItems.length);
+
+  // Track initial values to detect changes
+  const [initialValues, setInitialValues] = useState<{
+    customerId: string;
+    startDate: string;
+    endDate: string;
+    status: string;
+    notes: string;
+    totalPrice: string;
+    advancePayment: string;
+    paymentDueDate: string;
+    rentalItems: { itemId: string; quantity: number }[];
+  } | null>(null);
+
+  // Format date without timezone conversion
+  const formatDate = (dateString: string) => {
+    const datePart = dateString.split('T')[0]; // "2025-11-06"
+    const [year, month, day] = datePart.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return `${monthNames[date.getUTCMonth()]} ${date.getUTCDate()}`;
+  };
+
+  useEffect(() => {
+    if (isOpen && rental) {
+      fetchCustomers();
+      fetchItems();
+      // Clear error when modal opens
+      setError("");
+      // Populate form with rental data
+      const customerId = rental.customerId;
+      const start = rental.startDate.split("T")[0];
+      const end = rental.endDate.split("T")[0];
+      const rentalNotes = rental.notes || "";
+      const rentalStatus = rental.status;
+      const price = rental.totalPrice?.toString() || "";
+      const advance = rental.advancePayment?.toString() || "";
+      const dueDate = rental.paymentDueDate ? rental.paymentDueDate.split("T")[0] : "";
+      const items = rental.items.map((item) => ({
+        itemId: item.itemId || item.item?.id || "",
+        quantity: item.quantity,
+      }));
+
+      setSelectedCustomerId(customerId);
+      setStartDate(start);
+      setEndDate(end);
+      setNotes(rentalNotes);
+      setStatus(rentalStatus);
+      setTotalPrice(price);
+      setAdvancePayment(advance);
+      setPaymentDueDate(dueDate);
+      setPayments(rental.payments || []);
+      setRentalItems(items);
+
+      // Save initial values for change detection
+      setInitialValues({
+        customerId,
+        startDate: start,
+        endDate: end,
+        status: rentalStatus,
+        notes: rentalNotes,
+        totalPrice: price,
+        advancePayment: advance,
+        paymentDueDate: dueDate,
+        rentalItems: items,
+      });
+    }
+  }, [isOpen, rental]);
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
+
+  // Re-fetch items when dates change to update availability
+  useEffect(() => {
+    if (isOpen && rental && (startDate || endDate)) {
+      fetchItems();
+    }
+  }, [startDate, endDate]);
+
+  // Clear error when rentalItems change
+  useEffect(() => {
+    setError("");
+  }, [rentalItems]);
+
+  // Auto-focus newly added item dropdown
+  useEffect(() => {
+    if (rentalItems.length > previousItemsLength.current) {
+      const newIndex = rentalItems.length - 1;
+      setTimeout(() => {
+        itemSelectRefs.current[newIndex]?.focus();
+      }, 50);
+    }
+    previousItemsLength.current = rentalItems.length;
+  }, [rentalItems.length]);
+
+  const fetchCustomers = async () => {
+    try {
+      const response = await fetch("/api/customers");
+      const data = await response.json();
+      setCustomers(data);
+    } catch (err) {
+      console.error("Error fetching customers:", err);
+    }
+  };
+
+  const fetchItems = async () => {
+    try {
+      const itemsResponse = await fetch("/api/items");
+      const itemsData = await itemsResponse.json();
+
+      const rentalsResponse = await fetch("/api/rentals");
+      const rentalsData = await rentalsResponse.json();
+
+      // Calculate available quantities for each item based on selected dates
+      const itemsWithAvailability = itemsData.map((item: any) => {
+        // If no dates selected yet, show availability for today
+        const checkStartDate = startDate ? new Date(startDate + "T00:00:00.000Z") : new Date();
+        const checkEndDate = endDate ? new Date(endDate + "T00:00:00.000Z") : new Date();
+
+        const rented = rentalsData
+          .filter((r: any) => {
+            // Exclude the current rental being edited
+            if (rental && r.id === rental.id) return false;
+
+            const rentalStartDate = new Date(r.startDate);
+            const rentalEndDate = new Date(r.endDate);
+
+            // Check if rental overlaps with selected period
+            const overlaps = rentalStartDate <= checkEndDate && rentalEndDate >= checkStartDate;
+
+            return (
+              (r.status === "CONFIRMED" || r.status === "OUT") &&
+              overlaps
+            );
+          })
+          .reduce((sum: number, r: any) => {
+            const rentalItem = r.items?.find(
+              (ri: any) => ri.itemId === item.id || ri.item?.id === item.id
+            );
+            return sum + (rentalItem?.quantity || 0);
+          }, 0);
+
+        console.log(`[Edit] Item "${item.name}": ${item.totalQuantity} total, ${rented} rented during period, ${item.totalQuantity - rented} available`);
+
+        return {
+          ...item,
+          available: item.totalQuantity - rented,
+        };
+      });
+
+      setItems(itemsWithAvailability);
+    } catch (err) {
+      console.error("Error fetching items:", err);
+    }
+  };
+
+  const addRentalItem = () => {
+    setRentalItems([...rentalItems, { itemId: "", quantity: 1 }]);
+    // Focus will be handled by useEffect when rentalItems length changes
+  };
+
+  const removeRentalItem = (index: number) => {
+    setRentalItems(rentalItems.filter((_, i) => i !== index));
+  };
+
+  const updateRentalItem = (index: number, field: "itemId" | "quantity", value: any) => {
+    const updated = [...rentalItems];
+    updated[index] = { ...updated[index], [field]: value };
+    setRentalItems(updated);
+  };
+
+  const handleAddPayment = async () => {
+    if (!newPaymentAmount || parseFloat(newPaymentAmount) <= 0) {
+      setError("Please enter a valid payment amount");
+      return;
+    }
+
+    // Validate overpayment
+    const parsedTotalPrice = totalPrice ? parseFloat(totalPrice) : 0;
+    const parsedAdvancePayment = advancePayment ? parseFloat(advancePayment) : 0;
+    const newPaymentAmountNum = parseFloat(newPaymentAmount);
+    const existingPaymentsTotal = payments.reduce((sum, p) => sum + p.amount, 0);
+    const totalPayments = parsedAdvancePayment + existingPaymentsTotal + newPaymentAmountNum;
+
+    if (parsedTotalPrice > 0 && totalPayments > parsedTotalPrice) {
+      const remainingBalance = parsedTotalPrice - parsedAdvancePayment - existingPaymentsTotal;
+      setError(`Total payments (${formatCurrency(totalPayments)}) cannot exceed total price (${formatCurrency(parsedTotalPrice)}). Remaining balance: ${formatCurrency(remainingBalance)}`);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/rentals/${rental?.id}/payments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: parseFloat(newPaymentAmount),
+          paymentDate: newPaymentDate || new Date().toISOString(),
+          notes: newPaymentNotes,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Failed to add payment" }));
+        throw new Error(errorData.error || "Failed to add payment");
+      }
+
+      const newPayment = await response.json();
+      setPayments([newPayment, ...payments]);
+      setNewPaymentAmount("");
+      setNewPaymentDate("");
+      setNewPaymentNotes("");
+      setError("");
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      if (!rental) throw new Error("No rental to edit");
+
+      // Validate advance payment doesn't exceed total price
+      const parsedTotalPrice = totalPrice ? parseFloat(totalPrice) : 0;
+      const parsedAdvancePayment = advancePayment ? parseFloat(advancePayment) : 0;
+
+      if (parsedAdvancePayment > parsedTotalPrice && parsedTotalPrice > 0) {
+        throw new Error("Advance payment cannot exceed total price");
+      }
+
+      // Validate overpayment - check if total payments exceed total price
+      const existingPaymentsTotal = payments.reduce((sum, p) => sum + p.amount, 0);
+      const totalPayments = parsedAdvancePayment + existingPaymentsTotal;
+
+      if (parsedTotalPrice > 0 && totalPayments > parsedTotalPrice) {
+        throw new Error(`Total payments (${formatCurrency(totalPayments)}) cannot exceed total price (${formatCurrency(parsedTotalPrice)})`);
+      }
+
+      const response = await fetch(`/api/rentals/${rental.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerId: selectedCustomerId,
+          startDate,
+          endDate,
+          status,
+          items: rentalItems.filter((item) => item.itemId),
+          notes,
+          totalPrice: totalPrice ? parseFloat(totalPrice) : undefined,
+          advancePayment: advancePayment ? parseFloat(advancePayment) : undefined,
+          paymentDueDate: paymentDueDate || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+
+        // Format detailed error message for availability issues
+        if (errorData.itemName && errorData.requested !== undefined && errorData.available !== undefined) {
+          throw new Error(
+            `Insufficient availability for "${errorData.itemName}". You requested ${errorData.requested} but only ${errorData.available} are available (${errorData.total} total, ${errorData.total - errorData.available} already rented).`
+          );
+        }
+
+        throw new Error(errorData.error || "Failed to update rental");
+      }
+
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  if (!isOpen || !rental) return null;
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 bg-black bg-opacity-50 z-50"
+        onClick={onClose}
+      />
+      <div className="fixed inset-0 flex items-center justify-center z-50 p-2 overflow-y-auto">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-4 border border-gray-200 transform transition-all max-h-[95vh] flex flex-col">
+          <div className="flex items-center justify-between p-3 border-b flex-shrink-0">
+            <h3 className="text-base font-bold text-black">Edit Booking</h3>
+            <button
+              onClick={onClose}
+              className="p-1 hover:bg-gray-100 rounded"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-3 space-y-3 overflow-y-auto flex-1">
+            {error && (
+              <div className="bg-red-50 text-red-600 p-3 rounded text-sm">
+                {error}
+              </div>
+            )}
+
+            {/* Customer Selection */}
+            <div>
+              <label className="block text-sm font-bold mb-2 text-black">
+                Customer *
+              </label>
+              <select
+                value={selectedCustomerId}
+                onChange={(e) => setSelectedCustomerId(e.target.value)}
+                className="w-full px-2 py-1.5 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm"
+                required
+              >
+                <option value="">Select a customer</option>
+                {customers.map((customer) => (
+                  <option key={customer.id} value={customer.id}>
+                    {customer.firstName || customer.name} {customer.lastName || ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Dates */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="min-w-0">
+                <DatePicker
+                  value={startDate}
+                  onChange={(date) => setStartDate(date)}
+                  label="Start Date:"
+                  required
+                  className="text-sm"
+                />
+              </div>
+              <div className="min-w-0">
+                <DatePicker
+                  value={endDate}
+                  onChange={(date) => setEndDate(date)}
+                  label="Return Date:"
+                  minDate={startDate}
+                  required
+                  className="text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Status */}
+            <div>
+              <label className="block text-xs font-bold mb-1 text-black">
+                Status *
+              </label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="w-full px-2 py-1.5 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm"
+                required
+              >
+                <option value="CONFIRMED">Confirmed</option>
+                <option value="OUT">Out</option>
+                <option value="RETURNED">Returned</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+            </div>
+
+            {/* Items */}
+            <div>
+              <label className="block text-sm font-bold mb-2 text-black">
+                Items to Rent *
+              </label>
+              <div className="space-y-2">
+                {rentalItems.map((rentalItem, index) => (
+                  <div key={index} className="flex gap-2">
+                    <select
+                      ref={(el) => { itemSelectRefs.current[index] = el; }}
+                      value={rentalItem.itemId}
+                      onChange={(e) => {
+                        // Prevent selecting the "Select" option
+                        if (e.target.value !== "") {
+                          updateRentalItem(index, "itemId", e.target.value);
+                        }
+                      }}
+                      className="w-[calc(100%-8.5rem)] px-3 py-2 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-base truncate"
+                      required
+                    >
+                      <option value="" disabled>Select item</option>
+                      {items
+                        .filter((item) =>
+                          // Show current item OR items not already selected in other rows
+                          item.id === rentalItem.itemId ||
+                          !rentalItems.some((ri, i) => i !== index && ri.itemId === item.id)
+                        )
+                        .map((item) => {
+                          const available = item.available ?? item.totalQuantity;
+                          const isOverbooked = available < 0;
+                          return (
+                            <option key={item.id} value={item.id}>
+                              {item.name} (Available: {available} {item.unit}{isOverbooked ? ' ⚠️ OVERBOOKED' : available === 0 ? ' - NONE AVAILABLE' : ''})
+                            </option>
+                          );
+                        })
+                      }
+                    </select>
+                    <input
+                      type="number"
+                      value={rentalItem.quantity}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        // Allow empty string while typing
+                        if (val === "") {
+                          updateRentalItem(index, "quantity", "");
+                        } else {
+                          const numVal = parseInt(val);
+                          // Prevent negative numbers and 0
+                          if (numVal > 0) {
+                            updateRentalItem(index, "quantity", numVal);
+                          }
+                        }
+                      }}
+                      onBlur={(e) => {
+                        // Set to 1 if empty on blur
+                        if (e.target.value === "" || parseInt(e.target.value) < 1) {
+                          updateRentalItem(index, "quantity", 1);
+                        }
+                      }}
+                      className="w-20 flex-shrink-0 px-3 py-2 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-base"
+                      min="1"
+                      required
+                    />
+                    {rentalItems.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeRentalItem(index)}
+                        className="w-10 h-10 flex-shrink-0 flex items-center justify-center text-red-600 hover:text-white hover:bg-red-600 border border-red-600 rounded transition-colors"
+                        title="Remove item"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {/* Check if all items are selected and last item is complete */}
+                {(() => {
+                  const lastItem = rentalItems[rentalItems.length - 1];
+                  const hasValidLastItem = lastItem && lastItem.itemId && lastItem.quantity && lastItem.quantity > 0;
+                  const hasAvailableItems = items.filter(item => !rentalItems.some(ri => ri.itemId === item.id) && (item.available ?? item.totalQuantity) > 0).length > 0;
+
+                  if (!hasAvailableItems) {
+                    return (
+                      <div className="text-sm text-gray-600 italic">
+                        All available items have been selected
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <button
+                      type="button"
+                      onClick={addRentalItem}
+                      disabled={!hasValidLastItem}
+                      className={`text-sm flex items-center gap-1 ${
+                        hasValidLastItem
+                          ? 'text-blue-600 hover:underline cursor-pointer'
+                          : 'text-gray-400 cursor-not-allowed'
+                      }`}
+                      title={!hasValidLastItem ? 'Please select an item and enter a quantity first' : ''}
+                    >
+                      <Plus className="w-4 h-4" /> Add another item
+                    </button>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* Pricing Information */}
+            <div className="border-t pt-2">
+              <h4 className="text-xs font-bold mb-2 text-black">Pricing Information</h4>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-xs font-bold mb-1 text-black">
+                    Total Price
+                  </label>
+                  <input
+                    type="number"
+                    value={totalPrice}
+                    onChange={(e) => setTotalPrice(e.target.value)}
+                    placeholder="0.00"
+                    step="0.01"
+                    min="0"
+                    className="h-9 w-full px-2 py-1.5 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold mb-1 text-black">
+                    Advance Payment
+                  </label>
+                  <input
+                    type="number"
+                    value={advancePayment}
+                    onChange={(e) => setAdvancePayment(e.target.value)}
+                    placeholder="0.00"
+                    step="0.01"
+                    min="0"
+                    disabled
+                    className="h-9 w-full px-2 py-1.5 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm bg-gray-100 text-gray-500 cursor-not-allowed"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <DatePicker
+                    value={paymentDueDate}
+                    onChange={(date) => setPaymentDueDate(date)}
+                    label="Payment Due Date:"
+                    className="text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Additional Payments */}
+            <div className="border-t pt-2">
+              <h4 className="text-xs font-bold mb-2 text-black">Additional Payments</h4>
+
+              {/* Add New Payment Form */}
+              <div className="bg-gray-50 border border-gray-300 rounded p-3 mb-3">
+                <div className="grid grid-cols-2 gap-2 mb-2">
+                  <div>
+                    <label className="block text-xs font-bold mb-1 text-black">
+                      Amount
+                    </label>
+                    <input
+                      type="number"
+                      value={newPaymentAmount}
+                      onChange={(e) => setNewPaymentAmount(e.target.value)}
+                      placeholder="0.00"
+                      step="0.01"
+                      min="0"
+                      className="h-9 w-full px-2 py-1.5 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <DatePicker
+                      value={newPaymentDate}
+                      onChange={(date) => setNewPaymentDate(date)}
+                      label="Date:"
+                      className="text-xs"
+                    />
+                  </div>
+                </div>
+                <div className="mb-2">
+                  <label className="block text-xs font-bold mb-1 text-black">
+                    Notes (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={newPaymentNotes}
+                    onChange={(e) => setNewPaymentNotes(e.target.value)}
+                    placeholder="Payment notes..."
+                    className="w-full px-2 py-1.5 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddPayment}
+                  className="w-full flex items-center justify-center gap-1 px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-semibold"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Payment
+                </button>
+              </div>
+
+              {/* Payment History & Summary */}
+              <div>
+                {/* Show payment history if there are any payments */}
+                {((advancePayment && parseFloat(advancePayment) > 0) || payments.length > 0) && (
+                  <>
+                    <h5 className="text-xs font-bold mb-2 text-gray-700">Payment History</h5>
+                    <div className="space-y-2 max-h-40 overflow-y-auto mb-3">
+                      {advancePayment && parseFloat(advancePayment) > 0 && (
+                        <div className="bg-green-50 border border-green-200 rounded p-2 text-xs">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="font-bold text-green-800">
+                                {formatCurrency(parseFloat(advancePayment))}
+                              </div>
+                              <div className="text-green-600">Advance Payment</div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {payments.map((payment) => (
+                        <div key={payment.id} className="bg-green-50 border border-green-200 rounded p-2 text-xs">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="font-bold text-green-800">
+                                {formatCurrency(payment.amount)}
+                              </div>
+                              <div className="text-green-600">
+                                {formatDate(payment.paymentDate)}
+                              </div>
+                              {payment.notes && (
+                                <div className="text-gray-600 mt-1">{payment.notes}</div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {/* Payment Summary */}
+                {totalPrice && parseFloat(totalPrice) > 0 && (
+                  <div className="bg-purple-50 border-2 border-purple-300 rounded-lg p-3">
+                    <h5 className="text-xs font-bold mb-2 text-purple-900">Payment Summary</h5>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="font-semibold text-black">Total Price:</span>
+                        <span className="font-bold text-black">{formatCurrency(parseFloat(totalPrice))}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="font-semibold text-green-700">Total Paid:</span>
+                        <span className="font-bold text-green-700">
+                          {formatCurrency(
+                            (advancePayment ? parseFloat(advancePayment) : 0) +
+                            payments.reduce((sum, p) => sum + p.amount, 0)
+                          )}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm pt-1 border-t border-purple-300">
+                        <span className="font-bold text-purple-900">Balance Remaining:</span>
+                        <span className="font-bold text-red-700">
+                          {formatCurrency(
+                            parseFloat(totalPrice) -
+                            (advancePayment ? parseFloat(advancePayment) : 0) -
+                            payments.reduce((sum, p) => sum + p.amount, 0)
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Notes */}
+            <div>
+              <label className="block text-xs font-bold mb-1 text-black">
+                Notes (optional)
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full px-2 py-1.5 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm"
+                rows={2}
+              />
+            </div>
+
+            <div className="flex gap-2 pt-2 sticky bottom-0 bg-white border-t mt-2 -mx-3 -mb-3 px-3 py-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-3 py-1.5 border rounded hover:bg-gray-50 text-sm font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 text-sm font-semibold"
+              >
+                {loading ? "Updating..." : "Update Rental"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </>
+  );
+}

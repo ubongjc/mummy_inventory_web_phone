@@ -1,0 +1,429 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #000000;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #ffffff;
+    --foreground: #000000;
+  }
+}
+
+body {
+  color: #000000;
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Make all inputs and text BLACK */
+input, textarea, select {
+  color: #000000 !important;
+  font-weight: 500 !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #666666 !important;
+}
+
+label {
+  color: #000000 !important;
+  font-weight: 600 !important;
+}
+
+.text-gray-500, .text-gray-600, .text-gray-700 {
+  color: #000000 !important;
+}
+
+button {
+  font-weight: 600 !important;
+}
+
+table {
+  color: #000000 !important;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* FullCalendar customizations */
+.fc {
+  font-family: Arial, Helvetica, sans-serif;
+  height: 100% !important;
+  border-radius: 1rem !important;
+  overflow: hidden !important;
+  max-width: 100% !important;
+}
+
+.fc-toolbar-title {
+  font-size: 1.75rem !important;
+  font-weight: 800 !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-transform: uppercase !important;
+}
+
+.fc .fc-toolbar {
+  margin-bottom: 1.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.fc .fc-toolbar-chunk {
+  display: flex !important;
+  gap: 0.5rem !important;
+  align-items: center !important;
+}
+
+.fc .fc-button {
+  padding: 0.5rem 1rem !important;
+  font-size: 0.9rem !important;
+  border-radius: 0.5rem !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+  border: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  margin: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Mobile calendar header optimizations */
+@media (max-width: 768px) {
+  .fc {
+    overflow: visible !important;
+  }
+
+  .fc-toolbar-title {
+    font-size: 0.65rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .fc .fc-toolbar {
+    margin-bottom: 0.5rem !important;
+    flex-wrap: nowrap !important;
+    gap: 0.2rem !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  .fc .fc-toolbar-chunk {
+    gap: 0.2rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  .fc .fc-toolbar-chunk:nth-child(2) {
+    flex-shrink: 2 !important;
+    min-width: 0 !important;
+    flex-grow: 0 !important;
+    max-width: 40% !important;
+  }
+
+  /* Navigation buttons (prev, next, today) */
+  .fc .fc-toolbar-chunk:first-child .fc-button {
+    padding: 0.15rem 0.3rem !important;
+    font-size: 0.6rem !important;
+    border-radius: 0.375rem !important;
+    height: 22px !important;
+    line-height: 1 !important;
+  }
+
+  .fc .fc-toolbar-chunk:first-child .fc-button .fc-icon {
+    font-size: 0.6rem !important;
+  }
+
+  /* Reduce gap between prev/next on mobile */
+  .fc .fc-toolbar-chunk:first-child {
+    gap: 0.08rem !important;
+  }
+
+  /* View buttons (month, week, day) - make even smaller */
+  .fc .fc-toolbar-chunk:last-child .fc-button {
+    padding: 0.12rem 0.2rem !important;
+    font-size: 0.48rem !important;
+    border-radius: 0.25rem !important;
+    height: 22px !important;
+    line-height: 1 !important;
+  }
+
+  .fc .fc-toolbar-chunk:last-child .fc-button-group {
+    gap: 0.08rem !important;
+  }
+
+  /* Reduce day cell height on mobile */
+  .fc-daygrid-day-frame {
+    min-height: 55px !important;
+  }
+
+  /* Smaller day numbers on mobile */
+  .fc .fc-daygrid-day-number {
+    font-size: 0.75rem !important;
+    padding: 0.2rem !important;
+  }
+
+  /* Smaller column headers on mobile */
+  .fc .fc-col-header-cell {
+    padding: 0.3rem !important;
+    font-size: 0.65rem !important;
+  }
+
+  /* Smaller rental bars on mobile */
+  .fc .fc-event {
+    padding: 0px 2px !important;
+    font-size: 0.6rem !important;
+  }
+}
+
+.fc .fc-button-group {
+  gap: 0.25rem !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.fc .fc-button-group > .fc-button {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Reduce gap between prev/next buttons specifically */
+.fc .fc-toolbar-chunk:first-child {
+  gap: 0.25rem !important;
+  align-items: center !important;
+}
+
+.fc .fc-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.fc .fc-button-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.fc .fc-button-primary:not(:disabled):active,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  background: linear-gradient(135deg, #5568d3 0%, #653a8a 100%) !important;
+}
+
+.fc .fc-daygrid-day-number {
+  font-size: 0.85rem;
+  padding: 0.3rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.fc .fc-col-header-cell {
+  padding: 0.5rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  font-size: 0.7rem !important;
+  letter-spacing: 0.05em !important;
+  background: linear-gradient(to bottom, #f9fafb, #f3f4f6) !important;
+  border-color: #e5e7eb !important;
+  text-align: center !important;
+}
+
+.fc .fc-daygrid-day {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 0;
+}
+
+.fc .fc-daygrid-day:hover {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
+  transform: scale(1.02);
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2) !important;
+}
+
+.fc .fc-daygrid-day:hover .fc-daygrid-day-number {
+  color: #2563eb;
+  font-weight: 700;
+  transform: scale(1.1);
+}
+
+.fc .fc-event {
+  cursor: pointer !important;
+  border-radius: 0.2rem !important;
+  margin: 1px !important;
+  padding: 0px 3px !important;
+  font-weight: 500 !important;
+  font-size: 0.65rem !important;
+  transition: all 0.2s ease !important;
+  border: 1px solid transparent !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  position: relative !important;
+  z-index: 200 !important;
+  /* Background color is set dynamically from the API based on rental.color */
+}
+
+.fc .fc-event:hover {
+  transform: translateY(-2px) scale(1.05) !important;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35) !important;
+  filter: brightness(1.15) !important;
+  border: 2px solid rgba(255, 255, 255, 0.9) !important;
+  z-index: 300 !important;
+}
+
+.fc .fc-event:active {
+  transform: translateY(-1px) scale(1.02) !important;
+}
+
+.fc-daygrid-event {
+  white-space: normal !important;
+  align-items: normal !important;
+}
+
+/* Multi-week event styling - make continuation clearer */
+.fc-event-start {
+  border-left: 3px solid rgba(255, 255, 255, 0.8) !important;
+}
+
+.fc-event-end {
+  border-right: 3px solid rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Event that continues from previous week - add left arrows */
+.fc-event:not(.fc-event-start) {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  margin-left: 0 !important;
+  padding-left: 8px !important;
+}
+
+.fc-event:not(.fc-event-start)::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  border-left: 4px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    -3px 0 0 rgba(255, 255, 255, 0.7),
+    -6px 0 0 rgba(255, 255, 255, 0.5);
+}
+
+/* Event that continues to next week - add right arrows */
+.fc-event:not(.fc-event-end) {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  margin-right: 0 !important;
+  padding-right: 8px !important;
+}
+
+.fc-event:not(.fc-event-end)::after {
+  content: '';
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  border-left: 4px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    3px 0 0 rgba(255, 255, 255, 0.7),
+    6px 0 0 rgba(255, 255, 255, 0.5);
+}
+
+.fc .fc-view-harness {
+  height: 100% !important;
+}
+
+.fc-theme-standard td, .fc-theme-standard th {
+  border-color: #e5e7eb;
+}
+
+/* Round the calendar table itself */
+.fc .fc-scrollgrid {
+  border-radius: 0.5rem !important;
+  overflow: hidden !important;
+}
+
+.fc .fc-view-harness {
+  border-radius: 0.5rem !important;
+  overflow: hidden !important;
+}
+
+.fc-daygrid-day-frame {
+  min-height: 65px !important;
+}
+
+/* Ensure all events are visible, not hidden */
+.fc .fc-daygrid-day-events {
+  margin-bottom: 2px !important;
+  min-height: auto !important;
+}
+
+/* Allow events to stack properly */
+.fc .fc-daygrid-event-harness {
+  margin-bottom: 2px !important;
+}
+
+/* Add subtle animation to events */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fc-event {
+  animation: slideIn 0.3s ease-out;
+}
+
+
+/* Stop right-edge truncation on the last (Saturday) column */
+.fc .fc-daygrid-day:last-child,
+.fc .fc-daygrid-day:last-child .fc-daygrid-day-frame,
+.fc .fc-daygrid-day:last-child .fc-daygrid-day-events {
+  overflow: visible !important;
+}
+
+/* Give the harness a tiny negative margin so it paints past the cell border */
+.fc .fc-daygrid-event-harness {
+  margin-right: -1px; /* compensates for border/gap rounding */
+  z-index: 3;         /* above cell backgrounds */
+  overflow: visible !important;
+}
+
+/* Ensure the row wrapper isn't clipping spanning bars */
+.fc .fc-daygrid-body,
+.fc .fc-daygrid-body-unbalanced,
+.fc .fc-scrollgrid,
+.fc .fc-scrollgrid-sync-table {
+  overflow: visible !important;
+}
+
+/* Safeguard for Saturday overflow */
+.fc .fc-day-sat .fc-daygrid-day-frame,
+.fc .fc-day-sat .fc-daygrid-day-events {
+  overflow: visible !important;
+}
+
+.fc .fc-h-event {
+  overflow: visible !important;
+}

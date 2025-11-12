@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FullCalendar Standalone Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js"></script>
+</head>
+<body style="padding: 20px; font-family: Arial, sans-serif;">
+    <h1 style="color: black;">FullCalendar Standalone Test (No Next.js)</h1>
+    <p style="color: black;">This tests FullCalendar 6.1.19 in pure HTML/JS without Next.js</p>
+    <div id="calendar" style="max-width: 1000px; margin: 20px auto;"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                initialDate: '2025-11-01',
+                events: [
+                    {
+                        title: 'Multi-Day Event 1 (Nov 4-22)',
+                        start: '2025-11-04',
+                        end: '2025-11-23',
+                        backgroundColor: '#0ea5e9',
+                        borderColor: '#0ea5e9'
+                    },
+                    {
+                        title: 'Multi-Day Event 2 (Nov 6-11)',
+                        start: '2025-11-06',
+                        end: '2025-11-12',
+                        backgroundColor: '#f43f5e',
+                        borderColor: '#f43f5e'
+                    },
+                    {
+                        title: 'Single Day Event (Nov 8)',
+                        start: '2025-11-08',
+                        end: '2025-11-09',
+                        backgroundColor: '#10b981',
+                        borderColor: '#10b981'
+                    }
+                ]
+            });
+            calendar.render();
+
+            console.log('Calendar rendered. Events:', calendar.getEvents());
+        });
+    </script>
+</body>
+</html>
