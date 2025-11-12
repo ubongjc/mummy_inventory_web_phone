@@ -89,6 +89,11 @@ export default function BookingsPage() {
   const [itemSortBy, setItemSortBy] = useState<"name-asc" | "name-desc" | "quantity-desc" | "quantity-asc" | "unit">("name-asc");
   const [isDefaultFiltersOpen, setIsDefaultFiltersOpen] = useState(false);
 
+  // Temporary state for editing defaults in the dropdown
+  const [tempDateRangeFilter, setTempDateRangeFilter] = useState<DateRangeFilter>(dateRangeFilter);
+  const [tempSortBy, setTempSortBy] = useState<SortOption>(sortBy);
+  const [tempStatusFilter, setTempStatusFilter] = useState<StatusFilter>(statusFilter);
+
   // Load default filters from localStorage on mount
   useEffect(() => {
     const savedDefaults = localStorage.getItem("bookingsDefaultFilters");
@@ -103,6 +108,15 @@ export default function BookingsPage() {
       }
     }
   }, []);
+
+  // Sync temp values when dropdown opens
+  useEffect(() => {
+    if (isDefaultFiltersOpen) {
+      setTempDateRangeFilter(dateRangeFilter);
+      setTempSortBy(sortBy);
+      setTempStatusFilter(statusFilter);
+    }
+  }, [isDefaultFiltersOpen, dateRangeFilter, sortBy, statusFilter]);
 
   useEffect(() => {
     fetchBookings();
@@ -526,11 +540,17 @@ export default function BookingsPage() {
 
   const saveDefaultFilters = () => {
     const defaults = {
-      dateRangeFilter,
-      sortBy,
-      statusFilter,
+      dateRangeFilter: tempDateRangeFilter,
+      sortBy: tempSortBy,
+      statusFilter: tempStatusFilter,
     };
     localStorage.setItem("bookingsDefaultFilters", JSON.stringify(defaults));
+
+    // Apply the temp values to the current filters
+    setDateRangeFilter(tempDateRangeFilter);
+    setSortBy(tempSortBy);
+    setStatusFilter(tempStatusFilter);
+
     setIsDefaultFiltersOpen(false);
     alert("Default filters saved!");
   };
@@ -755,46 +775,58 @@ export default function BookingsPage() {
                     </div>
 
                     <div className="p-4 space-y-3">
-                      {/* Current Settings Display */}
-                      <div className="bg-gray-50 rounded-lg p-3 space-y-2">
-                        <div className="text-[10px] font-bold text-gray-700 uppercase">Current Filters</div>
+                      {/* Editable Settings */}
+                      <div className="bg-gray-50 rounded-lg p-3 space-y-3">
+                        <div className="text-[10px] font-bold text-gray-700 uppercase">Configure Default Filters</div>
 
                         <div>
-                          <div className="text-[9px] text-gray-600 font-medium">Date Range:</div>
-                          <div className="text-xs font-semibold text-gray-900">
-                            {dateRangeFilter === "today" && "Today"}
-                            {dateRangeFilter === "current-week" && "This Week"}
-                            {dateRangeFilter === "next-week" && "Next Week"}
-                            {dateRangeFilter === "current-month" && "This Month"}
-                            {dateRangeFilter === "next-month" && "Next Month"}
-                            {dateRangeFilter === "all" && "All Time"}
-                            {dateRangeFilter === "custom" && "Custom Range"}
-                          </div>
+                          <label className="text-[9px] text-gray-600 font-medium block mb-1">Date Range:</label>
+                          <select
+                            value={tempDateRangeFilter}
+                            onChange={(e) => setTempDateRangeFilter(e.target.value as DateRangeFilter)}
+                            className="w-full text-xs px-2 py-1.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold"
+                          >
+                            <option value="today">Today</option>
+                            <option value="current-week">This Week</option>
+                            <option value="next-week">Next Week</option>
+                            <option value="current-month">This Month</option>
+                            <option value="next-month">Next Month</option>
+                            <option value="all">All Time</option>
+                            <option value="custom">Custom Range</option>
+                          </select>
                         </div>
 
                         <div>
-                          <div className="text-[9px] text-gray-600 font-medium">Sort By:</div>
-                          <div className="text-xs font-semibold text-gray-900">
-                            {sortBy === "start-newest" && "Start Date ↓"}
-                            {sortBy === "start-oldest" && "Start Date ↑"}
-                            {sortBy === "end-newest" && "End Date ↓"}
-                            {sortBy === "end-oldest" && "End Date ↑"}
-                            {sortBy === "customer-asc" && "Customer A → Z"}
-                            {sortBy === "customer-desc" && "Customer Z → A"}
-                            {sortBy === "status" && "Status"}
-                          </div>
+                          <label className="text-[9px] text-gray-600 font-medium block mb-1">Sort By:</label>
+                          <select
+                            value={tempSortBy}
+                            onChange={(e) => setTempSortBy(e.target.value as SortOption)}
+                            className="w-full text-xs px-2 py-1.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold"
+                          >
+                            <option value="start-newest">Start Date ↓ (Newest)</option>
+                            <option value="start-oldest">Start Date ↑ (Oldest)</option>
+                            <option value="end-newest">End Date ↓ (Newest)</option>
+                            <option value="end-oldest">End Date ↑ (Oldest)</option>
+                            <option value="customer-asc">Customer A → Z</option>
+                            <option value="customer-desc">Customer Z → A</option>
+                            <option value="status">Status</option>
+                          </select>
                         </div>
 
                         <div>
-                          <div className="text-[9px] text-gray-600 font-medium">Status:</div>
-                          <div className="text-xs font-semibold text-gray-900">
-                            {statusFilter === "all" && "All Status"}
-                            {statusFilter === "CONFIRMED" && "Confirmed"}
-                            {statusFilter === "OUT" && "Out"}
-                            {statusFilter === "RETURNED" && "Returned"}
-                            {statusFilter === "CANCELLED" && "Cancelled"}
-                            {statusFilter === "OVERDUE" && "Overdue"}
-                          </div>
+                          <label className="text-[9px] text-gray-600 font-medium block mb-1">Status Filter:</label>
+                          <select
+                            value={tempStatusFilter}
+                            onChange={(e) => setTempStatusFilter(e.target.value as StatusFilter)}
+                            className="w-full text-xs px-2 py-1.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold"
+                          >
+                            <option value="all">All Status</option>
+                            <option value="CONFIRMED">Confirmed</option>
+                            <option value="OUT">Out</option>
+                            <option value="RETURNED">Returned</option>
+                            <option value="CANCELLED">Cancelled</option>
+                            <option value="OVERDUE">Overdue</option>
+                          </select>
                         </div>
                       </div>
 
@@ -804,18 +836,18 @@ export default function BookingsPage() {
                           onClick={saveDefaultFilters}
                           className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold text-xs transition-colors shadow-md"
                         >
-                          Save as Default
+                          💾 Save as Default
                         </button>
                         <button
                           onClick={clearDefaultFilters}
                           className="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold text-xs transition-colors shadow-md"
                         >
-                          Clear Default
+                          🗑️ Clear Default
                         </button>
                       </div>
 
                       <div className="text-[9px] text-gray-500 text-center italic">
-                        Adjust the filters below, then save them as your default settings
+                        These settings will be applied automatically when you open this page
                       </div>
                     </div>
                   </div>
