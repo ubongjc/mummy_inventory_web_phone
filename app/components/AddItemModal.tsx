@@ -26,6 +26,7 @@ export default function AddItemModal({
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [nameError, setNameError] = useState("");
   const [unitError, setUnitError] = useState("");
   const [quantityError, setQuantityError] = useState("");
   const [priceError, setPriceError] = useState("");
@@ -43,27 +44,39 @@ export default function AddItemModal({
 
     // Clear all errors
     setError("");
+    setNameError("");
     setUnitError("");
     setQuantityError("");
     setPriceError("");
 
+    let hasError = false;
+
+    // Validate name
+    if (!name || name.trim() === "") {
+      setNameError("*Enter a valid Item Name");
+      hasError = true;
+    }
+
     // Validate unit (must be alphabetic)
-    if (/\d/.test(unit)) {
-      setUnitError("The unit must be alphabetic");
-      return;
+    if (!unit || unit.trim() === "" || /\d/.test(unit)) {
+      setUnitError("*Enter letters only (no numbers)");
+      hasError = true;
     }
 
     // Validate quantity (must be a valid number)
     const quantityNum = parseInt(totalQuantity);
     if (isNaN(quantityNum) || totalQuantity === "" || quantityNum < 1) {
-      setQuantityError("Please enter a valid quantity");
-      setTotalQuantity("");
-      return;
+      setQuantityError("*Enter a numeric quantity");
+      hasError = true;
     }
 
     // Validate price format
     if (price && !validatePrice(price)) {
-      setPriceError("Price must have at most two decimal places");
+      setPriceError("*Enter a valid price (max 2 decimals)");
+      hasError = true;
+    }
+
+    if (hasError) {
       return;
     }
 
@@ -137,10 +150,18 @@ export default function AddItemModal({
               <input
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-3 py-2 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-base"
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setNameError("");
+                }}
+                className={`w-full px-3 py-2 border-2 ${
+                  nameError ? "border-red-500" : "border-gray-400"
+                } rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-base`}
                 required
               />
+              {nameError && (
+                <p className="text-red-600 text-xs mt-1 font-semibold">{nameError}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -167,7 +188,7 @@ export default function AddItemModal({
                   required
                 />
                 {unitError && (
-                  <p className="text-red-600 text-xs mt-1">{unitError}</p>
+                  <p className="text-red-600 text-xs mt-1 font-semibold">{unitError}</p>
                 )}
               </div>
 
@@ -196,7 +217,7 @@ export default function AddItemModal({
                   min="1"
                 />
                 {quantityError && (
-                  <p className="text-red-600 text-xs mt-1">{quantityError}</p>
+                  <p className="text-red-600 text-xs mt-1 font-semibold">{quantityError}</p>
                 )}
               </div>
             </div>
@@ -225,7 +246,7 @@ export default function AddItemModal({
                 />
               </div>
               {priceError && (
-                <p className="text-red-600 text-xs mt-1">{priceError}</p>
+                <p className="text-red-600 text-xs mt-1 font-semibold">{priceError}</p>
               )}
             </div>
 

@@ -552,13 +552,11 @@ export default function BookingsPage() {
     setStatusFilter(tempStatusFilter);
 
     setIsDefaultFiltersOpen(false);
-    alert("Default filters saved!");
   };
 
   const clearDefaultFilters = () => {
     localStorage.removeItem("bookingsDefaultFilters");
     setIsDefaultFiltersOpen(false);
-    alert("Default filters cleared!");
   };
 
   if (loading) {
@@ -754,11 +752,11 @@ export default function BookingsPage() {
             <div className="relative">
               <button
                 onClick={() => setIsDefaultFiltersOpen(!isDefaultFiltersOpen)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-semibold transition-all shadow-md text-xs"
+                className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-semibold transition-all shadow-md text-[10px]"
               >
-                <Settings className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">DEFAULT FILTERS</span>
-                <span className="sm:hidden">DEFAULTS</span>
+                <Settings className="w-3 h-3" />
+                <span className="hidden sm:inline">DEFAULTS</span>
+                <span className="sm:hidden">DEF</span>
               </button>
 
               {/* Dropdown Menu */}
