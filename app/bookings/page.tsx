@@ -755,11 +755,10 @@ export default function BookingsPage() {
                 className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-semibold transition-all shadow-md text-[10px]"
               >
                 <Settings className="w-3 h-3" />
-                <span className="hidden sm:flex sm:flex-col sm:items-center sm:leading-tight">
+                <span className="flex flex-col items-center leading-tight">
                   <span>DEFAULT</span>
                   <span>FILTERS</span>
                 </span>
-                <span className="sm:hidden">DEF</span>
               </button>
 
               {/* Dropdown Menu */}
