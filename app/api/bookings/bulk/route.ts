@@ -3,16 +3,16 @@ import { prisma } from "@/app/lib/prisma";
 
 export async function DELETE() {
   try {
-    const result = await prisma.rental.deleteMany({});
+    const result = await prisma.booking.deleteMany({});
 
     return NextResponse.json({
-      message: "All rentals deleted successfully",
+      message: "All bookings deleted successfully",
       count: result.count,
     });
   } catch (error) {
-    console.error("Error deleting all rentals:", error);
+    console.error("Error deleting all bookings:", error);
     return NextResponse.json(
-      { error: "Failed to delete rentals" },
+      { error: "Failed to delete bookings" },
       { status: 500 }
     );
   }

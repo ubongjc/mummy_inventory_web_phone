@@ -6,7 +6,7 @@ import { toTitleCase } from "@/app/lib/validation";
 import { useSettings } from "@/app/hooks/useSettings";
 import DatePicker from "./DatePicker";
 
-interface AddRentalModalProps {
+interface AddBookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -28,16 +28,16 @@ interface Customer {
   lastName?: string;
 }
 
-interface RentalItem {
+interface BookingItem {
   itemId: string;
   quantity: number | "";
 }
 
-export default function AddRentalModal({
+export default function AddBookingModal({
   isOpen,
   onClose,
   onSuccess,
-}: AddRentalModalProps) {
+}: AddBookingModalProps) {
   const { settings, formatCurrency } = useSettings();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [items, setItems] = useState<Item[]>([]);
@@ -49,7 +49,7 @@ export default function AddRentalModal({
   const [newCustomerAddress, setNewCustomerAddress] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [rentalItems, setRentalItems] = useState<RentalItem[]>([
+  const [bookingItems, setBookingItems] = useState<BookingItem[]>([
     { itemId: "", quantity: "" },
   ]);
   const [notes, setNotes] = useState("");
@@ -79,7 +79,7 @@ export default function AddRentalModal({
   const isSubmitting = useRef(false);
   const firstItemSelectRef = useRef<HTMLSelectElement>(null);
   const itemSelectRefs = useRef<{ [key: number]: HTMLSelectElement | null }>({});
-  const previousItemsLength = useRef(rentalItems.length);
+  const previousItemsLength = useRef(bookingItems.length);
 
   // Calculate max date (1 year from today)
   const today = new Date();
@@ -107,7 +107,7 @@ export default function AddRentalModal({
       setNewCustomerAddress("");
       setStartDate("");
       setEndDate("");
-      setRentalItems([{ itemId: "", quantity: "" }]);
+      setBookingItems([{ itemId: "", quantity: "" }]);
       setNotes("");
       setTotalPrice("");
       setAdvancePayment("");
@@ -174,28 +174,28 @@ export default function AddRentalModal({
 
   // Auto-focus newly added item dropdown
   useEffect(() => {
-    if (rentalItems.length > previousItemsLength.current) {
-      const newIndex = rentalItems.length - 1;
+    if (bookingItems.length > previousItemsLength.current) {
+      const newIndex = bookingItems.length - 1;
       setTimeout(() => {
         itemSelectRefs.current[newIndex]?.focus();
       }, 50);
     }
-    previousItemsLength.current = rentalItems.length;
-  }, [rentalItems.length]);
+    previousItemsLength.current = bookingItems.length;
+  }, [bookingItems.length]);
 
   // Auto-calculate total price when items or quantities change
   useEffect(() => {
-    if (items.length > 0 && rentalItems.length > 0) {
+    if (items.length > 0 && bookingItems.length > 0) {
       let calculatedTotal = 0;
       let hasValidItems = false;
 
-      rentalItems.forEach((rentalItem) => {
-        if (rentalItem.itemId && rentalItem.quantity) {
-          const item = items.find((i) => i.id === rentalItem.itemId);
+      bookingItems.forEach((bookingItem) => {
+        if (bookingItem.itemId && bookingItem.quantity) {
+          const item = items.find((i) => i.id === bookingItem.itemId);
           if (item?.price) {
-            const quantity = typeof rentalItem.quantity === "number"
-              ? rentalItem.quantity
-              : parseInt(String(rentalItem.quantity)) || 0;
+            const quantity = typeof bookingItem.quantity === "number"
+              ? bookingItem.quantity
+              : parseInt(String(bookingItem.quantity)) || 0;
             calculatedTotal += item.price * quantity;
             hasValidItems = true;
           }
@@ -207,7 +207,7 @@ export default function AddRentalModal({
         setTotalPrice(calculatedTotal.toFixed(2));
       }
     }
-  }, [rentalItems, items]);
+  }, [bookingItems, items]);
 
   const fetchCustomers = async () => {
     try {
@@ -225,9 +225,9 @@ export default function AddRentalModal({
       const itemsResponse = await fetch("/api/items");
       const itemsData = await itemsResponse.json();
 
-      // Fetch all active rentals
-      const rentalsResponse = await fetch("/api/rentals");
-      const rentalsData = await rentalsResponse.json();
+      // Fetch all active bookings
+      const bookingsResponse = await fetch("/api/bookings");
+      const bookingsData = await bookingsResponse.json();
 
       // Calculate available quantities for each item based on selected dates
       const itemsWithAvailability = itemsData.map((item: any) => {
@@ -235,24 +235,24 @@ export default function AddRentalModal({
         const checkStartDate = startDate ? new Date(startDate + "T00:00:00.000Z") : new Date();
         const checkEndDate = endDate ? new Date(endDate + "T00:00:00.000Z") : new Date();
 
-        const rented = rentalsData
-          .filter((rental: any) => {
-            const rentalStartDate = new Date(rental.startDate);
-            const rentalEndDate = new Date(rental.endDate);
+        const rented = bookingsData
+          .filter((booking: any) => {
+            const bookingStartDate = new Date(booking.startDate);
+            const bookingEndDate = new Date(booking.endDate);
 
-            // Check if rental overlaps with selected period
-            const overlaps = rentalStartDate <= checkEndDate && rentalEndDate >= checkStartDate;
+            // Check if booking overlaps with selected period
+            const overlaps = bookingStartDate <= checkEndDate && bookingEndDate >= checkStartDate;
 
             return (
-              (rental.status === "CONFIRMED" || rental.status === "OUT") &&
+              (booking.status === "CONFIRMED" || booking.status === "OUT") &&
               overlaps
             );
           })
-          .reduce((sum: number, rental: any) => {
-            const rentalItem = rental.items?.find(
+          .reduce((sum: number, booking: any) => {
+            const bookingItem = booking.items?.find(
               (ri: any) => ri.itemId === item.id || ri.item?.id === item.id
             );
-            return sum + (rentalItem?.quantity || 0);
+            return sum + (bookingItem?.quantity || 0);
           }, 0);
 
         const available = item.totalQuantity - rented;
@@ -274,25 +274,25 @@ export default function AddRentalModal({
     }
   };
 
-  const addRentalItem = () => {
-    setRentalItems([...rentalItems, { itemId: "", quantity: "" }]);
-    // Focus will be handled by useEffect below when rentalItems length changes
+  const addBookingItem = () => {
+    setBookingItems([...bookingItems, { itemId: "", quantity: "" }]);
+    // Focus will be handled by useEffect below when bookingItems length changes
   };
 
-  const removeRentalItem = (index: number) => {
-    setRentalItems(rentalItems.filter((_, i) => i !== index));
+  const removeBookingItem = (index: number) => {
+    setBookingItems(bookingItems.filter((_, i) => i !== index));
   };
 
-  const updateRentalItem = (
+  const updateBookingItem = (
     index: number,
-    field: keyof RentalItem,
+    field: keyof BookingItem,
     value: any
   ) => {
-    const updated = [...rentalItems];
+    const updated = [...bookingItems];
 
     // If changing itemId, check for duplicates
     if (field === "itemId" && value) {
-      const isDuplicate = rentalItems.some((item, i) => i !== index && item.itemId === value);
+      const isDuplicate = bookingItems.some((item, i) => i !== index && item.itemId === value);
       if (isDuplicate) {
         setError("This item is already added. Please select a different item or adjust the quantity of the existing item.");
         return;
@@ -305,7 +305,7 @@ export default function AddRentalModal({
     } else {
       updated[index] = { ...updated[index], [field]: value };
     }
-    setRentalItems(updated);
+    setBookingItems(updated);
   };
 
   // Check availability for all selected items
@@ -320,7 +320,7 @@ export default function AddRentalModal({
       return;
     }
 
-    const validItems = rentalItems.filter(
+    const validItems = bookingItems.filter(
       (item) => item.itemId && item.quantity && item.quantity > 0
     );
 
@@ -340,53 +340,53 @@ export default function AddRentalModal({
       const checkStartDate = new Date(startDate + "T00:00:00.000Z");
       const checkEndDate = new Date(endDate + "T00:00:00.000Z");
 
-      // Fetch all active rentals
-      const rentalsResponse = await fetch("/api/rentals");
-      const rentalsData = await rentalsResponse.json();
+      // Fetch all active bookings
+      const bookingsResponse = await fetch("/api/bookings");
+      const bookingsData = await bookingsResponse.json();
 
-      const itemStatuses = validItems.map((rentalItem) => {
-        const item = items.find((i) => i.id === rentalItem.itemId);
+      const itemStatuses = validItems.map((bookingItem) => {
+        const item = items.find((i) => i.id === bookingItem.itemId);
         if (!item) {
           return {
-            itemId: rentalItem.itemId,
+            itemId: bookingItem.itemId,
             available: false,
             message: "Item not found",
           };
         }
 
         const requestedQty =
-          typeof rentalItem.quantity === "number"
-            ? rentalItem.quantity
-            : parseInt(String(rentalItem.quantity)) || 0;
+          typeof bookingItem.quantity === "number"
+            ? bookingItem.quantity
+            : parseInt(String(bookingItem.quantity)) || 0;
 
         // Calculate rented quantity for this item during the period
-        const rented = rentalsData
-          .filter((rental: any) => {
-            const rentalStartDate = new Date(rental.startDate);
-            const rentalEndDate = new Date(rental.endDate);
+        const rented = bookingsData
+          .filter((booking: any) => {
+            const bookingStartDate = new Date(booking.startDate);
+            const bookingEndDate = new Date(booking.endDate);
 
-            // Check if rental overlaps with selected period
+            // Check if booking overlaps with selected period
             const overlaps =
-              rentalStartDate <= checkEndDate &&
-              rentalEndDate >= checkStartDate;
+              bookingStartDate <= checkEndDate &&
+              bookingEndDate >= checkStartDate;
 
             return (
-              (rental.status === "CONFIRMED" || rental.status === "OUT") &&
+              (booking.status === "CONFIRMED" || booking.status === "OUT") &&
               overlaps
             );
           })
-          .reduce((sum: number, rental: any) => {
-            const rentalItem = rental.items?.find(
+          .reduce((sum: number, booking: any) => {
+            const bookingItem = booking.items?.find(
               (ri: any) => ri.itemId === item.id || ri.item?.id === item.id
             );
-            return sum + (rentalItem?.quantity || 0);
+            return sum + (bookingItem?.quantity || 0);
           }, 0);
 
         const available = item.totalQuantity - rented;
         const isAvailable = available >= requestedQty;
 
         return {
-          itemId: rentalItem.itemId,
+          itemId: bookingItem.itemId,
           available: isAvailable,
           message: isAvailable
             ? `✓ ${item.name}: ${requestedQty} available (${available} remaining for this period)`
@@ -400,7 +400,7 @@ export default function AddRentalModal({
         isChecking: false,
         allAvailable,
         message: allAvailable
-          ? "✓ All items are available for the entire rental period!"
+          ? "✓ All items are available for the entire booking period!"
           : "⚠ Some items are not available for the selected dates",
         itemStatuses,
       });
@@ -418,20 +418,20 @@ export default function AddRentalModal({
   // Check availability whenever dates or items change
   useEffect(() => {
     checkItemsAvailability();
-  }, [startDate, endDate, rentalItems, items]);
+  }, [startDate, endDate, bookingItems, items]);
 
   // Auto-calculate total price based on item prices and quantities
   useEffect(() => {
-    if (!manualTotalPrice && rentalItems.length > 0) {
+    if (!manualTotalPrice && bookingItems.length > 0) {
       let calculatedTotal = 0;
       let hasItemsWithPrice = false;
 
-      rentalItems.forEach((rentalItem) => {
-        if (rentalItem.itemId && rentalItem.quantity) {
-          const item = items.find((i) => i.id === rentalItem.itemId);
+      bookingItems.forEach((bookingItem) => {
+        if (bookingItem.itemId && bookingItem.quantity) {
+          const item = items.find((i) => i.id === bookingItem.itemId);
           if (item && item.price) {
             hasItemsWithPrice = true;
-            const quantity = typeof rentalItem.quantity === "number" ? rentalItem.quantity : parseInt(String(rentalItem.quantity)) || 0;
+            const quantity = typeof bookingItem.quantity === "number" ? bookingItem.quantity : parseInt(String(bookingItem.quantity)) || 0;
             calculatedTotal += item.price * quantity;
           }
         }
@@ -442,7 +442,7 @@ export default function AddRentalModal({
         setTotalPrice(calculatedTotal.toFixed(2));
       }
     }
-  }, [rentalItems, items, manualTotalPrice]);
+  }, [bookingItems, items, manualTotalPrice]);
 
   const addInitialPayment = () => {
     if (!newPaymentAmount || !newPaymentDate) {
@@ -535,7 +535,7 @@ export default function AddRentalModal({
       }
 
       // Validate quantities
-      const validatedItems = rentalItems
+      const validatedItems = bookingItems
         .filter((item) => item.itemId)
         .map((item) => ({
           itemId: item.itemId,
@@ -580,7 +580,7 @@ export default function AddRentalModal({
 
       console.log('[CREATE RENTAL] Request body:', JSON.stringify(requestBody, null, 2));
 
-      const response = await fetch("/api/rentals", {
+      const response = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
@@ -597,7 +597,7 @@ export default function AddRentalModal({
         }
 
         throw new Error(
-          errorData.error || "Failed to create rental"
+          errorData.error || "Failed to create booking"
         );
       }
 
@@ -610,7 +610,7 @@ export default function AddRentalModal({
       setNewCustomerAddress("");
       setStartDate("");
       setEndDate("");
-      setRentalItems([{ itemId: "", quantity: "" }]);
+      setBookingItems([{ itemId: "", quantity: "" }]);
       setNotes("");
       setTotalPrice("");
       setAdvancePayment("");
@@ -696,18 +696,18 @@ export default function AddRentalModal({
                 Items to Rent *
               </label>
               <div className="space-y-2">
-                {rentalItems.map((rentalItem, index) => (
+                {bookingItems.map((bookingItem, index) => (
                   <div key={index} className="flex gap-1 items-center">
                     <select
                       ref={(el) => {
                         itemSelectRefs.current[index] = el;
                         if (index === 0) (firstItemSelectRef as React.MutableRefObject<HTMLSelectElement | null>).current = el;
                       }}
-                      value={rentalItem.itemId}
+                      value={bookingItem.itemId}
                       onChange={(e) => {
                         // Prevent selecting the "Select" option
                         if (e.target.value !== "") {
-                          updateRentalItem(index, "itemId", e.target.value);
+                          updateBookingItem(index, "itemId", e.target.value);
                         }
                       }}
                       className="flex-1 min-w-0 px-1 py-1 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-xs truncate"
@@ -717,8 +717,8 @@ export default function AddRentalModal({
                       {items
                         .filter((item) =>
                           // Show current item OR items not already selected in other rows
-                          item.id === rentalItem.itemId ||
-                          !rentalItems.some((ri, i) => i !== index && ri.itemId === item.id)
+                          item.id === bookingItem.itemId ||
+                          !bookingItems.some((ri, i) => i !== index && ri.itemId === item.id)
                         )
                         .map((item) => {
                           const available = item.available ?? item.totalQuantity;
@@ -733,31 +733,31 @@ export default function AddRentalModal({
                     </select>
                     <input
                       type="number"
-                      value={rentalItem.quantity}
+                      value={bookingItem.quantity}
                       onChange={(e) => {
                         const val = e.target.value;
                         // Allow empty string while typing
                         if (val === "") {
-                          updateRentalItem(index, "quantity", "");
+                          updateBookingItem(index, "quantity", "");
                         } else {
                           const numVal = parseInt(val);
                           // Prevent negative numbers and 0
                           if (numVal > 0) {
-                            updateRentalItem(index, "quantity", numVal);
+                            updateBookingItem(index, "quantity", numVal);
                           }
                         }
                       }}
                       placeholder="Qty"
                       className={`w-14 flex-shrink-0 px-1 py-1 border-2 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-xs ${
-                        rentalItem.quantity === "" ? "border-blue-500 animate-pulse" : "border-gray-400"
+                        bookingItem.quantity === "" ? "border-blue-500 animate-pulse" : "border-gray-400"
                       }`}
                       min="1"
                       required
                     />
-                    {rentalItems.length > 1 && (
+                    {bookingItems.length > 1 && (
                       <button
                         type="button"
-                        onClick={() => removeRentalItem(index)}
+                        onClick={() => removeBookingItem(index)}
                         className="w-6 h-6 flex-shrink-0 flex items-center justify-center text-red-600 hover:text-white hover:bg-red-600 border border-red-600 rounded transition-colors"
                         title="Remove item"
                       >
@@ -767,16 +767,16 @@ export default function AddRentalModal({
                   </div>
                 ))}
                 {/* Check if all items are selected */}
-                {items.filter(item => !rentalItems.some(ri => ri.itemId === item.id) && (item.available ?? item.totalQuantity) > 0).length > 0 ? (
+                {items.filter(item => !bookingItems.some(ri => ri.itemId === item.id) && (item.available ?? item.totalQuantity) > 0).length > 0 ? (
                   (() => {
-                    // Check if the last rental item has both itemId and quantity filled
-                    const lastItem = rentalItems[rentalItems.length - 1];
+                    // Check if the last booking item has both itemId and quantity filled
+                    const lastItem = bookingItems[bookingItems.length - 1];
                     const isLastItemComplete = !!lastItem.itemId && !!lastItem.quantity;
 
                     return (
                       <button
                         type="button"
-                        onClick={addRentalItem}
+                        onClick={addBookingItem}
                         disabled={!isLastItemComplete}
                         className={`text-[10px] flex items-center gap-1 ${
                           isLastItemComplete
@@ -797,7 +797,7 @@ export default function AddRentalModal({
             </div>
 
             {/* Availability Status */}
-            {startDate && endDate && rentalItems.some(item => item.itemId && item.quantity) && (
+            {startDate && endDate && bookingItems.some(item => item.itemId && item.quantity) && (
               <div className="mt-2">
                 {availabilityStatus.isChecking ? (
                   <div className="bg-blue-50 border border-blue-200 rounded p-2 flex items-center gap-2">

@@ -45,28 +45,28 @@ export default function InventorySummary() {
       const itemsResponse = await fetch("/api/items");
       const itemsData = await itemsResponse.json();
 
-      // Fetch all active rentals
-      const rentalsResponse = await fetch("/api/rentals");
-      const rentalsData = await rentalsResponse.json();
+      // Fetch all active bookings
+      const bookingsResponse = await fetch("/api/bookings");
+      const bookingsData = await bookingsResponse.json();
 
       // Calculate rented quantities for each item
       const today = new Date();
       const itemSummaries = itemsData.map((item: any) => {
-        const rented = rentalsData
-          .filter((rental: any) => {
-            const startDate = new Date(rental.startDate);
-            const endDate = new Date(rental.endDate);
+        const rented = bookingsData
+          .filter((booking: any) => {
+            const startDate = new Date(booking.startDate);
+            const endDate = new Date(booking.endDate);
             return (
-              (rental.status === "CONFIRMED" || rental.status === "OUT") &&
+              (booking.status === "CONFIRMED" || booking.status === "OUT") &&
               startDate <= today &&
               endDate >= today
             );
           })
-          .reduce((sum: number, rental: any) => {
-            const rentalItem = rental.items?.find(
+          .reduce((sum: number, booking: any) => {
+            const bookingItem = booking.items?.find(
               (ri: any) => ri.itemId === item.id || ri.item?.id === item.id
             );
-            return sum + (rentalItem?.quantity || 0);
+            return sum + (bookingItem?.quantity || 0);
           }, 0);
 
         return {

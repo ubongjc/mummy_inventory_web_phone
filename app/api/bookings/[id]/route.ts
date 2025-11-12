@@ -9,22 +9,22 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    // Delete the rental and all associated rental items and payments (cascade delete)
+    // Delete the booking and all associated booking items and payments (cascade delete)
     await prisma.rental.delete({
       where: { id },
     });
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error("Error deleting rental:", error);
+    console.error("Error deleting booking:", error);
     if (error.code === 'P2025') {
       return NextResponse.json(
-        { error: "Rental not found" },
+        { error: "Booking not found" },
         { status: 404 }
       );
     }
     return NextResponse.json(
-      { error: error.message || "Failed to delete rental" },
+      { error: error.message || "Failed to delete booking" },
       { status: 500 }
     );
   }
@@ -43,7 +43,7 @@ export async function PATCH(
     if (body.status !== undefined) updateData.status = body.status;
     if (body.color !== undefined) updateData.color = body.color;
 
-    const rental = await prisma.rental.update({
+    const booking = await prisma.rental.update({
       where: { id },
       data: updateData,
       include: {
@@ -59,11 +59,11 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json(rental);
+    return NextResponse.json(booking);
   } catch (error: any) {
-    console.error("Error updating rental:", error);
+    console.error("Error updating booking:", error);
     return NextResponse.json(
-      { error: "Failed to update rental" },
+      { error: "Failed to update booking" },
       { status: 500 }
     );
   }
@@ -74,30 +74,30 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: rentalId } = await params;
+    const { id: bookingId } = await params;
     const body = await request.json();
 
     const startDate = toUTCMidnight(body.startDate);
     const endDate = toUTCMidnight(body.endDate);
 
-    // Check availability for each item (excluding current rental)
-    for (const rentalItem of body.items) {
+    // Check availability for each item (excluding current booking)
+    for (const bookingItem of body.items) {
       const item = await prisma.item.findUnique({
-        where: { id: rentalItem.itemId },
+        where: { id: bookingItem.itemId },
       });
 
       if (!item) {
         return NextResponse.json(
-          { error: `Item ${rentalItem.itemId} not found` },
+          { error: `Item ${bookingItem.itemId} not found` },
           { status: 404 }
         );
       }
 
-      // Get overlapping rentals (excluding the current rental being edited)
-      const overlappingRentals = await prisma.rental.findMany({
+      // Get overlapping bookings (excluding the current booking being edited)
+      const overlappingBookings = await prisma.rental.findMany({
         where: {
           AND: [
-            { id: { not: rentalId } },
+            { id: { not: bookingId } },
             { startDate: { lte: endDate } },
             { endDate: { gte: startDate } },
             { status: { in: ["CONFIRMED", "OUT"] } },
@@ -106,7 +106,7 @@ export async function PUT(
         include: {
           items: {
             where: {
-              itemId: rentalItem.itemId,
+              itemId: bookingItem.itemId,
             },
           },
         },
@@ -118,26 +118,26 @@ export async function PUT(
 
       while (currentDate <= endDateCheck) {
         // Calculate reserved quantity on this specific day
-        const reservedOnDay = overlappingRentals.reduce((sum, rental) => {
-          const rentalStart = new Date(rental.startDate);
-          const rentalEnd = new Date(rental.endDate);
+        const reservedOnDay = overlappingBookings.reduce((sum, booking) => {
+          const bookingStart = new Date(booking.startDate);
+          const bookingEnd = new Date(booking.endDate);
 
-          // Check if this rental overlaps with current day
-          if (currentDate >= rentalStart && currentDate <= rentalEnd) {
-            return sum + rental.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
+          // Check if this booking overlaps with current day
+          if (currentDate >= bookingStart && currentDate <= bookingEnd) {
+            return sum + booking.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
           }
           return sum;
         }, 0);
 
         const availableOnDay = item.totalQuantity - reservedOnDay;
 
-        if (availableOnDay < rentalItem.quantity) {
+        if (availableOnDay < bookingItem.quantity) {
           return NextResponse.json(
             {
               error: "Insufficient availability",
               itemName: item.name,
               date: currentDate.toISOString().split('T')[0],
-              requested: rentalItem.quantity,
+              requested: bookingItem.quantity,
               available: availableOnDay,
               reserved: reservedOnDay,
               total: item.totalQuantity,
@@ -151,14 +151,14 @@ export async function PUT(
       }
     }
 
-    // Delete existing rental items
+    // Delete existing booking items
     await prisma.rentalItem.deleteMany({
-      where: { rentalId },
+      where: { rentalId: bookingId },
     });
 
-    // Update rental with new data
-    const rental = await prisma.rental.update({
-      where: { id: rentalId },
+    // Update booking with new data
+    const booking = await prisma.rental.update({
+      where: { id: bookingId },
       data: {
         customerId: body.customerId,
         startDate,
@@ -188,11 +188,11 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json(rental);
+    return NextResponse.json(booking);
   } catch (error: any) {
-    console.error("Error updating rental:", error);
+    console.error("Error updating booking:", error);
     return NextResponse.json(
-      { error: "Failed to update rental" },
+      { error: "Failed to update booking" },
       { status: 500 }
     );
   }

@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Search, ChevronDown, ChevronUp, Trash2, Edit2, User, Package, Maximize2, Minimize2, ChevronLeft, ChevronRight, Plus, X, CheckSquare, Square, Filter, Menu } from "lucide-react";
-import EditRentalModal from "../components/EditRentalModal";
+import EditBookingModal from "../components/EditBookingModal";
 import DatePicker from "../components/DatePicker";
 import { useSettings } from "@/app/hooks/useSettings";
 import { toZonedTime } from "date-fns-tz";
 
-interface RentalItem {
+interface BookingItem {
   id: string;
   itemId: string;
   quantity: number;
@@ -26,7 +26,7 @@ interface Payment {
   notes?: string;
 }
 
-interface Rental {
+interface Booking {
   id: string;
   customerId: string;
   startDate: string;
@@ -45,7 +45,7 @@ interface Rental {
     phone?: string;
     email?: string;
   };
-  items: RentalItem[];
+  items: BookingItem[];
   payments?: Payment[];
   createdAt: string;
 }
@@ -61,9 +61,9 @@ interface Item {
   totalQuantity: number;
 }
 
-export default function RentalsPage() {
-  const [rentals, setRentals] = useState<Rental[]>([]);
-  const [filteredRentals, setFilteredRentals] = useState<Rental[]>([]);
+export default function BookingsPage() {
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("start-newest");
@@ -71,11 +71,11 @@ export default function RentalsPage() {
   const [dateRangeFilter, setDateRangeFilter] = useState<DateRangeFilter>("current-month");
   const [startDateFilter, setStartDateFilter] = useState("");
   const [endDateFilter, setEndDateFilter] = useState("");
-  const [expandedRentals, setExpandedRentals] = useState<Set<string>>(new Set());
+  const [expandedBookings, setExpandedBookings] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(0);
-  const rentalsPerPage = 15;
+  const bookingsPerPage = 15;
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedRental, setSelectedRental] = useState<Rental | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [addingPaymentFor, setAddingPaymentFor] = useState<string | null>(null);
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentDate, setPaymentDate] = useState("");
@@ -89,13 +89,13 @@ export default function RentalsPage() {
   const [itemSortBy, setItemSortBy] = useState<"name-asc" | "name-desc" | "quantity-desc" | "quantity-asc" | "unit">("name-asc");
 
   useEffect(() => {
-    fetchRentals();
+    fetchBookings();
     fetchItems();
   }, []);
 
   useEffect(() => {
-    filterAndSortRentals();
-  }, [rentals, searchQuery, sortBy, statusFilter, dateRangeFilter, startDateFilter, endDateFilter, settings, selectedItemIds]);
+    filterAndSortBookings();
+  }, [bookings, searchQuery, sortBy, statusFilter, dateRangeFilter, startDateFilter, endDateFilter, settings, selectedItemIds]);
 
   const fetchItems = async () => {
     try {
@@ -125,13 +125,13 @@ export default function RentalsPage() {
     setSelectedItemIds([]);
   };
 
-  const fetchRentals = async () => {
+  const fetchBookings = async () => {
     try {
-      const response = await fetch("/api/rentals");
+      const response = await fetch("/api/bookings");
       const data = await response.json();
-      setRentals(data);
+      setBookings(data);
     } catch (error) {
-      console.error("Error fetching rentals:", error);
+      console.error("Error fetching bookings:", error);
     } finally {
       setLoading(false);
     }
@@ -192,33 +192,33 @@ export default function RentalsPage() {
     }
   };
 
-  const filterAndSortRentals = () => {
-    let filtered = [...rentals];
+  const filterAndSortBookings = () => {
+    let filtered = [...bookings];
 
     // Search filter (customer name, item names, notes)
     if (searchQuery) {
-      filtered = filtered.filter((rental) => {
-        const fullName = `${rental.customer.firstName || rental.customer.name} ${rental.customer.lastName || ""}`.trim();
+      filtered = filtered.filter((booking) => {
+        const fullName = `${booking.customer.firstName || booking.customer.name} ${booking.customer.lastName || ""}`.trim();
         const customerMatch = fullName.toLowerCase().includes(searchQuery.toLowerCase());
-        const itemsMatch = rental.items.some((item) =>
+        const itemsMatch = booking.items.some((item) =>
           item.item.name.toLowerCase().includes(searchQuery.toLowerCase())
         );
-        const notesMatch = rental.notes?.toLowerCase().includes(searchQuery.toLowerCase());
+        const notesMatch = booking.notes?.toLowerCase().includes(searchQuery.toLowerCase());
         return customerMatch || itemsMatch || notesMatch;
       });
     }
 
-    // Item filter - only show rentals that include at least one selected item
+    // Item filter - only show bookings that include at least one selected item
     if (selectedItemIds.length === 0) {
-      // If no items selected, show no rentals
+      // If no items selected, show no bookings
       filtered = [];
     } else if (selectedItemIds.length < items.length) {
-      // If some items selected, filter to show only matching rentals
-      filtered = filtered.filter((rental) => {
-        return rental.items.some((item) => selectedItemIds.includes(item.itemId));
+      // If some items selected, filter to show only matching bookings
+      filtered = filtered.filter((booking) => {
+        return booking.items.some((item) => selectedItemIds.includes(item.itemId));
       });
     }
-    // If all items selected, show all rentals (no filter needed)
+    // If all items selected, show all bookings (no filter needed)
 
     // Status filter
     if (statusFilter !== "all") {
@@ -227,14 +227,14 @@ export default function RentalsPage() {
         const today = new Date();
         today.setHours(0, 0, 0, 0); // Set to midnight for comparison
 
-        filtered = filtered.filter((rental) => {
+        filtered = filtered.filter((booking) => {
           // Must have a total price
-          if (!rental.totalPrice) return false;
+          if (!booking.totalPrice) return false;
 
           // Calculate balance remaining
-          const totalPaid = (rental.advancePayment || 0) +
-                           (rental.payments?.reduce((sum, p) => sum + p.amount, 0) || 0);
-          const balance = rental.totalPrice - totalPaid;
+          const totalPaid = (booking.advancePayment || 0) +
+                           (booking.payments?.reduce((sum, p) => sum + p.amount, 0) || 0);
+          const balance = booking.totalPrice - totalPaid;
 
           // Must have outstanding balance
           if (balance <= 0) return false;
@@ -243,17 +243,17 @@ export default function RentalsPage() {
           let isOverdue = false;
 
           // Check if payment due date has passed (if it exists)
-          if (rental.paymentDueDate) {
-            const dueDate = new Date(rental.paymentDueDate);
+          if (booking.paymentDueDate) {
+            const dueDate = new Date(booking.paymentDueDate);
             dueDate.setHours(0, 0, 0, 0);
             if (dueDate < today) {
               isOverdue = true;
             }
           }
 
-          // Also check if rental has ended (endDate in the past) with unpaid balance
-          if (rental.endDate) {
-            const endDate = new Date(rental.endDate);
+          // Also check if booking has ended (endDate in the past) with unpaid balance
+          if (booking.endDate) {
+            const endDate = new Date(booking.endDate);
             endDate.setHours(0, 0, 0, 0);
             if (endDate < today) {
               isOverdue = true;
@@ -263,7 +263,7 @@ export default function RentalsPage() {
           return isOverdue;
         });
       } else {
-        filtered = filtered.filter((rental) => rental.status === statusFilter);
+        filtered = filtered.filter((booking) => booking.status === statusFilter);
       }
     }
 
@@ -272,29 +272,29 @@ export default function RentalsPage() {
       const range = getDateRange(dateRangeFilter);
       if (range) {
         const beforeFilter = filtered.length;
-        filtered = filtered.filter((rental) => {
-          const rentalStart = new Date(rental.startDate);
-          const rentalEnd = new Date(rental.endDate);
-          // Include rental if it overlaps with the range
-          const included = rentalStart <= range.end && rentalEnd >= range.start;
+        filtered = filtered.filter((booking) => {
+          const bookingStart = new Date(booking.startDate);
+          const bookingEnd = new Date(booking.endDate);
+          // Include booking if it overlaps with the range
+          const included = bookingStart <= range.end && bookingEnd >= range.start;
           if (!included) {
-            console.log(`[DATE FILTER] Excluding rental: ${rental.customer.name}, start: ${rental.startDate}, end: ${rental.endDate}`);
-            console.log(`[DATE FILTER]   rentalStart (${rentalStart.toISOString()}) <= range.end (${range.end.toISOString()})? ${rentalStart <= range.end}`);
-            console.log(`[DATE FILTER]   rentalEnd (${rentalEnd.toISOString()}) >= range.start (${range.start.toISOString()})? ${rentalEnd >= range.start}`);
+            console.log(`[DATE FILTER] Excluding booking: ${booking.customer.name}, start: ${booking.startDate}, end: ${booking.endDate}`);
+            console.log(`[DATE FILTER]   bookingStart (${bookingStart.toISOString()}) <= range.end (${range.end.toISOString()})? ${bookingStart <= range.end}`);
+            console.log(`[DATE FILTER]   bookingEnd (${bookingEnd.toISOString()}) >= range.start (${range.start.toISOString()})? ${bookingEnd >= range.start}`);
           }
           return included;
         });
-        console.log(`[DATE FILTER] Filtered from ${beforeFilter} to ${filtered.length} rentals`);
+        console.log(`[DATE FILTER] Filtered from ${beforeFilter} to ${filtered.length} bookings`);
       }
     }
 
     // Custom date range filter
     if (dateRangeFilter === "custom") {
       if (startDateFilter) {
-        filtered = filtered.filter((rental) => new Date(rental.endDate) >= new Date(startDateFilter));
+        filtered = filtered.filter((booking) => new Date(booking.endDate) >= new Date(startDateFilter));
       }
       if (endDateFilter) {
-        filtered = filtered.filter((rental) => new Date(rental.startDate) <= new Date(endDateFilter));
+        filtered = filtered.filter((booking) => new Date(booking.startDate) <= new Date(endDateFilter));
       }
     }
 
@@ -324,58 +324,58 @@ export default function RentalsPage() {
       }
     });
 
-    setFilteredRentals(filtered);
+    setFilteredBookings(filtered);
     setCurrentPage(0); // Reset to first page when filters change
   };
 
-  const toggleRental = (id: string) => {
-    const newExpanded = new Set(expandedRentals);
+  const toggleBooking = (id: string) => {
+    const newExpanded = new Set(expandedBookings);
     if (newExpanded.has(id)) {
       newExpanded.delete(id);
     } else {
       newExpanded.add(id);
     }
-    setExpandedRentals(newExpanded);
+    setExpandedBookings(newExpanded);
   };
 
   const expandAll = () => {
-    setExpandedRentals(new Set(filteredRentals.map(rental => rental.id)));
+    setExpandedBookings(new Set(filteredBookings.map(booking => booking.id)));
   };
 
   const collapseAll = () => {
-    setExpandedRentals(new Set());
+    setExpandedBookings(new Set());
   };
 
-  const deleteRental = async (id: string) => {
+  const deleteBooking = async (id: string) => {
     try {
-      const response = await fetch(`/api/rentals/${id}`, {
+      const response = await fetch(`/api/bookings/${id}`, {
         method: "DELETE",
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Failed to delete rental" }));
-        throw new Error(errorData.error || "Failed to delete rental");
+        const errorData = await response.json().catch(() => ({ error: "Failed to delete booking" }));
+        throw new Error(errorData.error || "Failed to delete booking");
       }
 
-      fetchRentals();
+      fetchBookings();
     } catch (error: any) {
-      console.error("Error deleting rental:", error);
-      alert(`Failed to delete rental: ${error.message}`);
+      console.error("Error deleting booking:", error);
+      alert(`Failed to delete booking: ${error.message}`);
     }
   };
 
-  const handleEditRental = (rental: Rental) => {
-    setSelectedRental(rental);
+  const handleEditBooking = (booking: Booking) => {
+    setSelectedBooking(booking);
     setIsEditModalOpen(true);
   };
 
   const handleEditSuccess = () => {
-    fetchRentals(); // Refresh the rentals list
+    fetchBookings(); // Refresh the bookings list
   };
 
-  const handleUpdateRentalColor = async (rentalId: string, color: string) => {
+  const handleUpdateBookingColor = async (bookingId: string, color: string) => {
     try {
-      const response = await fetch(`/api/rentals/${rentalId}`, {
+      const response = await fetch(`/api/bookings/${bookingId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -384,20 +384,20 @@ export default function RentalsPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update rental color");
+        throw new Error("Failed to update booking color");
       }
 
-      // Refresh the rentals list
-      fetchRentals();
+      // Refresh the bookings list
+      fetchBookings();
     } catch (error) {
-      console.error("Error updating rental color:", error);
-      alert("Failed to update rental color");
+      console.error("Error updating booking color:", error);
+      alert("Failed to update booking color");
     }
   };
 
-  const handleUpdateRentalStatus = async (rentalId: string, newStatus: string) => {
+  const handleUpdateBookingStatus = async (bookingId: string, newStatus: string) => {
     try {
-      const response = await fetch(`/api/rentals/${rentalId}`, {
+      const response = await fetch(`/api/bookings/${bookingId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -406,30 +406,30 @@ export default function RentalsPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update rental status");
+        throw new Error("Failed to update booking status");
       }
 
-      // Refresh the rentals list
-      fetchRentals();
+      // Refresh the bookings list
+      fetchBookings();
     } catch (error) {
-      console.error("Error updating rental status:", error);
-      alert("Failed to update rental status");
+      console.error("Error updating booking status:", error);
+      alert("Failed to update booking status");
     }
   };
 
-  const handleAddPayment = async (rentalId: string) => {
+  const handleAddPayment = async (bookingId: string) => {
     if (!paymentAmount || parseFloat(paymentAmount) < 0.01) {
       setPaymentError("Please enter a valid payment amount (minimum 0.01)");
       return;
     }
 
-    // Find the rental to validate against total price
-    const rental = rentals.find(r => r.id === rentalId);
-    if (rental && rental.totalPrice) {
+    // Find the booking to validate against total price
+    const booking = bookings.find(r => r.id === bookingId);
+    if (booking && booking.totalPrice) {
       const newPaymentAmount = parseFloat(paymentAmount);
-      const totalPaid = (rental.advancePayment || 0) +
-                        (rental.payments?.reduce((sum, p) => sum + p.amount, 0) || 0);
-      const remainingBalance = rental.totalPrice - totalPaid;
+      const totalPaid = (booking.advancePayment || 0) +
+                        (booking.payments?.reduce((sum, p) => sum + p.amount, 0) || 0);
+      const remainingBalance = booking.totalPrice - totalPaid;
 
       if (newPaymentAmount > remainingBalance) {
         setPaymentError(`Payment amount (${formatCurrency(newPaymentAmount)}) exceeds remaining balance (${formatCurrency(remainingBalance)})`);
@@ -438,7 +438,7 @@ export default function RentalsPage() {
     }
 
     try {
-      const response = await fetch(`/api/rentals/${rentalId}/payments`, {
+      const response = await fetch(`/api/bookings/${bookingId}/payments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -458,7 +458,7 @@ export default function RentalsPage() {
       setPaymentNotes("");
       setPaymentError("");
       setAddingPaymentFor(null);
-      fetchRentals();
+      fetchBookings();
     } catch (err: any) {
       setPaymentError(err.message);
     }
@@ -492,9 +492,9 @@ export default function RentalsPage() {
     return `${monthNames[date.getUTCMonth()]} ${date.getUTCDate()}`;
   };
 
-  const totalPages = Math.ceil(filteredRentals.length / rentalsPerPage);
-  const startIndex = currentPage * rentalsPerPage;
-  const currentRentals = filteredRentals.slice(startIndex, startIndex + rentalsPerPage);
+  const totalPages = Math.ceil(filteredBookings.length / bookingsPerPage);
+  const startIndex = currentPage * bookingsPerPage;
+  const currentBookings = filteredBookings.slice(startIndex, startIndex + bookingsPerPage);
 
   const goToNextPage = () => {
     if (currentPage < totalPages - 1) {
@@ -692,7 +692,7 @@ export default function RentalsPage() {
                   All Bookings
                 </h1>
                 <p className="text-[10px] text-gray-600 font-medium">
-                  {filteredRentals.length} booking{filteredRentals.length !== 1 ? "s" : ""}
+                  {filteredBookings.length} booking{filteredBookings.length !== 1 ? "s" : ""}
                 </p>
               </div>
             </div>
@@ -821,39 +821,39 @@ export default function RentalsPage() {
           </div>
         </div>
 
-        {/* Rentals List */}
-        {filteredRentals.length === 0 ? (
+        {/* Bookings List */}
+        {filteredBookings.length === 0 ? (
           <div className="bg-white rounded-xl shadow-lg p-8 text-center border border-gray-200">
             <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <h3 className="text-lg font-bold text-gray-700 mb-1">No rentals found</h3>
+            <h3 className="text-lg font-bold text-gray-700 mb-1">No bookings found</h3>
             <p className="text-xs text-gray-500">
               {searchQuery || statusFilter !== "all" || dateRangeFilter !== "all"
                 ? "Try adjusting your filters"
-                : "Create your first rental to get started"}
+                : "Create your first booking to get started"}
             </p>
           </div>
         ) : (
           <>
             <div className="space-y-1.5">
-              {currentRentals.map((rental) => {
-                const isExpanded = expandedRentals.has(rental.id);
+              {currentBookings.map((booking) => {
+                const isExpanded = expandedBookings.has(booking.id);
                 return (
                   <div
-                    key={rental.id}
+                    key={booking.id}
                     className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md hover:border-blue-300 transition-all duration-200 relative"
                   >
                     {/* Color stripe */}
-                    {rental.color && (
+                    {booking.color && (
                       <div
                         className="absolute top-0 left-0 w-1 h-full"
-                        style={{ backgroundColor: rental.color }}
+                        style={{ backgroundColor: booking.color }}
                       />
                     )}
 
                     {/* Collapsed Header - Always Visible */}
                     <div className="p-2 pl-3">
                       <div
-                        onClick={() => toggleRental(rental.id)}
+                        onClick={() => toggleBooking(booking.id)}
                         className="flex items-center justify-between cursor-pointer"
                       >
                         <div className="flex items-center gap-1.5 flex-1 min-w-0">
@@ -865,35 +865,35 @@ export default function RentalsPage() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <h3 className="font-bold text-black text-xs leading-tight truncate">
-                                {rental.customer.firstName || rental.customer.name} {rental.customer.lastName || ""}
+                                {booking.customer.firstName || booking.customer.name} {booking.customer.lastName || ""}
                               </h3>
                             </div>
                             <div className="text-[10px] text-gray-600 font-medium">
-                              {formatDate(rental.startDate)} → {formatDate(rental.endDate)}
+                              {formatDate(booking.startDate)} → {formatDate(booking.endDate)}
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5 flex-shrink-0">
                           <input
                             type="color"
-                            value={rental.color || "#3b82f6"}
+                            value={booking.color || "#3b82f6"}
                             onChange={(e) => {
                               e.stopPropagation();
-                              handleUpdateRentalColor(rental.id, e.target.value);
+                              handleUpdateBookingColor(booking.id, e.target.value);
                             }}
                             onClick={(e) => e.stopPropagation()}
                             className="w-6 h-6 border border-gray-300 rounded cursor-pointer"
-                            title="Choose rental color"
+                            title="Choose booking color"
                           />
                           <select
-                            value={rental.status}
+                            value={booking.status}
                             onChange={(e) => {
                               e.stopPropagation();
-                              handleUpdateRentalStatus(rental.id, e.target.value);
+                              handleUpdateBookingStatus(booking.id, e.target.value);
                             }}
                             onClick={(e) => e.stopPropagation()}
                             className={`px-1.5 py-0.5 rounded text-[9px] font-bold border-0 cursor-pointer ${getStatusColor(
-                              rental.status
+                              booking.status
                             )}`}
                           >
                             <option value="CONFIRMED">Confirmed</option>
@@ -905,10 +905,10 @@ export default function RentalsPage() {
                       </div>
                       {/* Item summary - always visible */}
                       <div className="mt-1 ml-5 text-[10px] text-gray-700 font-medium">
-                        {rental.items.map((item, idx) => (
+                        {booking.items.map((item, idx) => (
                           <span key={item.id}>
                             {item.item.name} ×{item.quantity}
-                            {idx < rental.items.length - 1 && ", "}
+                            {idx < booking.items.length - 1 && ", "}
                           </span>
                         ))}
                       </div>
@@ -918,17 +918,17 @@ export default function RentalsPage() {
                     {isExpanded && (
                       <div className="px-2 pb-2 space-y-2 border-t border-gray-200">
                         {/* Customer Details */}
-                        {(rental.customer.phone || rental.customer.email) && (
+                        {(booking.customer.phone || booking.customer.email) && (
                           <div className="bg-blue-50 rounded p-2 border border-blue-200">
                             <div className="text-[9px] text-gray-600 font-bold mb-1">CUSTOMER</div>
-                            {rental.customer.phone && (
+                            {booking.customer.phone && (
                               <div className="text-[10px] text-black font-medium">
-                                📞 {rental.customer.phone}
+                                📞 {booking.customer.phone}
                               </div>
                             )}
-                            {rental.customer.email && (
+                            {booking.customer.email && (
                               <div className="text-[10px] text-black font-medium">
-                                ✉️ {rental.customer.email}
+                                ✉️ {booking.customer.email}
                               </div>
                             )}
                           </div>
@@ -938,7 +938,7 @@ export default function RentalsPage() {
                         <div>
                           <div className="text-[9px] text-gray-600 font-bold mb-1">ITEMS</div>
                           <div className="space-y-1">
-                            {rental.items.map((item) => (
+                            {booking.items.map((item) => (
                               <div
                                 key={item.id}
                                 className="bg-gray-50 rounded p-1.5 border border-gray-200 flex items-center justify-between"
@@ -955,27 +955,27 @@ export default function RentalsPage() {
                         </div>
 
                         {/* Pricing Information */}
-                        {(rental.totalPrice || rental.advancePayment || rental.paymentDueDate) && (
+                        {(booking.totalPrice || booking.advancePayment || booking.paymentDueDate) && (
                           <div className="bg-purple-50 border border-purple-200 rounded p-2">
                             <div className="text-[9px] font-bold text-gray-700 mb-1">PRICING</div>
-                            {rental.totalPrice && (
+                            {booking.totalPrice && (
                               <div className="text-[10px] text-black font-medium">
-                                Total Price: {formatCurrency(rental.totalPrice)}
+                                Total Price: {formatCurrency(booking.totalPrice)}
                               </div>
                             )}
 
                             {/* Payment History */}
-                            {((rental.advancePayment && rental.advancePayment > 0) || (rental.payments && rental.payments.length > 0)) && (
+                            {((booking.advancePayment && booking.advancePayment > 0) || (booking.payments && booking.payments.length > 0)) && (
                               <div className="pt-1 border-t border-purple-200 mt-1">
                                 <div className="text-[8px] font-bold text-purple-700 mb-0.5">PAYMENT HISTORY</div>
                                 <div className="space-y-0.5">
-                                  {rental.advancePayment && rental.advancePayment > 0 && (
+                                  {booking.advancePayment && booking.advancePayment > 0 && (
                                     <div className="flex justify-between text-[9px] bg-green-50 px-1 py-0.5 rounded">
                                       <span className="text-gray-700">Advance Payment</span>
-                                      <span className="font-bold text-green-700">{formatCurrency(rental.advancePayment)}</span>
+                                      <span className="font-bold text-green-700">{formatCurrency(booking.advancePayment)}</span>
                                     </div>
                                   )}
-                                  {rental.payments && rental.payments.map((payment) => (
+                                  {booking.payments && booking.payments.map((payment) => (
                                     <div key={payment.id} className="flex justify-between text-[9px] bg-green-50 px-1 py-0.5 rounded">
                                       <div className="flex flex-col">
                                         <span className="text-gray-700">
@@ -993,14 +993,14 @@ export default function RentalsPage() {
                             )}
 
                             {/* Summary */}
-                            {rental.totalPrice && (
+                            {booking.totalPrice && (
                               <div className="pt-1 border-t border-purple-200 mt-1 space-y-0.5">
                                 <div className="flex justify-between text-[10px] font-bold text-black">
                                   <span>Total Paid:</span>
                                   <span className="text-green-700">
                                     {formatCurrency(
-                                      (rental.advancePayment || 0) +
-                                      (rental.payments?.reduce((sum, p) => sum + p.amount, 0) || 0)
+                                      (booking.advancePayment || 0) +
+                                      (booking.payments?.reduce((sum, p) => sum + p.amount, 0) || 0)
                                     )}
                                   </span>
                                 </div>
@@ -1008,23 +1008,23 @@ export default function RentalsPage() {
                                   <span className="text-purple-900">Balance Remaining:</span>
                                   <span className="text-red-700">
                                     {formatCurrency(
-                                      rental.totalPrice -
-                                      (rental.advancePayment || 0) -
-                                      (rental.payments?.reduce((sum, p) => sum + p.amount, 0) || 0)
+                                      booking.totalPrice -
+                                      (booking.advancePayment || 0) -
+                                      (booking.payments?.reduce((sum, p) => sum + p.amount, 0) || 0)
                                     )}
                                   </span>
                                 </div>
                               </div>
                             )}
 
-                            {rental.paymentDueDate && (
+                            {booking.paymentDueDate && (
                               <div className="text-[10px] text-gray-600 font-medium mt-1">
-                                Due: {new Date(rental.paymentDueDate).toLocaleDateString()}
+                                Due: {new Date(booking.paymentDueDate).toLocaleDateString()}
                               </div>
                             )}
 
                             {/* Add Payment Button/Form */}
-                            {addingPaymentFor === rental.id ? (
+                            {addingPaymentFor === booking.id ? (
                               <div className="mt-2 pt-2 border-t-2 border-green-300 bg-green-50 rounded-lg p-2">
                                 <div className="text-[11px] font-bold text-green-900 mb-2 text-center">💰 Record New Payment</div>
                                 {paymentError && (
@@ -1068,7 +1068,7 @@ export default function RentalsPage() {
                                   </div>
                                   <div className="flex gap-1.5 pt-1">
                                     <button
-                                      onClick={() => handleAddPayment(rental.id)}
+                                      onClick={() => handleAddPayment(booking.id)}
                                       className="flex-1 px-2 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-[11px] font-bold"
                                     >
                                       SAVE
@@ -1090,7 +1090,7 @@ export default function RentalsPage() {
                               </div>
                             ) : (
                               <button
-                                onClick={() => setAddingPaymentFor(rental.id)}
+                                onClick={() => setAddingPaymentFor(booking.id)}
                                 className="mt-2 w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-[11px] font-bold shadow-sm"
                               >
                                 <Plus className="w-3.5 h-3.5" />
@@ -1101,10 +1101,10 @@ export default function RentalsPage() {
                         )}
 
                         {/* Notes */}
-                        {rental.notes && (
+                        {booking.notes && (
                           <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
                             <div className="text-[9px] font-bold text-gray-700 mb-1">NOTES</div>
-                            <p className="text-[10px] text-black font-medium">{rental.notes}</p>
+                            <p className="text-[10px] text-black font-medium">{booking.notes}</p>
                           </div>
                         )}
 
@@ -1113,11 +1113,11 @@ export default function RentalsPage() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleEditRental(rental);
+                              handleEditBooking(booking);
                             }}
-                            disabled={addingPaymentFor === rental.id}
+                            disabled={addingPaymentFor === booking.id}
                             className={`flex-1 flex items-center justify-center px-2 py-1.5 border rounded-lg text-xs font-bold transition-colors ${
-                              addingPaymentFor === rental.id
+                              addingPaymentFor === booking.id
                                 ? 'text-gray-400 bg-gray-100 border-gray-300 cursor-not-allowed opacity-50'
                                 : 'text-blue-600 hover:text-white hover:bg-blue-600 border-blue-600'
                             }`}
@@ -1127,11 +1127,11 @@ export default function RentalsPage() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              deleteRental(rental.id);
+                              deleteBooking(booking.id);
                             }}
-                            disabled={addingPaymentFor === rental.id}
+                            disabled={addingPaymentFor === booking.id}
                             className={`flex-1 flex items-center justify-center px-2 py-1.5 border rounded-lg text-xs font-bold transition-colors ${
-                              addingPaymentFor === rental.id
+                              addingPaymentFor === booking.id
                                 ? 'text-gray-400 bg-gray-100 border-gray-300 cursor-not-allowed opacity-50'
                                 : 'text-red-600 hover:text-white hover:bg-red-600 border-red-600'
                             }`}
@@ -1176,12 +1176,12 @@ export default function RentalsPage() {
         )}
       </main>
 
-      {/* Edit Rental Modal */}
-      <EditRentalModal
+      {/* Edit Booking Modal */}
+      <EditBookingModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSuccess={handleEditSuccess}
-        rental={selectedRental}
+        booking={selectedBooking}
       />
     </div>
   );

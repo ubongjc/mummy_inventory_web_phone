@@ -14,7 +14,7 @@ interface Settings {
   businessAddress: string | null;
   taxRate: number | null;
   lowStockThreshold: number;
-  defaultRentalDays: number;
+  defaultBookingDays: number;
   dateFormat: string;
   timezone: string;
   updatedAt: string;
@@ -165,7 +165,7 @@ export default function SettingsPage() {
             </div>
             <div>
               <h1 className="text-lg sm:text-3xl font-bold text-black">Settings</h1>
-              <p className="text-gray-600 text-xs sm:text-sm font-medium">Configure your rental business preferences</p>
+              <p className="text-gray-600 text-xs sm:text-sm font-medium">Configure your booking business preferences</p>
             </div>
           </div>
         </div>
@@ -200,7 +200,7 @@ export default function SettingsPage() {
                 value={settings.businessName}
                 onChange={(e) => updateSetting("businessName", e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium"
-                placeholder="My Rental Business"
+                placeholder="My Booking Business"
               />
             </div>
 
@@ -287,11 +287,11 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Inventory & Rental */}
+        {/* Inventory & Booking */}
         <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 border border-gray-200">
           <div className="flex items-center gap-2 mb-4">
             <AlertTriangle className="w-6 h-6 text-orange-600" />
-            <h2 className="text-xl font-bold text-black">Inventory & Rental Settings</h2>
+            <h2 className="text-xl font-bold text-black">Inventory & Booking Settings</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -313,17 +313,17 @@ export default function SettingsPage() {
 
             <div>
               <label className="block text-sm font-bold text-black mb-2">
-                Default Rental Duration (days) <span className="text-red-500">*</span>
+                Default Booking Duration (days) <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
                 min="1"
-                value={settings.defaultRentalDays}
-                onChange={(e) => updateSetting("defaultRentalDays", parseInt(e.target.value) || 1)}
+                value={settings.defaultBookingDays}
+                onChange={(e) => updateSetting("defaultBookingDays", parseInt(e.target.value) || 1)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium"
               />
               <p className="text-xs text-gray-500 mt-1 font-medium">
-                Default rental period when creating new rentals
+                Default booking period when creating new bookings
               </p>
             </div>
           </div>

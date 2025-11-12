@@ -6,7 +6,7 @@ import { useSettings } from "@/app/hooks/useSettings";
 import DatePicker from "./DatePicker";
 import { PaymentPanel } from "./payments/PaymentPanel";
 
-interface RentalItem {
+interface BookingItem {
   id: string;
   itemId: string;
   quantity: number;
@@ -24,7 +24,7 @@ interface Payment {
   notes?: string;
 }
 
-interface Rental {
+interface Booking {
   id: string;
   customerId: string;
   startDate: string;
@@ -34,7 +34,7 @@ interface Rental {
   totalPrice?: number;
   advancePayment?: number;
   paymentDueDate?: string;
-  items: RentalItem[];
+  items: BookingItem[];
   payments?: Payment[];
   customer: {
     id: string;
@@ -46,11 +46,11 @@ interface Rental {
   };
 }
 
-interface EditRentalModalProps {
+interface EditBookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  rental: Rental | null;
+  booking: Booking | null;
 }
 
 interface Item {
@@ -68,18 +68,18 @@ interface Customer {
   lastName?: string;
 }
 
-export default function EditRentalModal({
+export default function EditBookingModal({
   isOpen,
   onClose,
   onSuccess,
-  rental,
-}: EditRentalModalProps) {
+  booking,
+}: EditBookingModalProps) {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [rentalItems, setRentalItems] = useState<{ itemId: string; quantity: number }[]>([]);
+  const [bookingItems, setBookingItems] = useState<{ itemId: string; quantity: number }[]>([]);
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("CONFIRMED");
   const [totalPrice, setTotalPrice] = useState("");
@@ -90,7 +90,7 @@ export default function EditRentalModal({
   const [error, setError] = useState("");
   const { formatCurrency } = useSettings();
   const itemSelectRefs = useRef<{ [key: number]: HTMLSelectElement | null }>({});
-  const previousItemsLength = useRef(rentalItems.length);
+  const previousItemsLength = useRef(bookingItems.length);
 
   // Track initial values to detect changes
   const [initialValues, setInitialValues] = useState<{
@@ -102,7 +102,7 @@ export default function EditRentalModal({
     totalPrice: string;
     advancePayment: string;
     paymentDueDate: string;
-    rentalItems: { itemId: string; quantity: number }[];
+    bookingItems: { itemId: string; quantity: number }[];
   } | null>(null);
 
   // Format date without timezone conversion
@@ -115,21 +115,21 @@ export default function EditRentalModal({
   };
 
   useEffect(() => {
-    if (isOpen && rental) {
+    if (isOpen && booking) {
       fetchCustomers();
       fetchItems();
       // Clear error when modal opens
       setError("");
-      // Populate form with rental data
-      const customerId = rental.customerId;
-      const start = rental.startDate.split("T")[0];
-      const end = rental.endDate.split("T")[0];
-      const rentalNotes = rental.notes || "";
-      const rentalStatus = rental.status;
-      const price = rental.totalPrice?.toString() || "";
-      const advance = rental.advancePayment?.toString() || "";
-      const dueDate = rental.paymentDueDate ? rental.paymentDueDate.split("T")[0] : "";
-      const items = rental.items.map((item) => ({
+      // Populate form with booking data
+      const customerId = booking.customerId;
+      const start = booking.startDate.split("T")[0];
+      const end = booking.endDate.split("T")[0];
+      const bookingNotes = booking.notes || "";
+      const bookingStatus = booking.status;
+      const price = booking.totalPrice?.toString() || "";
+      const advance = booking.advancePayment?.toString() || "";
+      const dueDate = booking.paymentDueDate ? booking.paymentDueDate.split("T")[0] : "";
+      const items = booking.items.map((item) => ({
         itemId: item.itemId || item.item?.id || "",
         quantity: item.quantity,
       }));
@@ -137,28 +137,28 @@ export default function EditRentalModal({
       setSelectedCustomerId(customerId);
       setStartDate(start);
       setEndDate(end);
-      setNotes(rentalNotes);
-      setStatus(rentalStatus);
+      setNotes(bookingNotes);
+      setStatus(bookingStatus);
       setTotalPrice(price);
       setAdvancePayment(advance);
       setPaymentDueDate(dueDate);
-      setPayments(rental.payments || []);
-      setRentalItems(items);
+      setPayments(booking.payments || []);
+      setBookingItems(items);
 
       // Save initial values for change detection
       setInitialValues({
         customerId,
         startDate: start,
         endDate: end,
-        status: rentalStatus,
-        notes: rentalNotes,
+        status: bookingStatus,
+        notes: bookingNotes,
         totalPrice: price,
         advancePayment: advance,
         paymentDueDate: dueDate,
-        rentalItems: items,
+        bookingItems: items,
       });
     }
-  }, [isOpen, rental]);
+  }, [isOpen, booking]);
 
   // Handle Escape key to close modal
   useEffect(() => {
@@ -176,26 +176,26 @@ export default function EditRentalModal({
 
   // Re-fetch items when dates change to update availability
   useEffect(() => {
-    if (isOpen && rental && (startDate || endDate)) {
+    if (isOpen && booking && (startDate || endDate)) {
       fetchItems();
     }
   }, [startDate, endDate]);
 
-  // Clear error when rentalItems change
+  // Clear error when bookingItems change
   useEffect(() => {
     setError("");
-  }, [rentalItems]);
+  }, [bookingItems]);
 
   // Auto-focus newly added item dropdown
   useEffect(() => {
-    if (rentalItems.length > previousItemsLength.current) {
-      const newIndex = rentalItems.length - 1;
+    if (bookingItems.length > previousItemsLength.current) {
+      const newIndex = bookingItems.length - 1;
       setTimeout(() => {
         itemSelectRefs.current[newIndex]?.focus();
       }, 50);
     }
-    previousItemsLength.current = rentalItems.length;
-  }, [rentalItems.length]);
+    previousItemsLength.current = bookingItems.length;
+  }, [bookingItems.length]);
 
   const fetchCustomers = async () => {
     try {
@@ -212,8 +212,8 @@ export default function EditRentalModal({
       const itemsResponse = await fetch("/api/items");
       const itemsData = await itemsResponse.json();
 
-      const rentalsResponse = await fetch("/api/rentals");
-      const rentalsData = await rentalsResponse.json();
+      const bookingsResponse = await fetch("/api/bookings");
+      const bookingsData = await bookingsResponse.json();
 
       // Calculate available quantities for each item based on selected dates
       const itemsWithAvailability = itemsData.map((item: any) => {
@@ -221,16 +221,16 @@ export default function EditRentalModal({
         const checkStartDate = startDate ? new Date(startDate + "T00:00:00.000Z") : new Date();
         const checkEndDate = endDate ? new Date(endDate + "T00:00:00.000Z") : new Date();
 
-        const rented = rentalsData
+        const rented = bookingsData
           .filter((r: any) => {
-            // Exclude the current rental being edited
-            if (rental && r.id === rental.id) return false;
+            // Exclude the current booking being edited
+            if (booking && r.id === booking.id) return false;
 
-            const rentalStartDate = new Date(r.startDate);
-            const rentalEndDate = new Date(r.endDate);
+            const bookingStartDate = new Date(r.startDate);
+            const bookingEndDate = new Date(r.endDate);
 
-            // Check if rental overlaps with selected period
-            const overlaps = rentalStartDate <= checkEndDate && rentalEndDate >= checkStartDate;
+            // Check if booking overlaps with selected period
+            const overlaps = bookingStartDate <= checkEndDate && bookingEndDate >= checkStartDate;
 
             return (
               (r.status === "CONFIRMED" || r.status === "OUT") &&
@@ -238,10 +238,10 @@ export default function EditRentalModal({
             );
           })
           .reduce((sum: number, r: any) => {
-            const rentalItem = r.items?.find(
+            const bookingItem = r.items?.find(
               (ri: any) => ri.itemId === item.id || ri.item?.id === item.id
             );
-            return sum + (rentalItem?.quantity || 0);
+            return sum + (bookingItem?.quantity || 0);
           }, 0);
 
         console.log(`[Edit] Item "${item.name}": ${item.totalQuantity} total, ${rented} rented during period, ${item.totalQuantity - rented} available`);
@@ -258,21 +258,21 @@ export default function EditRentalModal({
     }
   };
 
-  const addRentalItem = () => {
-    setRentalItems([...rentalItems, { itemId: "", quantity: 1 }]);
-    // Focus will be handled by useEffect when rentalItems length changes
+  const addBookingItem = () => {
+    setBookingItems([...bookingItems, { itemId: "", quantity: 1 }]);
+    // Focus will be handled by useEffect when bookingItems length changes
   };
 
-  const removeRentalItem = (index: number) => {
-    setRentalItems(rentalItems.filter((_, i) => i !== index));
+  const removeBookingItem = (index: number) => {
+    setBookingItems(bookingItems.filter((_, i) => i !== index));
   };
 
-  const updateRentalItem = (index: number, field: "itemId" | "quantity", value: any) => {
-    const updated = [...rentalItems];
+  const updateBookingItem = (index: number, field: "itemId" | "quantity", value: any) => {
+    const updated = [...bookingItems];
 
     // If changing itemId, check for duplicates
     if (field === "itemId" && value) {
-      const isDuplicate = rentalItems.some((item, i) => i !== index && item.itemId === value);
+      const isDuplicate = bookingItems.some((item, i) => i !== index && item.itemId === value);
       if (isDuplicate) {
         setError("This item is already added. Please select a different item or adjust the quantity of the existing item.");
         return;
@@ -280,7 +280,7 @@ export default function EditRentalModal({
     }
 
     updated[index] = { ...updated[index], [field]: value };
-    setRentalItems(updated);
+    setBookingItems(updated);
   };
 
 
@@ -290,7 +290,7 @@ export default function EditRentalModal({
     setError("");
 
     try {
-      if (!rental) throw new Error("No rental to edit");
+      if (!booking) throw new Error("No booking to edit");
 
       // Validate advance payment doesn't exceed total price
       const parsedTotalPrice = totalPrice ? parseFloat(totalPrice) : 0;
@@ -308,7 +308,7 @@ export default function EditRentalModal({
         throw new Error(`Total payments (${formatCurrency(totalPayments)}) cannot exceed total price (${formatCurrency(parsedTotalPrice)})`);
       }
 
-      const response = await fetch(`/api/rentals/${rental.id}`, {
+      const response = await fetch(`/api/bookings/${booking.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -316,7 +316,7 @@ export default function EditRentalModal({
           startDate,
           endDate,
           status,
-          items: rentalItems.filter((item) => item.itemId),
+          items: bookingItems.filter((item) => item.itemId),
           notes,
           totalPrice: totalPrice ? parseFloat(totalPrice) : undefined,
           advancePayment: advancePayment ? parseFloat(advancePayment) : undefined,
@@ -334,7 +334,7 @@ export default function EditRentalModal({
           );
         }
 
-        throw new Error(errorData.error || "Failed to update rental");
+        throw new Error(errorData.error || "Failed to update booking");
       }
 
       // Trigger data refresh
@@ -353,7 +353,7 @@ export default function EditRentalModal({
   };
 
 
-  if (!isOpen || !rental) return null;
+  if (!isOpen || !booking) return null;
 
   return (
     <>
@@ -454,15 +454,15 @@ export default function EditRentalModal({
                 Items to Rent *
               </label>
               <div className="space-y-2">
-                {rentalItems.map((rentalItem, index) => (
+                {bookingItems.map((bookingItem, index) => (
                   <div key={index} className="flex gap-2">
                     <select
                       ref={(el) => { itemSelectRefs.current[index] = el; }}
-                      value={rentalItem.itemId}
+                      value={bookingItem.itemId}
                       onChange={(e) => {
                         // Prevent selecting the "Select" option
                         if (e.target.value !== "") {
-                          updateRentalItem(index, "itemId", e.target.value);
+                          updateBookingItem(index, "itemId", e.target.value);
                         }
                       }}
                       className="flex-1 min-w-0 px-3 py-2 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-base truncate"
@@ -472,8 +472,8 @@ export default function EditRentalModal({
                       {items
                         .filter((item) =>
                           // Show current item OR items not already selected in other rows
-                          item.id === rentalItem.itemId ||
-                          !rentalItems.some((ri, i) => i !== index && ri.itemId === item.id)
+                          item.id === bookingItem.itemId ||
+                          !bookingItems.some((ri, i) => i !== index && ri.itemId === item.id)
                         )
                         .map((item) => {
                           const available = item.available ?? item.totalQuantity;
@@ -488,34 +488,34 @@ export default function EditRentalModal({
                     </select>
                     <input
                       type="number"
-                      value={rentalItem.quantity}
+                      value={bookingItem.quantity}
                       onChange={(e) => {
                         const val = e.target.value;
                         // Allow empty string while typing
                         if (val === "") {
-                          updateRentalItem(index, "quantity", "");
+                          updateBookingItem(index, "quantity", "");
                         } else {
                           const numVal = parseInt(val);
                           // Prevent negative numbers and 0
                           if (numVal > 0) {
-                            updateRentalItem(index, "quantity", numVal);
+                            updateBookingItem(index, "quantity", numVal);
                           }
                         }
                       }}
                       onBlur={(e) => {
                         // Set to 1 if empty on blur
                         if (e.target.value === "" || parseInt(e.target.value) < 1) {
-                          updateRentalItem(index, "quantity", 1);
+                          updateBookingItem(index, "quantity", 1);
                         }
                       }}
                       className="w-20 flex-shrink-0 px-3 py-2 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-base"
                       min="1"
                       required
                     />
-                    {rentalItems.length > 1 && (
+                    {bookingItems.length > 1 && (
                       <button
                         type="button"
-                        onClick={() => removeRentalItem(index)}
+                        onClick={() => removeBookingItem(index)}
                         className="w-10 h-10 flex-shrink-0 flex items-center justify-center text-red-600 hover:text-white hover:bg-red-600 border border-red-600 rounded transition-colors"
                         title="Remove item"
                       >
@@ -526,9 +526,9 @@ export default function EditRentalModal({
                 ))}
                 {/* Check if all items are selected and last item is complete */}
                 {(() => {
-                  const lastItem = rentalItems[rentalItems.length - 1];
+                  const lastItem = bookingItems[bookingItems.length - 1];
                   const hasValidLastItem = lastItem && lastItem.itemId && lastItem.quantity && lastItem.quantity > 0;
-                  const hasAvailableItems = items.filter(item => !rentalItems.some(ri => ri.itemId === item.id) && (item.available ?? item.totalQuantity) > 0).length > 0;
+                  const hasAvailableItems = items.filter(item => !bookingItems.some(ri => ri.itemId === item.id) && (item.available ?? item.totalQuantity) > 0).length > 0;
 
                   if (!hasAvailableItems) {
                     return (
@@ -541,7 +541,7 @@ export default function EditRentalModal({
                   return (
                     <button
                       type="button"
-                      onClick={addRentalItem}
+                      onClick={addBookingItem}
                       disabled={!hasValidLastItem}
                       className={`text-sm flex items-center gap-1 ${
                         hasValidLastItem
@@ -620,7 +620,7 @@ export default function EditRentalModal({
                       throw new Error(`Total payments (${formatCurrency(totalPayments)}) cannot exceed total price (${formatCurrency(parsedTotalPrice)}). Remaining balance: ${formatCurrency(remainingBalance)}`);
                     }
 
-                    const response = await fetch(`/api/rentals/${rental?.id}/payments`, {
+                    const response = await fetch(`/api/bookings/${booking?.id}/payments`, {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
@@ -745,7 +745,7 @@ export default function EditRentalModal({
                 disabled={loading}
                 className="flex-1 px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 text-sm font-semibold"
               >
-                {loading ? "Updating..." : "Update Rental"}
+                {loading ? "Updating..." : "Update Booking"}
               </button>
             </div>
           </form>

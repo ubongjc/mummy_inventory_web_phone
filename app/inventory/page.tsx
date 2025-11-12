@@ -28,7 +28,7 @@ interface Customer {
   notes?: string;
 }
 
-interface Rental {
+interface Booking {
   id: string;
   startDate: string;
   endDate: string;
@@ -60,7 +60,7 @@ export default function InventoryPage() {
   const [activeTab, setActiveTab] = useState<"items" | "customers" | "bookings">("items");
   const [items, setItems] = useState<Item[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [rentals, setRentals] = useState<Rental[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<any>({});
   const [showItemSummary, setShowItemSummary] = useState(false);
@@ -68,15 +68,15 @@ export default function InventoryPage() {
   // Search states
   const [itemSearch, setItemSearch] = useState("");
   const [customerSearch, setCustomerSearch] = useState("");
-  const [rentalSearch, setRentalSearch] = useState("");
+  const [bookingSearch, setBookingSearch] = useState("");
 
   // Sort states
   const [itemSortBy, setItemSortBy] = useState<"name" | "quantity" | "price" | "unit">("name");
   const [customerSortBy, setCustomerSortBy] = useState<"name" | "email" | "phone">("name");
-  const [rentalSortBy, setRentalSortBy] = useState<"date" | "customer" | "items" | "status">("date");
+  const [bookingSortBy, setBookingSortBy] = useState<"date" | "customer" | "items" | "status">("date");
 
   // Filter states
-  const [rentalStatusFilter, setRentalStatusFilter] = useState<string>("all");
+  const [bookingStatusFilter, setBookingStatusFilter] = useState<string>("all");
 
   // Expanded customer rows
   const [expandedCustomerIds, setExpandedCustomerIds] = useState<Set<string>>(new Set());
@@ -127,7 +127,7 @@ export default function InventoryPage() {
   useEffect(() => {
     fetchItems();
     fetchCustomers();
-    fetchRentals();
+    fetchBookings();
   }, []);
 
   const fetchItems = async () => {
@@ -142,10 +142,10 @@ export default function InventoryPage() {
     setCustomers(data);
   };
 
-  const fetchRentals = async () => {
-    const response = await fetch("/api/rentals");
+  const fetchBookings = async () => {
+    const response = await fetch("/api/bookings");
     const data = await response.json();
-    setRentals(data);
+    setBookings(data);
   };
 
   const handleEdit = (id: string, data: any) => {
@@ -289,43 +289,43 @@ export default function InventoryPage() {
     }
   };
 
-  const handleDeleteRental = async (id: string) => {
+  const handleDeleteBooking = async (id: string) => {
     try {
-      const response = await fetch(`/api/rentals/${id}`, { method: "DELETE" });
+      const response = await fetch(`/api/bookings/${id}`, { method: "DELETE" });
       if (!response.ok) {
         const error = await response.text();
-        throw new Error(error || "Failed to delete rental");
+        throw new Error(error || "Failed to delete booking");
       }
-      await fetchRentals();
+      await fetchBookings();
     } catch (error: any) {
-      console.error("Error deleting rental:", error);
-      alert(`Failed to delete rental: ${error.message}`);
+      console.error("Error deleting booking:", error);
+      alert(`Failed to delete booking: ${error.message}`);
     }
   };
 
-  const handleUpdateRentalStatus = async (id: string, status: string) => {
+  const handleUpdateBookingStatus = async (id: string, status: string) => {
     try {
-      await fetch(`/api/rentals/${id}`, {
+      await fetch(`/api/bookings/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
-      await fetchRentals();
+      await fetchBookings();
     } catch (error) {
-      console.error("Error updating rental status:", error);
+      console.error("Error updating booking status:", error);
     }
   };
 
-  const handleUpdateRentalColor = async (id: string, color: string) => {
+  const handleUpdateBookingColor = async (id: string, color: string) => {
     try {
-      await fetch(`/api/rentals/${id}`, {
+      await fetch(`/api/bookings/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ color }),
       });
-      await fetchRentals();
+      await fetchBookings();
     } catch (error) {
-      console.error("Error updating rental color:", error);
+      console.error("Error updating booking color:", error);
     }
   };
 
@@ -388,26 +388,26 @@ export default function InventoryPage() {
     }
   };
 
-  const getFilteredAndSortedRentals = () => {
-    let filtered = [...rentals];
+  const getFilteredAndSortedBookings = () => {
+    let filtered = [...bookings];
 
     // Apply status filter
-    if (rentalStatusFilter !== "all") {
-      filtered = filtered.filter((rental) => rental.status === rentalStatusFilter);
+    if (bookingStatusFilter !== "all") {
+      filtered = filtered.filter((booking) => booking.status === bookingStatusFilter);
     }
 
     // Apply search filter
-    if (rentalSearch) {
-      filtered = filtered.filter((rental) => {
-        const fullName = `${rental.customer.firstName || rental.customer.name} ${rental.customer.lastName || ""}`.trim();
-        return fullName.toLowerCase().includes(rentalSearch.toLowerCase()) ||
-          rental.reference?.toLowerCase().includes(rentalSearch.toLowerCase()) ||
-          rental.items.some((item) => item.item.name.toLowerCase().includes(rentalSearch.toLowerCase()));
+    if (bookingSearch) {
+      filtered = filtered.filter((booking) => {
+        const fullName = `${booking.customer.firstName || booking.customer.name} ${booking.customer.lastName || ""}`.trim();
+        return fullName.toLowerCase().includes(bookingSearch.toLowerCase()) ||
+          booking.reference?.toLowerCase().includes(bookingSearch.toLowerCase()) ||
+          booking.items.some((item) => item.item.name.toLowerCase().includes(bookingSearch.toLowerCase()));
       });
     }
 
     // Apply sorting
-    switch (rentalSortBy) {
+    switch (bookingSortBy) {
       case "customer":
         return filtered.sort((a, b) => {
           const aName = `${a.customer.firstName || a.customer.name} ${a.customer.lastName || ""}`.trim();
@@ -443,12 +443,12 @@ export default function InventoryPage() {
       case "bookings":
         title = "Delete All Bookings";
         message = "This will permanently delete all bookings.";
-        count = rentals.length;
+        count = bookings.length;
         break;
       case "all":
         title = "Delete Everything";
         message = "This will permanently delete ALL items, customers, and bookings. This action cannot be undone!";
-        count = items.length + customers.length + rentals.length;
+        count = items.length + customers.length + bookings.length;
         break;
     }
 
@@ -466,7 +466,7 @@ export default function InventoryPage() {
           endpoint = "/api/customers/bulk";
           break;
         case "bookings":
-          endpoint = "/api/rentals/bulk";
+          endpoint = "/api/bookings/bulk";
           break;
         case "all":
           endpoint = "/api/clear-all";
@@ -482,7 +482,7 @@ export default function InventoryPage() {
       // Refresh all data
       await fetchItems();
       await fetchCustomers();
-      await fetchRentals();
+      await fetchBookings();
 
       alert(`Successfully deleted ${deleteModal.type === "all" ? "all data" : `all ${deleteModal.type}`}`);
       setDeleteModal({ ...deleteModal, isOpen: false });
@@ -555,7 +555,7 @@ export default function InventoryPage() {
             }`}
           >
             <Calendar className="w-3 h-3" />
-            Bookings ({rentals.length})
+            Bookings ({bookings.length})
           </button>
         </div>
 
@@ -1062,10 +1062,10 @@ export default function InventoryPage() {
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="p-2 border-b border-gray-200">
               <div className="flex justify-between items-center mb-2">
-                <h2 className="text-xs font-bold text-black">Bookings ({getFilteredAndSortedRentals().length})</h2>
+                <h2 className="text-xs font-bold text-black">Bookings ({getFilteredAndSortedBookings().length})</h2>
                 <button
                   onClick={() => handleOpenDeleteModal("bookings")}
-                  disabled={rentals.length === 0}
+                  disabled={bookings.length === 0}
                   className="flex items-center gap-1 px-2 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-[10px]"
                 >
                   <Trash2 className="w-3 h-3" />
@@ -1078,14 +1078,14 @@ export default function InventoryPage() {
                   <input
                     type="text"
                     placeholder="Search..."
-                    value={rentalSearch}
-                    onChange={(e) => setRentalSearch(e.target.value)}
+                    value={bookingSearch}
+                    onChange={(e) => setBookingSearch(e.target.value)}
                     className="w-full pl-7 pr-2 py-1 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-black font-medium text-xs"
                   />
                 </div>
                 <select
-                  value={rentalStatusFilter}
-                  onChange={(e) => setRentalStatusFilter(e.target.value)}
+                  value={bookingStatusFilter}
+                  onChange={(e) => setBookingStatusFilter(e.target.value)}
                   className="px-2 py-1 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-[10px]"
                 >
                   <option value="all">All</option>
@@ -1095,8 +1095,8 @@ export default function InventoryPage() {
                   <option value="CANCELLED">Cancelled</option>
                 </select>
                 <select
-                  value={rentalSortBy}
-                  onChange={(e) => setRentalSortBy(e.target.value as any)}
+                  value={bookingSortBy}
+                  onChange={(e) => setBookingSortBy(e.target.value as any)}
                   className="px-2 py-1 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-[10px]"
                 >
                   <option value="date">Date</option>
@@ -1135,53 +1135,53 @@ export default function InventoryPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {getFilteredAndSortedRentals().map((rental) => (
-                  <tr key={rental.id} className="relative">
+                {getFilteredAndSortedBookings().map((booking) => (
+                  <tr key={booking.id} className="relative">
                     {/* Color stripe */}
                     <td className="px-2 py-1 relative">
                       <div
                         className="absolute top-0 left-0 w-1 h-full"
-                        style={{ backgroundColor: rental.color || "#3b82f6" }}
+                        style={{ backgroundColor: booking.color || "#3b82f6" }}
                       />
                       <input
                         type="color"
-                        value={rental.color || "#3b82f6"}
-                        onChange={(e) => handleUpdateRentalColor(rental.id, e.target.value)}
+                        value={booking.color || "#3b82f6"}
+                        onChange={(e) => handleUpdateBookingColor(booking.id, e.target.value)}
                         className="w-5 h-5 border border-gray-300 rounded cursor-pointer ml-1"
-                        title="Choose rental color"
+                        title="Choose booking color"
                       />
                     </td>
                     <td className="px-2 py-1 font-bold text-black text-[10px]">
-                      {rental.customer.firstName || rental.customer.name} {rental.customer.lastName || ""}
+                      {booking.customer.firstName || booking.customer.name} {booking.customer.lastName || ""}
                     </td>
                     <td className="px-2 py-1 font-semibold text-black text-[10px]">
-                      {formatDate(rental.startDate)}
+                      {formatDate(booking.startDate)}
                     </td>
                     <td className="px-2 py-1 font-semibold text-black text-[10px]">
-                      {formatDate(rental.endDate)}
+                      {formatDate(booking.endDate)}
                     </td>
                     <td className="px-2 py-1 text-[9px] font-medium text-black">
                       <div className="font-bold text-blue-600">
-                        {rental.items.length} item{rental.items.length !== 1 ? "s" : ""}
+                        {booking.items.length} item{booking.items.length !== 1 ? "s" : ""}
                       </div>
                       <div className="text-[8px]">
-                        {rental.items
+                        {booking.items
                           .map((i) => `${i.item.name} ×${i.quantity}`)
                           .join(", ")}
                       </div>
                     </td>
                     <td className="px-2 py-1">
                       <select
-                        value={rental.status}
+                        value={booking.status}
                         onChange={(e) =>
-                          handleUpdateRentalStatus(rental.id, e.target.value)
+                          handleUpdateBookingStatus(booking.id, e.target.value)
                         }
                         className={`px-2 py-1 rounded text-[10px] font-bold border w-full min-w-[120px] ${
-                          rental.status === "CONFIRMED"
+                          booking.status === "CONFIRMED"
                             ? "bg-blue-100 text-blue-800"
-                            : rental.status === "OUT"
+                            : booking.status === "OUT"
                             ? "bg-red-100 text-red-800"
-                            : rental.status === "RETURNED"
+                            : booking.status === "RETURNED"
                             ? "bg-green-100 text-green-800"
                             : "bg-gray-100 text-gray-800"
                         }`}
@@ -1194,7 +1194,7 @@ export default function InventoryPage() {
                     </td>
                     <td className="px-2 py-1 text-right">
                       <button
-                        onClick={() => handleDeleteRental(rental.id)}
+                        onClick={() => handleDeleteBooking(booking.id)}
                         className="px-1 py-0.5 text-[9px] font-bold text-red-600 hover:text-white hover:bg-red-600 border border-red-600 rounded transition-colors"
                       >
                         DEL
@@ -1205,9 +1205,9 @@ export default function InventoryPage() {
               </tbody>
             </table>
             </div>
-            {getFilteredAndSortedRentals().length === 0 && (
+            {getFilteredAndSortedBookings().length === 0 && (
               <div className="text-center py-6 text-black font-semibold text-xs">
-                {rentals.length === 0
+                {bookings.length === 0
                   ? "No bookings yet."
                   : "No bookings match your filters."}
               </div>

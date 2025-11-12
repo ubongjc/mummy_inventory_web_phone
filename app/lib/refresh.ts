@@ -20,8 +20,8 @@ export async function refreshAll() {
  * Generate cache keys for data fetching
  */
 export const cacheKeys = {
-  rentals: (start?: string, end?: string) =>
-    start && end ? `rentals-${start}-${end}` : "rentals",
+  bookings: (start?: string, end?: string) =>
+    start && end ? `bookings-${start}-${end}` : "bookings",
   dayData: (date: string) => `day-${date}`,
   items: () => "items",
   customers: () => "customers",

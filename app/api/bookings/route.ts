@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
-import { createRentalSchema } from "@/app/lib/validation";
+import { createBookingSchema } from "@/app/lib/validation";
 import { toUTCMidnight, addOneDay, formatDateISO } from "@/app/lib/dates";
-import { getRandomRentalColor } from "@/app/lib/colors";
+import { getRandomBookingColor } from "@/app/lib/colors";
 import { toUtcDateOnly, toYmd, addDays } from "@/app/lib/dateUtils";
 import dayjs from "dayjs";
 
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    const rentals = await prisma.rental.findMany({
+    const bookings = await prisma.rental.findMany({
       where: whereClause,
       include: {
         customer: true,
@@ -45,40 +45,40 @@ export async function GET(request: NextRequest) {
 
     // Format for FullCalendar if start and end are provided
     if (start && end) {
-      const events = rentals.map((rental) => {
-        const itemsSummary = rental.items
+      const events = bookings.map((booking) => {
+        const itemsSummary = booking.items
           .map((ri) => `${ri.item.name} ×${ri.quantity}`)
           .join(", ");
 
         // Use dateUtils helpers for consistent UTC date handling
-        const startDate = toYmd(toUtcDateOnly(rental.startDate));
+        const startDate = toYmd(toUtcDateOnly(booking.startDate));
         // FullCalendar 'end' is exclusive for allDay events: add 1 day
-        const endDate = toYmd(addDays(toUtcDateOnly(rental.endDate), 1));
+        const endDate = toYmd(addDays(toUtcDateOnly(booking.endDate), 1));
 
         // Use custom color if set, otherwise default blue or red for OUT status
-        const bgColor = (rental as any).color || (rental.status === "OUT" ? "#ef4444" : "#3b82f6");
+        const bgColor = (booking as any).color || (booking.status === "OUT" ? "#ef4444" : "#3b82f6");
         const borderColor = bgColor;
         // Show only firstName on the calendar to save space (as requested)
-        const customerFirstName = rental.customer.firstName || rental.customer.name;
-        const customerFullName = `${rental.customer.firstName || rental.customer.name} ${rental.customer.lastName || ""}`.trim();
+        const customerFirstName = booking.customer.firstName || booking.customer.name;
+        const customerFullName = `${booking.customer.firstName || booking.customer.name} ${booking.customer.lastName || ""}`.trim();
 
-        console.log(`[Calendar] Rental ${rental.id.substring(0, 8)}: "${customerFullName}" DB: ${rental.startDate.toISOString().split('T')[0]} to ${rental.endDate.toISOString().split('T')[0]}, Calendar: ${startDate} to ${endDate}, Color: ${(rental as any).color} → ${bgColor}`);
+        console.log(`[Calendar] Booking ${booking.id.substring(0, 8)}: "${customerFullName}" DB: ${booking.startDate.toISOString().split('T')[0]} to ${booking.endDate.toISOString().split('T')[0]}, Calendar: ${startDate} to ${endDate}, Color: ${(booking as any).color} → ${bgColor}`);
 
         return {
-          id: rental.id,
+          id: booking.id,
           title: `${customerFirstName} — ${itemsSummary}`,
           start: startDate,
           end: endDate, // YYYY-MM-DD (no time, no Z)
           allDay: true,
           backgroundColor: bgColor,
           borderColor: borderColor,
-          rentalItemIds: rental.items.map(ri => ri.itemId),
+          bookingItemIds: booking.items.map(ri => ri.itemId),
           extendedProps: {
-            customerId: rental.customerId,
+            customerId: booking.customerId,
             customerName: customerFullName,
-            status: rental.status,
-            items: rental.items,
-            color: (rental as any).color,
+            status: booking.status,
+            items: booking.items,
+            color: (booking as any).color,
           },
         };
       });
@@ -91,11 +91,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(events);
     }
 
-    return NextResponse.json(rentals);
+    return NextResponse.json(bookings);
   } catch (error) {
-    console.error("Error fetching rentals:", error);
+    console.error("Error fetching bookings:", error);
     return NextResponse.json(
-      { error: "Failed to fetch rentals" },
+      { error: "Failed to fetch bookings" },
       { status: 500 }
     );
   }
@@ -104,31 +104,31 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log('[API] Received rental data:', JSON.stringify(body, null, 2));
-    const validated = createRentalSchema.parse(body);
+    console.log('[API] Received booking data:', JSON.stringify(body, null, 2));
+    const validated = createBookingSchema.parse(body);
     console.log('[API] Validated initial payments:', validated.initialPayments);
 
     const startDate = toUTCMidnight(validated.startDate);
     const endDate = toUTCMidnight(validated.endDate);
 
-    console.log('[CREATE RENTAL] Input dates:', validated.startDate, 'to', validated.endDate);
-    console.log('[CREATE RENTAL] Parsed to UTC:', startDate.toISOString(), 'to', endDate.toISOString());
+    console.log('[CREATE BOOKING] Input dates:', validated.startDate, 'to', validated.endDate);
+    console.log('[CREATE BOOKING] Parsed to UTC:', startDate.toISOString(), 'to', endDate.toISOString());
 
     // Check availability for each item
-    for (const rentalItem of validated.items) {
+    for (const bookingItem of validated.items) {
       const item = await prisma.item.findUnique({
-        where: { id: rentalItem.itemId },
+        where: { id: bookingItem.itemId },
       });
 
       if (!item) {
         return NextResponse.json(
-          { error: `Item ${rentalItem.itemId} not found` },
+          { error: `Item ${bookingItem.itemId} not found` },
           { status: 404 }
         );
       }
 
-      // Get all overlapping rentals for this item
-      const overlappingRentals = await prisma.rental.findMany({
+      // Get all overlapping bookings for this item
+      const overlappingBookings = await prisma.rental.findMany({
         where: {
           AND: [
             { startDate: { lte: endDate } },
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
         include: {
           items: {
             where: {
-              itemId: rentalItem.itemId,
+              itemId: bookingItem.itemId,
             },
           },
         },
@@ -151,26 +151,26 @@ export async function POST(request: NextRequest) {
 
       while (currentDate <= endDateCheck) {
         // Calculate reserved quantity on this specific day
-        const reservedOnDay = overlappingRentals.reduce((sum, rental) => {
-          const rentalStart = new Date(rental.startDate);
-          const rentalEnd = new Date(rental.endDate);
+        const reservedOnDay = overlappingBookings.reduce((sum, booking) => {
+          const bookingStart = new Date(booking.startDate);
+          const bookingEnd = new Date(booking.endDate);
 
-          // Check if this rental overlaps with current day
-          if (currentDate >= rentalStart && currentDate <= rentalEnd) {
-            return sum + rental.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
+          // Check if this booking overlaps with current day
+          if (currentDate >= bookingStart && currentDate <= bookingEnd) {
+            return sum + booking.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
           }
           return sum;
         }, 0);
 
         const availableOnDay = item.totalQuantity - reservedOnDay;
 
-        if (availableOnDay < rentalItem.quantity) {
+        if (availableOnDay < bookingItem.quantity) {
           return NextResponse.json(
             {
               error: "Insufficient availability",
               itemName: item.name,
               date: currentDate.toISOString().split('T')[0],
-              requested: rentalItem.quantity,
+              requested: bookingItem.quantity,
               available: availableOnDay,
               reserved: reservedOnDay,
               total: item.totalQuantity,
@@ -204,8 +204,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create rental with random color
-    const rental = await prisma.rental.create({
+    // Create booking with random color
+    const booking = await prisma.rental.create({
       data: {
         customerId: validated.customerId,
         startDate,
@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
         status: validated.status || "CONFIRMED",
         reference: validated.reference,
         notes: validated.notes,
-        color: getRandomRentalColor(),
+        color: getRandomBookingColor(),
         totalPrice: validated.totalPrice,
         advancePayment: validated.advancePayment,
         paymentDueDate: validated.paymentDueDate ? toUTCMidnight(validated.paymentDueDate) : undefined,
@@ -242,9 +242,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(rental, { status: 201 });
+    return NextResponse.json(booking, { status: 201 });
   } catch (error: any) {
-    console.error("Error creating rental:", error);
+    console.error("Error creating booking:", error);
     if (error.name === "ZodError") {
       return NextResponse.json(
         { error: "Invalid input", details: error.errors },
@@ -252,7 +252,7 @@ export async function POST(request: NextRequest) {
       );
     }
     return NextResponse.json(
-      { error: "Failed to create rental" },
+      { error: "Failed to create booking" },
       { status: 500 }
     );
   }

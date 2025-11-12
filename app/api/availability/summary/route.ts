@@ -22,8 +22,8 @@ export async function GET(request: NextRequest) {
     const startDate = parseYmd(startStr);
     const endDate = parseYmd(endStr);
 
-    // Get all rentals that overlap with the date range
-    const rentals = await prisma.rental.findMany({
+    // Get all bookings that overlap with the date range
+    const bookings = await prisma.booking.findMany({
       where: {
         AND: [
           { startDate: { lte: endDate } },
@@ -43,16 +43,16 @@ export async function GET(request: NextRequest) {
     // Calculate reserved quantities per item
     const reservedByItem: Record<string, { itemId: string; name: string; reserved: number }> = {};
 
-    for (const rental of rentals) {
-      for (const rentalItem of rental.items) {
-        if (!reservedByItem[rentalItem.itemId]) {
-          reservedByItem[rentalItem.itemId] = {
-            itemId: rentalItem.itemId,
-            name: rentalItem.item.name,
+    for (const booking of bookings) {
+      for (const bookingItem of booking.items) {
+        if (!reservedByItem[bookingItem.itemId]) {
+          reservedByItem[bookingItem.itemId] = {
+            itemId: bookingItem.itemId,
+            name: bookingItem.item.name,
             reserved: 0,
           };
         }
-        reservedByItem[rentalItem.itemId].reserved += rentalItem.quantity;
+        reservedByItem[bookingItem.itemId].reserved += bookingItem.quantity;
       }
     }
 

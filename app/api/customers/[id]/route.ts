@@ -51,14 +51,14 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    // Check if customer has rentals
-    const customerRentals = await prisma.rental.count({
+    // Check if customer has bookings
+    const customerBookings = await prisma.rental.count({
       where: { customerId: id }
     });
 
-    if (customerRentals > 0) {
+    if (customerBookings > 0) {
       return NextResponse.json(
-        { error: `Cannot delete customer with ${customerRentals} existing rental${customerRentals > 1 ? 's' : ''}. Delete the rentals first.` },
+        { error: `Cannot delete customer with ${customerBookings} existing booking${customerBookings > 1 ? 's' : ''}. Delete the bookings first.` },
         { status: 400 }
       );
     }

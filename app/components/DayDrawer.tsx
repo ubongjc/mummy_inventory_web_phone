@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { X, Edit2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
-import EditRentalModal from "./EditRentalModal";
+import EditBookingModal from "./EditBookingModal";
 import { useSettings } from "@/app/hooks/useSettings";
 
 interface DayDrawerProps {
@@ -15,7 +15,7 @@ interface DayDrawerProps {
   onDataChange?: () => void;
 }
 
-interface RentalItem {
+interface BookingItem {
   id: string;
   itemId: string;
   quantity: number;
@@ -26,7 +26,7 @@ interface RentalItem {
   };
 }
 
-interface Rental {
+interface Booking {
   id: string;
   customerId: string;
   customer: {
@@ -45,7 +45,7 @@ interface Rental {
   totalPrice?: number;
   advancePayment?: number;
   paymentDueDate?: string;
-  items: RentalItem[];
+  items: BookingItem[];
   payments?: Array<{
     id: string;
     amount: number;
@@ -71,13 +71,13 @@ interface ItemAvailability {
 }
 
 export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDataChange }: DayDrawerProps) {
-  const [rentals, setRentals] = useState<Rental[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [itemAvailability, setItemAvailability] = useState<ItemAvailability[]>(
     []
   );
   const [loading, setLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedRental, setSelectedRental] = useState<Rental | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const { formatCurrency } = useSettings();
 
   // Format date without timezone conversion
@@ -126,18 +126,18 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
 
       const data = await response.json();
 
-      // Filter rentals by selected items
-      // If no items selected, show no rentals
-      let filteredRentals = data.rentals || [];
+      // Filter bookings by selected items
+      // If no items selected, show no bookings
+      let filteredBookings = data.bookings || [];
       if (selectedItemIds.length === 0) {
-        filteredRentals = [];
+        filteredBookings = [];
       } else {
-        filteredRentals = filteredRentals.filter((rental: Rental) =>
-          rental.items.some((item) => selectedItemIds.includes(item.itemId))
+        filteredBookings = filteredBookings.filter((booking: Booking) =>
+          booking.items.some((item) => selectedItemIds.includes(item.itemId))
         );
       }
 
-      setRentals(filteredRentals);
+      setBookings(filteredBookings);
       setItemAvailability(data.itemAvailability || []);
     } catch (error) {
       console.error("Error fetching day data:", error);
@@ -146,8 +146,8 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
     }
   };
 
-  const handleEditRental = (rental: Rental) => {
-    setSelectedRental(rental);
+  const handleEditBooking = (booking: Booking) => {
+    setSelectedBooking(booking);
     setIsEditModalOpen(true);
   };
 
@@ -155,9 +155,9 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
     fetchDayData(); // Refresh the data
   };
 
-  const handleUpdateRentalStatus = async (rentalId: string, newStatus: string) => {
+  const handleUpdateBookingStatus = async (bookingId: string, newStatus: string) => {
     try {
-      const response = await fetch(`/api/rentals/${rentalId}`, {
+      const response = await fetch(`/api/bookings/${bookingId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -166,20 +166,20 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update rental status");
+        throw new Error("Failed to update booking status");
       }
 
       // Refresh the data
       fetchDayData();
     } catch (error) {
-      console.error("Error updating rental status:", error);
-      alert("Failed to update rental status");
+      console.error("Error updating booking status:", error);
+      alert("Failed to update booking status");
     }
   };
 
-  const handleUpdateRentalColor = async (rentalId: string, newColor: string) => {
+  const handleUpdateBookingColor = async (bookingId: string, newColor: string) => {
     try {
-      const response = await fetch(`/api/rentals/${rentalId}`, {
+      const response = await fetch(`/api/bookings/${bookingId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -188,7 +188,7 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update rental color");
+        throw new Error("Failed to update booking color");
       }
 
       // Refresh the data
@@ -198,8 +198,8 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
         onDataChange();
       }
     } catch (error) {
-      console.error("Error updating rental color:", error);
-      alert("Failed to update rental color");
+      console.error("Error updating booking color:", error);
+      alert("Failed to update booking color");
     }
   };
 
@@ -250,65 +250,65 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
             </div>
           ) : (
             <>
-              {/* Rentals Section */}
+              {/* Bookings Section */}
               <div className="mb-8">
                 <h3 className="text-lg font-bold text-black mb-4">
-                  Active Rentals ({rentals.length})
+                  Active Bookings ({bookings.length})
                 </h3>
 
-                {rentals.length === 0 ? (
+                {bookings.length === 0 ? (
                   <p className="text-black text-sm font-semibold">
-                    No rentals for this date
+                    No bookings for this date
                   </p>
                 ) : (
                   <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
-                    {rentals.map((rental) => (
+                    {bookings.map((booking) => (
                       <div
-                        key={rental.id}
+                        key={booking.id}
                         className="border border-gray-300 rounded-lg p-2.5 hover:shadow-md hover:border-blue-400 transition-all bg-white relative overflow-hidden"
                       >
                         {/* Color indicator stripe */}
-                        {rental.color && (
+                        {booking.color && (
                           <div
                             className="absolute top-0 left-0 w-1 h-full"
-                            style={{ backgroundColor: rental.color }}
+                            style={{ backgroundColor: booking.color }}
                           />
                         )}
 
                         <div className="flex items-start justify-between mb-1.5 pl-2">
                           <div className="flex-1">
                             <h4 className="font-bold text-black text-sm mb-0.5">
-                              {rental.customer.firstName || rental.customer.name} {rental.customer.lastName || ""}
+                              {booking.customer.firstName || booking.customer.name} {booking.customer.lastName || ""}
                             </h4>
                             <div className="flex items-center gap-2 text-xs text-black font-medium">
                               <span>
-                                {formatDate(rental.startDate)} - {formatDate(rental.endDate)}
+                                {formatDate(booking.startDate)} - {formatDate(booking.endDate)}
                               </span>
-                              {rental.customer.phone && (
-                                <span className="text-gray-600">• {rental.customer.phone}</span>
+                              {booking.customer.phone && (
+                                <span className="text-gray-600">• {booking.customer.phone}</span>
                               )}
                             </div>
                           </div>
                           <div className="flex items-center gap-1.5 flex-shrink-0">
                             <input
                               type="color"
-                              value={rental.color || "#3b82f6"}
-                              onChange={(e) => handleUpdateRentalColor(rental.id, e.target.value)}
+                              value={booking.color || "#3b82f6"}
+                              onChange={(e) => handleUpdateBookingColor(booking.id, e.target.value)}
                               className="w-7 h-7 border border-gray-300 rounded cursor-pointer hover:border-blue-500 transition-colors"
-                              title="Change rental color"
+                              title="Change booking color"
                               onClick={(e) => e.stopPropagation()}
                             />
                             <button
-                              onClick={() => handleEditRental(rental)}
+                              onClick={() => handleEditBooking(booking)}
                               className="px-2 py-1 text-xs font-bold text-blue-600 hover:text-white hover:bg-blue-600 border border-blue-600 rounded transition-colors"
                             >
                               EDIT
                             </button>
                             <select
-                              value={rental.status}
-                              onChange={(e) => handleUpdateRentalStatus(rental.id, e.target.value)}
+                              value={booking.status}
+                              onChange={(e) => handleUpdateBookingStatus(booking.id, e.target.value)}
                               className={`px-2 py-1 rounded text-xs font-bold border cursor-pointer min-w-[100px] ${getStatusColor(
-                                rental.status
+                                booking.status
                               )}`}
                               onClick={(e) => e.stopPropagation()}
                             >
@@ -322,7 +322,7 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
                         </div>
 
                         <div className="bg-gray-50 rounded p-1.5 pl-3.5 text-xs">
-                          {rental.items.map((item, idx) => (
+                          {booking.items.map((item, idx) => (
                             <div
                               key={idx}
                               className="text-black font-semibold flex justify-between py-0.5"
@@ -336,26 +336,26 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
                         </div>
 
                         {/* Payment Information */}
-                        {rental.totalPrice && (
+                        {booking.totalPrice && (
                           <div className="mt-2 bg-purple-50 border border-purple-200 rounded p-1.5 pl-3.5 text-xs">
                             <div className="space-y-0.5">
                               <div className="flex justify-between text-black font-bold">
                                 <span>Total Amount:</span>
-                                <span className="text-purple-900">{formatCurrency(rental.totalPrice)}</span>
+                                <span className="text-purple-900">{formatCurrency(booking.totalPrice)}</span>
                               </div>
                               <div className="flex justify-between text-black font-bold">
                                 <span>Amount Due:</span>
                                 <span className="text-red-700">
                                   {formatCurrency(
-                                    rental.totalPrice -
-                                    (rental.advancePayment || 0) -
-                                    (rental.payments?.reduce((sum, p) => sum + p.amount, 0) || 0)
+                                    booking.totalPrice -
+                                    (booking.advancePayment || 0) -
+                                    (booking.payments?.reduce((sum, p) => sum + p.amount, 0) || 0)
                                   )}
                                 </span>
                               </div>
-                              {rental.paymentDueDate && (
+                              {booking.paymentDueDate && (
                                 <div className="text-gray-600 text-[10px] pt-0.5">
-                                  Due: {formatDate(rental.paymentDueDate, true)}
+                                  Due: {formatDate(booking.paymentDueDate, true)}
                                 </div>
                               )}
                             </div>
@@ -425,12 +425,12 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
         </div>
       </div>
 
-      {/* Edit Rental Modal */}
-      <EditRentalModal
+      {/* Edit Booking Modal */}
+      <EditBookingModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSuccess={handleEditSuccess}
-        rental={selectedRental}
+        booking={selectedBooking}
       />
     </>
   );

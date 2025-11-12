@@ -20,7 +20,7 @@ export default function CalendarVanilla({ onDateClick }: CalendarVanillaProps) {
       const endStr = end.toISOString().split("T")[0];
 
       const response = await fetch(
-        `/api/rentals?start=${startStr}&end=${endStr}`
+        `/api/bookings?start=${startStr}&end=${endStr}`
       );
 
       if (!response.ok) {

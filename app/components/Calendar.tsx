@@ -38,7 +38,7 @@ export default function Calendar({ onDateClick, selectedItemIds, onDateRangeChan
       }
 
       const response = await fetch(
-        `/api/rentals?start=${startStr}&end=${endStr}`
+        `/api/bookings?start=${startStr}&end=${endStr}`
       );
 
       if (!response.ok) {
@@ -53,8 +53,8 @@ export default function Calendar({ onDateClick, selectedItemIds, onDateRangeChan
         data = [];
       } else {
         data = data.filter((event: any) => {
-          // Check if the rental has any of the selected items
-          return event.rentalItemIds && event.rentalItemIds.some((itemId: string) =>
+          // Check if the booking has any of the selected items
+          return event.bookingItemIds && event.bookingItemIds.some((itemId: string) =>
             selectedItemIds.includes(itemId)
           );
         });

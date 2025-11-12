@@ -6,7 +6,7 @@ import Image from "next/image";
 import Calendar from "./components/Calendar";
 import DayDrawer from "./components/DayDrawer";
 import AddItemModal from "./components/AddItemModal";
-import AddRentalModal from "./components/AddRentalModal";
+import AddBookingModal from "./components/AddBookingModal";
 import CheckAvailabilityModal from "./components/CheckAvailabilityModal";
 import { CalendarDays, Package, Plus, Settings, Menu, X, Filter, CheckSquare, Square, Search } from "lucide-react";
 
@@ -26,7 +26,7 @@ export default function Home() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
-  const [isAddRentalModalOpen, setIsAddRentalModalOpen] = useState(false);
+  const [isAddBookingModalOpen, setIsAddBookingModalOpen] = useState(false);
   const [isCheckAvailabilityOpen, setIsCheckAvailabilityOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -105,7 +105,7 @@ export default function Home() {
     setRefreshKey((prev) => prev + 1);
   };
 
-  const handleRentalAdded = () => {
+  const handleBookingAdded = () => {
     setRefreshKey((prev) => prev + 1);
   };
 
@@ -160,7 +160,7 @@ export default function Home() {
 
               <button
                 onClick={() => {
-                  setIsAddRentalModalOpen(true);
+                  setIsAddBookingModalOpen(true);
                   setIsMenuOpen(false);
                 }}
                 className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 font-semibold shadow-lg transition-all"
@@ -170,7 +170,7 @@ export default function Home() {
               </button>
 
               <Link
-                href="/rentals"
+                href="/bookings"
                 onClick={() => setIsMenuOpen(false)}
                 className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl hover:from-purple-600 hover:to-pink-700 font-semibold shadow-lg transition-all"
               >
@@ -376,9 +376,9 @@ export default function Home() {
               </div>
               <div>
                 <h1 className="text-base md:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
-                  Ufonime Rental Inventory
+                  Ufonime Booking Inventory
                 </h1>
-                <p className="text-[10px] text-gray-600 font-medium hidden md:block">Manage your rentals with ease</p>
+                <p className="text-[10px] text-gray-600 font-medium hidden md:block">Manage your bookings with ease</p>
               </div>
             </div>
           </div>
@@ -423,10 +423,10 @@ export default function Home() {
         onClose={() => setIsAddItemModalOpen(false)}
         onSuccess={handleItemAdded}
       />
-      <AddRentalModal
-        isOpen={isAddRentalModalOpen}
-        onClose={() => setIsAddRentalModalOpen(false)}
-        onSuccess={handleRentalAdded}
+      <AddBookingModal
+        isOpen={isAddBookingModalOpen}
+        onClose={() => setIsAddBookingModalOpen(false)}
+        onSuccess={handleBookingAdded}
       />
       <CheckAvailabilityModal
         isOpen={isCheckAvailabilityOpen}

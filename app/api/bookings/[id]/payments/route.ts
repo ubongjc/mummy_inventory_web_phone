@@ -6,35 +6,35 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: rentalId } = await params;
+    const { id: bookingId } = await params;
     const body = await request.json();
 
-    // Validate rental exists
-    const rental = await prisma.rental.findUnique({
-      where: { id: rentalId },
+    // Validate booking exists
+    const booking = await prisma.rental.findUnique({
+      where: { id: bookingId },
       include: {
         payments: true,
       },
     });
 
-    if (!rental) {
+    if (!booking) {
       return NextResponse.json(
-        { error: "Rental not found" },
+        { error: "Booking not found" },
         { status: 404 }
       );
     }
 
     // Validate payment doesn't exceed total price
-    if (rental.totalPrice) {
-      const totalPaid = (rental.advancePayment || 0) +
-                        (rental.payments?.reduce((sum, p) => sum + p.amount, 0) || 0);
-      const remainingBalance = rental.totalPrice - totalPaid;
+    if (booking.totalPrice) {
+      const totalPaid = (booking.advancePayment || 0) +
+                        (booking.payments?.reduce((sum, p) => sum + p.amount, 0) || 0);
+      const remainingBalance = booking.totalPrice - totalPaid;
 
       if (body.amount > remainingBalance) {
         return NextResponse.json(
           {
             error: "Payment exceeds remaining balance",
-            totalPrice: rental.totalPrice,
+            totalPrice: booking.totalPrice,
             totalPaid,
             remainingBalance,
             attemptedPayment: body.amount
@@ -47,7 +47,7 @@ export async function POST(
     // Create payment
     const payment = await prisma.payment.create({
       data: {
-        rentalId,
+        rentalId: bookingId,
         amount: body.amount,
         paymentDate: body.paymentDate ? new Date(body.paymentDate) : new Date(),
         notes: body.notes,

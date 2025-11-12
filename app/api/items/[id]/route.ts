@@ -13,11 +13,11 @@ export async function PATCH(
 
     // If totalQuantity is being updated, check that it's not below current reservations
     if (validated.totalQuantity !== undefined) {
-      // Get current and future rentals using this item
+      // Get current and future bookings using this item
       const now = new Date();
       now.setHours(0, 0, 0, 0);
 
-      const overlappingRentals = await prisma.rental.findMany({
+      const overlappingBookings = await prisma.rental.findMany({
         where: {
           AND: [
             { endDate: { gte: now } },
@@ -31,11 +31,11 @@ export async function PATCH(
         },
       });
 
-      const maxReserved = overlappingRentals.reduce(
-        (max, rental) =>
+      const maxReserved = overlappingBookings.reduce(
+        (max, booking) =>
           Math.max(
             max,
-            rental.items.reduce((sum, item) => sum + item.quantity, 0)
+            booking.items.reduce((sum, item) => sum + item.quantity, 0)
           ),
         0
       );
@@ -43,7 +43,7 @@ export async function PATCH(
       if (validated.totalQuantity < maxReserved) {
         return NextResponse.json(
           {
-            error: `Cannot reduce total quantity to ${validated.totalQuantity}. Currently ${maxReserved} units are reserved in active/future rentals. Please cancel or modify those rentals first.`,
+            error: `Cannot reduce total quantity to ${validated.totalQuantity}. Currently ${maxReserved} units are reserved in active/future bookings. Please cancel or modify those bookings first.`,
             maxReserved,
             requestedQuantity: validated.totalQuantity,
           },
@@ -80,14 +80,14 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    // Check if item is used in any rentals
-    const itemRentals = await prisma.rentalItem.count({
+    // Check if item is used in any bookings
+    const itemBookings = await prisma.rentalItem.count({
       where: { itemId: id }
     });
 
-    if (itemRentals > 0) {
+    if (itemBookings > 0) {
       return NextResponse.json(
-        { error: `Cannot delete item that is used in ${itemRentals} rental${itemRentals > 1 ? 's' : ''}. Delete or modify the rentals first.` },
+        { error: `Cannot delete item that is used in ${itemBookings} booking${itemBookings > 1 ? 's' : ''}. Delete or modify the bookings first.` },
         { status: 400 }
       );
     }

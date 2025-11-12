@@ -1,5 +1,5 @@
-// Color palette for rentals
-const RENTAL_COLORS = [
+// Color palette for bookings
+const BOOKING_COLORS = [
   '#3b82f6', // blue
   '#8b5cf6', // violet
   '#ec4899', // pink
@@ -21,12 +21,12 @@ const RENTAL_COLORS = [
 /**
  * Get a random color from the palette
  */
-export function getRandomRentalColor(): string {
-  return RENTAL_COLORS[Math.floor(Math.random() * RENTAL_COLORS.length)];
+export function getRandomBookingColor(): string {
+  return BOOKING_COLORS[Math.floor(Math.random() * BOOKING_COLORS.length)];
 }
 
 /**
- * Get color for rental status (fallback if no custom color set)
+ * Get color for booking status (fallback if no custom color set)
  */
 export function getStatusColor(status: string): string {
   switch (status) {

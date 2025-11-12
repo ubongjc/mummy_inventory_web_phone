@@ -19,9 +19,9 @@ export async function GET(request: NextRequest) {
 
     console.log("Target date for day query:", dateStr, "->", targetDate.toISOString());
 
-    // Get all rentals that span this date (inclusive)
-    // A rental is active on targetDate if: startDate <= targetDate AND endDate >= targetDate
-    const rentals = await prisma.rental.findMany({
+    // Get all bookings that span this date (inclusive)
+    // A booking is active on targetDate if: startDate <= targetDate AND endDate >= targetDate
+    const bookings = await prisma.booking.findMany({
       where: {
         startDate: { lte: targetDate },
         endDate: { gte: targetDate },
@@ -41,29 +41,29 @@ export async function GET(request: NextRequest) {
       orderBy: { startDate: "asc" },
     });
 
-    console.log(`Found ${rentals.length} rentals for ${dateStr}`);
-    rentals.forEach(r => {
-      console.log(`  - Rental ${r.id}: ${r.startDate} to ${r.endDate} (${r.status})`);
+    console.log(`Found ${bookings.length} bookings for ${dateStr}`);
+    bookings.forEach(r => {
+      console.log(`  - Booking ${r.id}: ${r.startDate} to ${r.endDate} (${r.status})`);
     });
 
     // Get all items and calculate remaining for this date
     const items = await prisma.item.findMany({
       include: {
-        rentalItems: {
+        bookingItems: {
           include: {
-            rental: true,
+            booking: true,
           },
         },
       },
     });
 
     const itemAvailability = items.map((item) => {
-      const reserved = item.rentalItems
+      const reserved = item.bookingItems
         .filter(
           (ri) =>
-            new Date(ri.rental.startDate) <= targetDate &&
-            new Date(ri.rental.endDate) >= targetDate &&
-            (ri.rental.status === "CONFIRMED" || ri.rental.status === "OUT")
+            new Date(ri.booking.startDate) <= targetDate &&
+            new Date(ri.booking.endDate) >= targetDate &&
+            (ri.booking.status === "CONFIRMED" || ri.booking.status === "OUT")
         )
         .reduce((sum, ri) => sum + ri.quantity, 0);
 
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       date: dateStr,
-      rentals,
+      bookings,
       itemAvailability,
     });
   } catch (error) {
