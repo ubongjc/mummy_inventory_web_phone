@@ -98,6 +98,35 @@ export default function AddRentalModal({
 
   useEffect(() => {
     if (isOpen) {
+      // Reset all form fields when modal opens
+      setSelectedCustomerId("");
+      setNewCustomerFirstName("");
+      setNewCustomerLastName("");
+      setNewCustomerPhone("");
+      setNewCustomerEmail("");
+      setNewCustomerAddress("");
+      setStartDate("");
+      setEndDate("");
+      setRentalItems([{ itemId: "", quantity: "" }]);
+      setNotes("");
+      setTotalPrice("");
+      setAdvancePayment("");
+      setPaymentDueDate("");
+      setInitialPayments([]);
+      setNewPaymentAmount("");
+      setNewPaymentDate("");
+      setNewPaymentNotes("");
+      setError("");
+      setShowNewCustomer(false);
+      setManualTotalPrice(false);
+      setAvailabilityStatus({
+        isChecking: false,
+        allAvailable: false,
+        message: "",
+        itemStatuses: [],
+      });
+      setDateError("");
+
       fetchCustomers();
       fetchItems();
       // Auto-focus the first item dropdown after a brief delay to ensure it's rendered
