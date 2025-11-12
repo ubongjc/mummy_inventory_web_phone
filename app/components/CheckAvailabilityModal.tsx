@@ -362,72 +362,76 @@ export default function CheckAvailabilityModal({
               </label>
               <div className="space-y-2">
                 {bookingItems.map((bookingItem, index) => (
-                  <div key={index} className="flex gap-1 items-center">
-                    <select
-                      value={bookingItem.itemId}
-                      onChange={(e) => {
-                        // Prevent selecting the "Select" option
-                        if (e.target.value !== "") {
-                          updateBookingItem(index, "itemId", e.target.value);
-                        }
-                      }}
-                      className="w-[calc(100%-5.5rem)] px-1 py-1 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-xs truncate"
-                      required
-                    >
-                      <option value="" disabled>Select Item</option>
-                      {items
-                        .filter((item) =>
-                          // Show current item OR items not already selected in other rows
-                          item.id === bookingItem.itemId ||
-                          !bookingItems.some((ri, i) => i !== index && ri.itemId === item.id)
-                        )
-                        .map((item) => {
-                          const available = item.available ?? item.totalQuantity;
-                          const isOverbooked = available < 0;
-                          return (
-                            <option key={item.id} value={item.id} disabled={isOverbooked || available === 0}>
-                              {item.name} ({available} remaining{isOverbooked ? ' ⚠️ OVERBOOKED' : available === 0 ? ' - NONE AVAILABLE' : ''})
-                            </option>
-                          );
-                        })
-                      }
-                    </select>
-                    <input
-                      type="number"
-                      value={bookingItem.quantity}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        // Allow empty string while typing
-                        if (val === "") {
-                          updateBookingItem(index, "quantity", "");
-                        } else {
-                          const numVal = parseInt(val);
-                          // Prevent negative numbers and 0
-                          if (numVal > 0) {
-                            updateBookingItem(index, "quantity", numVal);
+                  <div key={index} className="grid grid-cols-[1fr_auto] gap-4 items-center">
+                    <div className="flex gap-1 items-center min-w-0">
+                      <select
+                        value={bookingItem.itemId}
+                        onChange={(e) => {
+                          // Prevent selecting the "Select" option
+                          if (e.target.value !== "") {
+                            updateBookingItem(index, "itemId", e.target.value);
                           }
-                        }
-                      }}
-                      onBlur={(e) => {
-                        // Set to 1 if empty on blur
-                        if (e.target.value === "" || parseInt(e.target.value) < 1) {
-                          updateBookingItem(index, "quantity", 1);
-                        }
-                      }}
-                      placeholder="Qty"
-                      className="w-14 flex-shrink-0 px-1 py-1 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-xs"
-                      min="1"
-                    />
-                    {bookingItems.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeBookingItem(index)}
-                        className="w-6 h-6 flex-shrink-0 flex items-center justify-center text-red-600 hover:text-white hover:bg-red-600 border border-red-600 rounded transition-colors"
-                        title="Remove item"
+                        }}
+                        className="flex-1 min-w-0 px-1 py-1 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-xs truncate"
+                        required
                       >
-                        <X className="w-3 h-3" />
-                      </button>
-                    )}
+                        <option value="" disabled>Select Item</option>
+                        {items
+                          .filter((item) =>
+                            // Show current item OR items not already selected in other rows
+                            item.id === bookingItem.itemId ||
+                            !bookingItems.some((ri, i) => i !== index && ri.itemId === item.id)
+                          )
+                          .map((item) => {
+                            const available = item.available ?? item.totalQuantity;
+                            const isOverbooked = available < 0;
+                            return (
+                              <option key={item.id} value={item.id} disabled={isOverbooked || available === 0}>
+                                {item.name} ({available} remaining{isOverbooked ? ' ⚠️ OVERBOOKED' : available === 0 ? ' - NONE AVAILABLE' : ''})
+                              </option>
+                            );
+                          })
+                        }
+                      </select>
+                      {bookingItems.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeBookingItem(index)}
+                          className="w-6 h-6 flex-shrink-0 flex items-center justify-center text-red-600 hover:text-white hover:bg-red-600 border border-red-600 rounded transition-colors"
+                          title="Remove item"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex justify-end">
+                      <input
+                        type="number"
+                        value={bookingItem.quantity}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          // Allow empty string while typing
+                          if (val === "") {
+                            updateBookingItem(index, "quantity", "");
+                          } else {
+                            const numVal = parseInt(val);
+                            // Prevent negative numbers and 0
+                            if (numVal > 0) {
+                              updateBookingItem(index, "quantity", numVal);
+                            }
+                          }
+                        }}
+                        onBlur={(e) => {
+                          // Set to 1 if empty on blur
+                          if (e.target.value === "" || parseInt(e.target.value) < 1) {
+                            updateBookingItem(index, "quantity", 1);
+                          }
+                        }}
+                        placeholder="Qty"
+                        className="w-20 px-1 py-1 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-xs"
+                        min="1"
+                      />
+                    </div>
                   </div>
                 ))}
                 {/* Check if all items are selected and last item is complete */}
