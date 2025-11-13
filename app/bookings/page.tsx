@@ -1194,7 +1194,7 @@ export default function BookingsPage() {
                                   {/* Amount and Date on same line */}
                                   <div className="grid grid-cols-2 gap-2">
                                     <div className="min-w-0">
-                                      <label className="block text-[9px] font-bold text-green-800 mb-1">AMOUNT ($)</label>
+                                      <label className="block text-[9px] font-bold text-green-800 mb-1">AMOUNT ({settings?.currencySymbol || "₦"})</label>
                                       <input
                                         type="number"
                                         value={paymentAmount}

@@ -157,6 +157,14 @@ export default function SettingsPage() {
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
               Back to Home Page
             </Link>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg sm:rounded-xl font-semibold transition-all duration-200 shadow-md sm:shadow-lg text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Save className="w-3 h-3 sm:w-4 sm:h-4" />
+              {saving ? "Saving..." : "Save"}
+            </button>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
