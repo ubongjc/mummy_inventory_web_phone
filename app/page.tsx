@@ -430,21 +430,18 @@ export default function Home() {
                   <img
                     src={userProfile.logoUrl}
                     alt="Company Logo"
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-contain bg-white"
                   />
                 ) : (
-                  <Image
-                    src="/logo.jpeg"
-                    alt="Default Logo"
-                    fill
-                    className="object-cover"
-                  />
+                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <Package className="w-6 h-6 text-white" />
+                  </div>
                 )}
               </div>
               <div>
-                <p className="text-xs md:text-sm font-bold text-gray-800">
-                  Hi {userProfile?.businessName || "there"},
-                </p>
+                <h2 className="text-sm md:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Hi {userProfile?.businessName || "there"}!
+                </h2>
                 <p className="text-[10px] md:text-xs text-gray-600 font-medium">
                   Manage your bookings with ease
                 </p>
