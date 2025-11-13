@@ -117,6 +117,8 @@ model User {
   role              String        @default("user") @db.VarChar(20) // 'user' | 'admin'
   firstName         String?       @db.VarChar(50)
   lastName          String?       @db.VarChar(50)
+  businessName      String?       @db.VarChar(100) // Personalized business name for each user
+  logoUrl           String?       @db.VarChar(500) // URL to user's custom logo
   emailVerified     Boolean       @default(false)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt

@@ -22,6 +22,16 @@ interface ItemReservation {
   reserved: number;
 }
 
+interface UserProfile {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  businessName: string | null;
+  logoUrl: string | null;
+  role: string;
+}
+
 export default function Home() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -37,10 +47,12 @@ export default function Home() {
   const [itemSortBy, setItemSortBy] = useState<"name-asc" | "name-desc" | "quantity-desc" | "quantity-asc" | "unit">("name-asc");
   const [itemReservations, setItemReservations] = useState<Map<string, number>>(new Map());
   const [calendarDateRange, setCalendarDateRange] = useState<{ start: string; end: string } | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
-  // Fetch items on mount
+  // Fetch items and user profile on mount
   useEffect(() => {
     fetchItems();
+    fetchUserProfile();
   }, [refreshKey]);
 
   const fetchItems = async () => {
@@ -52,6 +64,18 @@ export default function Home() {
       setSelectedItemIds(data.map((item: Item) => item.id));
     } catch (error) {
       console.error("Error fetching items:", error);
+    }
+  };
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch("/api/user/profile");
+      if (response.ok) {
+        const data = await response.json();
+        setUserProfile(data);
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
     }
   };
 
@@ -195,6 +219,11 @@ export default function Home() {
                 <Settings className="w-5 h-5" />
                 Settings
               </Link>
+
+              {/* Separator */}
+              <div className="py-2">
+                <div className="border-t border-gray-300"></div>
+              </div>
 
               <Link
                 href="/premium"
@@ -376,18 +405,28 @@ export default function Home() {
               </div>
 
               <div className="relative w-10 h-10 rounded-xl shadow-lg overflow-hidden">
-                <Image
-                  src="/logo.jpeg"
-                  alt="Ufonime Logo"
-                  fill
-                  className="object-cover"
-                />
+                {userProfile?.logoUrl ? (
+                  <img
+                    src={userProfile.logoUrl}
+                    alt="Company Logo"
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <Image
+                    src="/logo.jpeg"
+                    alt="Default Logo"
+                    fill
+                    className="object-cover"
+                  />
+                )}
               </div>
               <div>
                 <h1 className="text-base md:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
-                  Ufonime Booking Inventory
+                  Very Simple Inventory
                 </h1>
-                <p className="text-[10px] text-gray-600 font-medium hidden md:block">Manage your bookings with ease</p>
+                <p className="text-[10px] text-gray-600 font-medium hidden md:block">
+                  Hi {userProfile?.businessName || "there"}, Manage your bookings with ease
+                </p>
               </div>
             </div>
           </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Settings as SettingsIcon, Save, Building2, DollarSign, Globe, Calendar, AlertTriangle, ArrowLeft, Home, Package, CalendarDays } from "lucide-react";
+import { Settings as SettingsIcon, Save, Building2, DollarSign, Globe, Calendar, AlertTriangle, ArrowLeft, Home, Package, CalendarDays, Image as ImageIcon, User } from "lucide-react";
 
 interface Settings {
   id: string;
@@ -18,6 +18,16 @@ interface Settings {
   dateFormat: string;
   timezone: string;
   updatedAt: string;
+}
+
+interface UserProfile {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  businessName: string | null;
+  logoUrl: string | null;
+  role: string;
 }
 
 const CURRENCY_OPTIONS = [
@@ -61,12 +71,15 @@ const TIMEZONE_OPTIONS = [
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
     fetchSettings();
+    fetchUserProfile();
   }, []);
 
   const fetchSettings = async () => {
@@ -80,6 +93,18 @@ export default function SettingsPage() {
       setMessage({ type: "error", text: "Failed to load settings" });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch("/api/user/profile");
+      if (response.ok) {
+        const data = await response.json();
+        setUserProfile(data);
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
     }
   };
 
@@ -125,6 +150,45 @@ export default function SettingsPage() {
         currency: currency.code,
         currencySymbol: currency.symbol,
       });
+    }
+  };
+
+  const updateProfile = <K extends keyof UserProfile>(key: K, value: UserProfile[K]) => {
+    if (!userProfile) return;
+    setUserProfile({ ...userProfile, [key]: value });
+  };
+
+  const handleSaveProfile = async () => {
+    if (!userProfile) return;
+
+    setSavingProfile(true);
+    setMessage(null);
+
+    try {
+      const response = await fetch("/api/user/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessName: userProfile.businessName,
+          logoUrl: userProfile.logoUrl,
+          firstName: userProfile.firstName,
+          lastName: userProfile.lastName,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to save profile");
+
+      const updatedProfile = await response.json();
+      setUserProfile(updatedProfile);
+      setMessage({ type: "success", text: "Business branding saved successfully!" });
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      setMessage({ type: "error", text: "Failed to save business branding" });
+    } finally {
+      setSavingProfile(false);
     }
   };
 
@@ -188,6 +252,85 @@ export default function SettingsPage() {
             }`}
           >
             {message.text}
+          </div>
+        )}
+
+        {/* Business Branding (Personal Settings) */}
+        {userProfile && (
+          <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl shadow-xl p-6 mb-6 border-2 border-blue-300">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <User className="w-6 h-6 text-blue-600" />
+                <h2 className="text-xl font-bold text-black">Business Branding</h2>
+              </div>
+              <button
+                onClick={handleSaveProfile}
+                disabled={savingProfile}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Save className="w-4 h-4" />
+                {savingProfile ? "Saving..." : "Save Branding"}
+              </button>
+            </div>
+
+            <div className="bg-white rounded-xl p-4 space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-black mb-2">
+                  Your Business Name
+                </label>
+                <input
+                  type="text"
+                  value={userProfile.businessName || ""}
+                  onChange={(e) => updateProfile("businessName", e.target.value || null)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium"
+                  placeholder="Enter your business name (e.g., Acme Rentals)"
+                  maxLength={100}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  This name will appear throughout the app and make it feel personalized to your business
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-black mb-2">
+                  Company Logo URL <span className="flex items-center gap-1"><ImageIcon className="w-4 h-4" /></span>
+                </label>
+                <input
+                  type="url"
+                  value={userProfile.logoUrl || ""}
+                  onChange={(e) => updateProfile("logoUrl", e.target.value || null)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium"
+                  placeholder="https://example.com/your-logo.png"
+                  maxLength={500}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Paste the URL of your company logo. It will be displayed on the home page and throughout the app.
+                </p>
+              </div>
+
+              {/* Logo Preview */}
+              {userProfile.logoUrl && (
+                <div>
+                  <label className="block text-sm font-bold text-black mb-2">Logo Preview</label>
+                  <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <img
+                      src={userProfile.logoUrl}
+                      alt="Company Logo"
+                      className="w-16 h-16 object-contain rounded-lg bg-white p-2 border border-gray-300"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                    <div>
+                      <p className="text-sm font-semibold text-black">
+                        {userProfile.businessName || "Your Business"}
+                      </p>
+                      <p className="text-xs text-gray-500">This is how your logo will appear</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
