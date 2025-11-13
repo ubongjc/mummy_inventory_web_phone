@@ -8,7 +8,7 @@ import DayDrawer from "./components/DayDrawer";
 import AddItemModal from "./components/AddItemModal";
 import AddBookingModal from "./components/AddBookingModal";
 import CheckAvailabilityModal from "./components/CheckAvailabilityModal";
-import { CalendarDays, Package, Plus, Settings, Menu, X, Filter, CheckSquare, Square, Search, Sparkles } from "lucide-react";
+import { CalendarDays, Package, Plus, Settings, Menu, X, Filter, CheckSquare, Square, Search, Star } from "lucide-react";
 
 interface Item {
   id: string;
@@ -230,7 +230,7 @@ export default function Home() {
                 onClick={() => setIsMenuOpen(false)}
                 className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-yellow-500 to-amber-600 text-white rounded-xl hover:from-yellow-600 hover:to-amber-700 font-semibold shadow-lg transition-all"
               >
-                <Sparkles className="w-5 h-5" />
+                <Star className="w-5 h-5 fill-yellow-300" />
                 Premium Features
               </Link>
             </div>
@@ -404,7 +404,7 @@ export default function Home() {
                 </button>
               </div>
 
-              <div className="relative w-10 h-10 rounded-xl shadow-lg overflow-hidden">
+              <div className="relative w-10 h-10 rounded-xl shadow-lg overflow-hidden flex-shrink-0">
                 {userProfile?.logoUrl ? (
                   <img
                     src={userProfile.logoUrl}
@@ -421,14 +421,26 @@ export default function Home() {
                 )}
               </div>
               <div>
-                <h1 className="text-base md:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
-                  Very Simple Inventory
-                </h1>
-                <p className="text-[10px] text-gray-600 font-medium hidden md:block">
-                  Hi {userProfile?.businessName || "there"}, Manage your bookings with ease
+                <p className="text-xs md:text-sm font-bold text-gray-800">
+                  Hi {userProfile?.businessName || "there"},
+                </p>
+                <p className="text-[10px] md:text-xs text-gray-600 font-medium">
+                  Manage your bookings with ease
                 </p>
               </div>
             </div>
+
+            {/* Right side - App Title with Premium Link */}
+            <Link
+              href="/premium"
+              className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+              title="Premium Features"
+            >
+              <h1 className="text-sm md:text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
+                Very Simple Inventory
+              </h1>
+              <Star className="w-4 h-4 md:w-5 md:h-5 text-yellow-500 fill-yellow-400 flex-shrink-0" />
+            </Link>
           </div>
           {/* Check Availability Button */}
           <div className="mt-2">
