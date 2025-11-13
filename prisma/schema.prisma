@@ -108,3 +108,86 @@ model Settings {
   timezone              String   @default("UTC") @db.VarChar(64) // IANA timezone
   updatedAt             DateTime @updatedAt
 }
+
+// Authentication & Premium Features
+model User {
+  id                String        @id @default(cuid())
+  email             String        @unique @db.VarChar(254)
+  passwordHash      String
+  role              String        @default("user") @db.VarChar(20) // 'user' | 'admin'
+  firstName         String?       @db.VarChar(50)
+  lastName          String?       @db.VarChar(50)
+  emailVerified     Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  subscription      Subscription?
+  publicPage        PublicPage?
+  passwordResets    PasswordReset[]
+
+  @@index([email])
+}
+
+model Subscription {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  plan              String   @default("free") @db.VarChar(20) // 'free' | 'pro' | 'business'
+  status            String   @default("active") @db.VarChar(20) // 'active' | 'trialing' | 'past_due' | 'canceled'
+  currentPeriodEnd  DateTime?
+  stripeCustomerId  String?  @unique @db.VarChar(100)
+  stripeSubId       String?  @unique @db.VarChar(100)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PublicPage {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  slug            String   @unique @db.VarChar(100)
+  title           String   @db.VarChar(100)
+  phonePublic     String?  @db.VarChar(15)
+  emailPublic     String?  @db.VarChar(254)
+  itemsJson       Json     // Array of {itemId, displayName}
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  inquiries       PublicInquiry[]
+
+  @@index([slug])
+}
+
+model PublicInquiry {
+  id              String   @id @default(cuid())
+  publicPageId    String
+  name            String   @db.VarChar(100)
+  phone           String?  @db.VarChar(15)
+  email           String?  @db.VarChar(254)
+  message         String?  @db.Text
+  startDate       DateTime
+  endDate         DateTime
+  status          String   @default("new") @db.VarChar(20) // 'new' | 'contacted' | 'converted' | 'archived'
+  createdAt       DateTime @default(now())
+
+  page            PublicPage @relation(fields: [publicPageId], references: [id], onDelete: Cascade)
+
+  @@index([publicPageId])
+  @@index([createdAt])
+}
+
+model PasswordReset {
+  id              String   @id @default(cuid())
+  userId          String
+  token           String   @unique @db.VarChar(100)
+  expiresAt       DateTime
+  used            Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}

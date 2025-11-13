@@ -8,7 +8,7 @@ import DayDrawer from "./components/DayDrawer";
 import AddItemModal from "./components/AddItemModal";
 import AddBookingModal from "./components/AddBookingModal";
 import CheckAvailabilityModal from "./components/CheckAvailabilityModal";
-import { CalendarDays, Package, Plus, Settings, Menu, X, Filter, CheckSquare, Square, Search } from "lucide-react";
+import { CalendarDays, Package, Plus, Settings, Menu, X, Filter, CheckSquare, Square, Search, Sparkles } from "lucide-react";
 
 interface Item {
   id: string;
@@ -194,6 +194,15 @@ export default function Home() {
               >
                 <Settings className="w-5 h-5" />
                 Settings
+              </Link>
+
+              <Link
+                href="/premium"
+                onClick={() => setIsMenuOpen(false)}
+                className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-yellow-500 to-amber-600 text-white rounded-xl hover:from-yellow-600 hover:to-amber-700 font-semibold shadow-lg transition-all"
+              >
+                <Sparkles className="w-5 h-5" />
+                Premium Features
               </Link>
             </div>
           </nav>
