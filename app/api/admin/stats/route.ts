@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/lib/auth.config";
 import { prisma } from "@/app/lib/prisma";
 import { isAdmin } from "@/app/lib/auth";
+import { secureLog } from "@/app/lib/security";
 
 export async function GET(request: NextRequest) {
   try {
@@ -75,8 +76,8 @@ export async function GET(request: NextRequest) {
         newThisMonth: newInquiries,
       },
     });
-  } catch (error) {
-    console.error("Error fetching admin stats:", error);
+  } catch (error: any) {
+    secureLog("[ERROR] Failed to fetch admin stats", { error: error.message });
     return NextResponse.json(
       { error: "Failed to fetch statistics" },
       { status: 500 }
