@@ -13,7 +13,7 @@ import {
 export const createItemSchema = z.object({
   name: z.string()
     .min(2, "Item name must be at least 2 characters")
-    .max(80, "Item name must be 80 characters or less")
+    .max(50, "Item name must be 50 characters or less")
     .transform(normalizeItemName),
   unit: z.string()
     .min(2, "Unit must be at least 2 characters")

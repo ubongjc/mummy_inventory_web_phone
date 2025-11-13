@@ -1062,10 +1062,10 @@ export default function BookingsPage() {
                         </div>
                       </div>
                       {/* Item summary - always visible */}
-                      <div className="mt-1 ml-5 text-[10px] text-gray-700 font-medium">
+                      <div className="mt-1 ml-5 text-[10px] text-gray-700 font-medium break-words">
                         {booking.items.map((item, idx) => (
-                          <span key={item.id}>
-                            {item.item.name} ×{item.quantity}
+                          <span key={item.id} className="inline-block">
+                            <span className="break-all">{item.item.name}</span> ×{item.quantity}
                             {idx < booking.items.length - 1 && ", "}
                           </span>
                         ))}
@@ -1099,12 +1099,12 @@ export default function BookingsPage() {
                             {booking.items.map((item) => (
                               <div
                                 key={item.id}
-                                className="bg-gray-50 rounded p-1.5 border border-gray-200 flex items-center justify-between"
+                                className="bg-gray-50 rounded p-1.5 border border-gray-200 flex items-center justify-between gap-2"
                               >
-                                <span className="font-bold text-black text-[10px]">
+                                <span className="font-bold text-black text-[10px] break-words flex-1 min-w-0">
                                   {item.item.name}
                                 </span>
-                                <span className="text-[10px] font-bold text-purple-600">
+                                <span className="text-[10px] font-bold text-purple-600 whitespace-nowrap flex-shrink-0">
                                   {item.quantity} {item.item.unit}
                                 </span>
                               </div>

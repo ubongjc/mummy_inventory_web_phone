@@ -474,6 +474,7 @@ export default function InventoryPage() {
                 </select>
               </div>
             </div>
+            <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -509,6 +510,7 @@ export default function InventoryPage() {
                             onChange={(e) =>
                               setEditData({ ...editData, name: e.target.value })
                             }
+                            maxLength={50}
                             className="w-full px-1 py-0.5 border border-gray-400 rounded text-black font-semibold text-[10px]"
                           />
                         </td>
@@ -598,14 +600,16 @@ export default function InventoryPage() {
                       </>
                     ) : (
                       <>
-                        <td className="px-2 py-1 font-bold text-black text-[10px]">{item.name}</td>
+                        <td className="px-2 py-1 font-bold text-black text-[10px] max-w-[150px]">
+                          <div className="truncate" title={item.name}>{item.name}</div>
+                        </td>
                         <td className="px-2 py-1 font-semibold text-black text-[10px]">{item.unit}</td>
                         <td className="px-2 py-1 font-semibold text-black text-[10px]">{item.totalQuantity}</td>
                         <td className="px-2 py-1 font-semibold text-green-700 text-[10px]">
                           {item.price ? formatCurrency(item.price) : "-"}
                         </td>
-                        <td className="px-2 py-1 text-black text-[9px] font-medium">
-                          {item.notes || "-"}
+                        <td className="px-2 py-1 text-black text-[9px] font-medium max-w-[120px]">
+                          <div className="truncate" title={item.notes || ""}>{item.notes || "-"}</div>
                         </td>
                         <td className="px-2 py-1 text-right space-x-1">
                           <button
@@ -627,6 +631,7 @@ export default function InventoryPage() {
                 ))}
               </tbody>
             </table>
+            </div>
             {getFilteredAndSortedItems().length === 0 && (
               <div className="text-center py-6 text-black font-semibold text-xs">
                 {items.length === 0

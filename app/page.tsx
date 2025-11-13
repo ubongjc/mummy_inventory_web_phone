@@ -320,11 +320,11 @@ export default function Home() {
                         ) : (
                           <Square className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                         )}
-                        <div className="flex-1 text-left">
-                          <div className="font-bold text-black text-[10px] leading-tight">
-                            {item.name}
+                        <div className="flex-1 text-left min-w-0">
+                          <div className="font-bold text-black text-[10px] leading-tight break-words">
+                            <span className="break-all">{item.name}</span>
                             {itemReservations.has(item.id) && itemReservations.get(item.id)! > 0 && (
-                              <span className="text-orange-600 ml-1">
+                              <span className="text-orange-600 ml-1 whitespace-normal">
                                 ({itemReservations.get(item.id)} currently booked)
                               </span>
                             )}

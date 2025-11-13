@@ -10,7 +10,7 @@ datasource db {
 
 model Item {
   id             String    @id @default(cuid())
-  name           String    @db.VarChar(80)
+  name           String    @db.VarChar(50)
   unit           String    @db.VarChar(16) // "pcs" etc. - letters only
   totalQuantity  Int       // authoritative stock count (0-100000)
   price          Decimal?  @db.Decimal(12, 2) // default booking price per unit
