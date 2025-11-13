@@ -46,9 +46,9 @@ export async function GET(request: NextRequest) {
 
     // Format for FullCalendar if start and end are provided
     if (start && end) {
-      const events = bookings.map((booking) => {
+      const events = bookings.map((booking: any) => {
         const itemsSummary = booking.items
-          .map((ri) => `${ri.item.name} ×${ri.quantity}`)
+          .map((ri: any) => `${ri.item.name} ×${ri.quantity}`)
           .join(", ");
 
         // Use dateUtils helpers for consistent UTC date handling
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
           allDay: true,
           backgroundColor: bgColor,
           borderColor: borderColor,
-          bookingItemIds: booking.items.map(ri => ri.itemId),
+          bookingItemIds: booking.items.map((ri: any) => ri.itemId),
           extendedProps: {
             customerId: booking.customerId,
             customerName: customerFullName,
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(bookings);
-  } catch (error) {
+  } catch (error: any) {
     secureLog("[ERROR] Failed to fetch bookings", { error: error.message });
     return NextResponse.json(
       { error: "Failed to fetch bookings" },
@@ -143,13 +143,13 @@ export async function POST(request: NextRequest) {
 
       while (currentDate <= endDateCheck) {
         // Calculate reserved quantity on this specific day
-        const reservedOnDay = overlappingBookings.reduce((sum, booking) => {
+        const reservedOnDay = overlappingBookings.reduce((sum: number, booking: any) => {
           const bookingStart = new Date(booking.startDate);
           const bookingEnd = new Date(booking.endDate);
 
           // Check if this booking overlaps with current day
           if (currentDate >= bookingStart && currentDate <= bookingEnd) {
-            return sum + booking.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
+            return sum + booking.items.reduce((itemSum: number, item: any) => itemSum + item.quantity, 0);
           }
           return sum;
         }, 0);

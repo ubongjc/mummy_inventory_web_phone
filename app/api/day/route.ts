@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { toUTCMidnight } from "@/app/lib/dates";
+import { secureLog } from "@/app/lib/security";
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,8 +17,6 @@ export async function GET(request: NextRequest) {
 
     // Parse the date string directly as YYYY-MM-DD at UTC midnight
     const targetDate = new Date(dateStr + "T00:00:00.000Z");
-
-    console.log("Target date for day query:", dateStr, "->", targetDate.toISOString());
 
     // Get all bookings that span this date (inclusive)
     // A booking is active on targetDate if: startDate <= targetDate AND endDate >= targetDate
@@ -41,11 +40,6 @@ export async function GET(request: NextRequest) {
       orderBy: { startDate: "asc" },
     });
 
-    console.log(`Found ${bookings.length} bookings for ${dateStr}`);
-    bookings.forEach(r => {
-      console.log(`  - Booking ${r.id}: ${r.startDate} to ${r.endDate} (${r.status})`);
-    });
-
     // Get all items and calculate remaining for this date
     const items = await prisma.item.findMany({
       include: {
@@ -57,15 +51,15 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const itemAvailability = items.map((item) => {
+    const itemAvailability = items.map((item: any) => {
       const reserved = item.bookingItems
         .filter(
-          (ri) =>
+          (ri: any) =>
             new Date(ri.booking.startDate) <= targetDate &&
             new Date(ri.booking.endDate) >= targetDate &&
             (ri.booking.status === "CONFIRMED" || ri.booking.status === "OUT")
         )
-        .reduce((sum, ri) => sum + ri.quantity, 0);
+        .reduce((sum: number, ri: any) => sum + ri.quantity, 0);
 
       return {
         id: item.id,
@@ -82,8 +76,8 @@ export async function GET(request: NextRequest) {
       bookings,
       itemAvailability,
     });
-  } catch (error) {
-    console.error("Error fetching day data:", error);
+  } catch (error: any) {
+    secureLog("[ERROR] Failed to fetch day data", { error: error.message });
     return NextResponse.json(
       { error: "Failed to fetch day data" },
       { status: 500 }

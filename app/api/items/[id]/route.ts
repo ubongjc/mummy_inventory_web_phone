@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { updateItemSchema } from "@/app/lib/validation";
+import { secureLog } from "@/app/lib/security";
 
 export async function PATCH(
   request: NextRequest,
@@ -32,10 +33,10 @@ export async function PATCH(
       });
 
       const maxReserved = overlappingBookings.reduce(
-        (max, booking) =>
+        (max: number, booking: any) =>
           Math.max(
             max,
-            booking.items.reduce((sum, item) => sum + item.quantity, 0)
+            booking.items.reduce((sum: number, item: any) => sum + item.quantity, 0)
           ),
         0
       );
@@ -59,7 +60,7 @@ export async function PATCH(
 
     return NextResponse.json(item);
   } catch (error: any) {
-    console.error("Error updating item:", error);
+    secureLog("[ERROR] Failed to update item", { error: error.message });
     if (error.name === "ZodError") {
       return NextResponse.json(
         { error: "Invalid input", details: error.errors },
@@ -98,7 +99,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error("Error deleting item:", error);
+    secureLog("[ERROR] Failed to delete item", { error: error.message });
     if (error.code === 'P2025') {
       return NextResponse.json(
         { error: "Item not found" },

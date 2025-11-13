@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import { secureLog } from "@/app/lib/security";
 
 export async function POST(
   request: NextRequest,
@@ -28,7 +29,7 @@ export async function POST(
     if (booking.totalPrice) {
       const totalPriceNum = Number(booking.totalPrice);
       const advancePaymentNum = booking.advancePayment ? Number(booking.advancePayment) : 0;
-      const paymentsTotal = booking.payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
+      const paymentsTotal = booking.payments?.reduce((sum: number, p: any) => sum + Number(p.amount), 0) || 0;
       const totalPaid = advancePaymentNum + paymentsTotal;
       const remainingBalance = totalPriceNum - totalPaid;
 
@@ -58,7 +59,7 @@ export async function POST(
 
     return NextResponse.json(payment, { status: 201 });
   } catch (error: any) {
-    console.error("Error creating payment:", error);
+    secureLog("[ERROR] Failed to create payment", { error: error.message });
     return NextResponse.json(
       { error: "Failed to create payment" },
       { status: 500 }

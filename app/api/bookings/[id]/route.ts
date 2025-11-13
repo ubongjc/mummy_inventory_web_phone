@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { toUTCMidnight } from "@/app/lib/dates";
+import { secureLog } from "@/app/lib/security";
 
 export async function DELETE(
   request: NextRequest,
@@ -16,7 +17,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error("Error deleting booking:", error);
+    secureLog("[ERROR] Failed to delete booking", { error: error.message });
     if (error.code === 'P2025') {
       return NextResponse.json(
         { error: "Booking not found" },
@@ -61,7 +62,7 @@ export async function PATCH(
 
     return NextResponse.json(booking);
   } catch (error: any) {
-    console.error("Error updating booking:", error);
+    secureLog("[ERROR] Failed to update booking (PATCH)", { error: error.message });
     return NextResponse.json(
       { error: "Failed to update booking" },
       { status: 500 }
@@ -118,13 +119,13 @@ export async function PUT(
 
       while (currentDate <= endDateCheck) {
         // Calculate reserved quantity on this specific day
-        const reservedOnDay = overlappingBookings.reduce((sum, booking) => {
+        const reservedOnDay = overlappingBookings.reduce((sum: number, booking: any) => {
           const bookingStart = new Date(booking.startDate);
           const bookingEnd = new Date(booking.endDate);
 
           // Check if this booking overlaps with current day
           if (currentDate >= bookingStart && currentDate <= bookingEnd) {
-            return sum + booking.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
+            return sum + booking.items.reduce((itemSum: number, item: any) => itemSum + item.quantity, 0);
           }
           return sum;
         }, 0);
@@ -190,7 +191,7 @@ export async function PUT(
 
     return NextResponse.json(booking);
   } catch (error: any) {
-    console.error("Error updating booking:", error);
+    secureLog("[ERROR] Failed to update booking (PUT)", { error: error.message });
     return NextResponse.json(
       { error: "Failed to update booking" },
       { status: 500 }
