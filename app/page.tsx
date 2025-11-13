@@ -55,6 +55,20 @@ export default function Home() {
     fetchUserProfile();
   }, [refreshKey]);
 
+  // Refresh user profile when page becomes visible (e.g., navigating back from settings)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchUserProfile();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   const fetchItems = async () => {
     try {
       const response = await fetch("/api/items");
@@ -69,10 +83,17 @@ export default function Home() {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await fetch("/api/user/profile");
+      const response = await fetch("/api/user/profile", {
+        cache: 'no-store', // Prevent caching to always get fresh data
+      });
       if (response.ok) {
         const data = await response.json();
         setUserProfile(data);
+        console.log("User profile loaded:", data.businessName || "No business name set");
+      } else if (response.status === 401) {
+        console.log("User not authenticated - personalization features unavailable");
+      } else {
+        console.error("Failed to fetch user profile:", response.status);
       }
     } catch (error) {
       console.error("Error fetching user profile:", error);
