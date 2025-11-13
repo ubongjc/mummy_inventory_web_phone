@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./styles/globals.css";
-import { SessionProvider } from "./components/SessionProvider";
+import { Providers } from "./components/Providers";
 
 export const metadata: Metadata = {
   title: "Rental Inventory Management - Track Bookings & Inventory",
@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <SessionProvider>{children}</SessionProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

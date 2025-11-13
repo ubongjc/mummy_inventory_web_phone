@@ -4,6 +4,7 @@ import { createBookingSchema } from "@/app/lib/validation";
 import { toUTCMidnight, addOneDay, formatDateISO } from "@/app/lib/dates";
 import { getRandomBookingColor } from "@/app/lib/colors";
 import { toUtcDateOnly, toYmd, addDays } from "@/app/lib/dateUtils";
+import { secureLog } from "@/app/lib/security";
 import dayjs from "dayjs";
 
 export async function GET(request: NextRequest) {
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
         const customerFirstName = booking.customer.firstName || booking.customer.name;
         const customerFullName = `${booking.customer.firstName || booking.customer.name} ${booking.customer.lastName || ""}`.trim();
 
-        console.log(`[Calendar] Booking ${booking.id.substring(0, 8)}: "${customerFullName}" DB: ${booking.startDate.toISOString().split('T')[0]} to ${booking.endDate.toISOString().split('T')[0]}, Calendar: ${startDate} to ${endDate}, Color: ${(booking as any).color} → ${bgColor}`);
+        // Logging removed - contains customer PII
 
         return {
           id: booking.id,
@@ -83,17 +84,13 @@ export async function GET(request: NextRequest) {
         };
       });
 
-      console.log(`[Calendar] Returning ${events.length} events for ${start} to ${end}`);
-      if (events.length > 0) {
-        const sample = events[0];
-        console.log('[Calendar] Sample event - id:', sample.id, 'start:', sample.start, 'end:', sample.end, 'allDay:', sample.allDay);
-      }
+      // Events returned successfully
       return NextResponse.json(events);
     }
 
     return NextResponse.json(bookings);
   } catch (error) {
-    console.error("Error fetching bookings:", error);
+    secureLog("[ERROR] Failed to fetch bookings", { error: error.message });
     return NextResponse.json(
       { error: "Failed to fetch bookings" },
       { status: 500 }
@@ -104,15 +101,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log('[API] Received booking data:', JSON.stringify(body, null, 2));
     const validated = createBookingSchema.parse(body);
-    console.log('[API] Validated initial payments:', validated.initialPayments);
 
     const startDate = toUTCMidnight(validated.startDate);
     const endDate = toUTCMidnight(validated.endDate);
-
-    console.log('[CREATE BOOKING] Input dates:', validated.startDate, 'to', validated.endDate);
-    console.log('[CREATE BOOKING] Parsed to UTC:', startDate.toISOString(), 'to', endDate.toISOString());
 
     // Check availability for each item
     for (const bookingItem of validated.items) {
@@ -244,7 +236,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(booking, { status: 201 });
   } catch (error: any) {
-    console.error("Error creating booking:", error);
+    secureLog("[ERROR] Failed to create booking", { error: error.message });
     if (error.name === "ZodError") {
       return NextResponse.json(
         { error: "Invalid input", details: error.errors },
