@@ -76,10 +76,35 @@ export async function POST(request: NextRequest) {
       errors: [] as string[]
     };
 
+    // Get or create a user for the seed data
+    // For now, we'll use the first user or create a test user
+    let user = await prisma.user.findFirst();
+
+    if (!user) {
+      // Create a test user if none exists
+      const bcrypt = await import('bcrypt');
+      const hashedPassword = await bcrypt.hash('testpassword123', 10);
+
+      user = await prisma.user.create({
+        data: {
+          email: 'test@example.com',
+          passwordHash: hashedPassword,
+          firstName: 'Test',
+          lastName: 'User',
+          emailVerified: true
+        }
+      });
+    }
+
     // Add customers
     for (const customer of customers) {
       try {
-        await prisma.customer.create({ data: customer });
+        await prisma.customer.create({
+          data: {
+            ...customer,
+            userId: user.id
+          }
+        });
         results.customers++;
       } catch (error: any) {
         results.errors.push(`Customer ${customer.firstName}: ${error.message}`);
@@ -89,7 +114,12 @@ export async function POST(request: NextRequest) {
     // Add items
     for (const item of items) {
       try {
-        await prisma.item.create({ data: item });
+        await prisma.item.create({
+          data: {
+            ...item,
+            userId: user.id
+          }
+        });
         results.items++;
       } catch (error: any) {
         results.errors.push(`Item ${item.name}: ${error.message}`);
@@ -97,8 +127,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Get all customers and items for bookings
-    const allCustomers = await prisma.customer.findMany();
-    const allItems = await prisma.item.findMany();
+    const allCustomers = await prisma.customer.findMany({ where: { userId: user.id } });
+    const allItems = await prisma.item.findMany({ where: { userId: user.id } });
 
     if (allCustomers.length > 0 && allItems.length > 0) {
       // Create 20 random bookings in November 2025
@@ -138,6 +168,7 @@ export async function POST(request: NextRequest) {
 
           await prisma.booking.create({
             data: {
+              userId: user.id,
               customerId: customer.id,
               startDate,
               endDate,
