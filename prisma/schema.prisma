@@ -10,6 +10,7 @@ datasource db {
 
 model Item {
   id             String    @id @default(cuid())
+  userId         String    // Owner of this item
   name           String    @db.VarChar(50)
   unit           String    @db.VarChar(16) // "pcs" etc. - letters only
   totalQuantity  Int       // authoritative stock count (0-100000)
@@ -18,13 +19,16 @@ model Item {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   bookingItems   BookingItem[]
 
-  @@unique([name], name: "unique_item_name")
+  @@unique([userId, name], name: "unique_user_item_name")
+  @@index([userId])
 }
 
 model Customer {
   id        String   @id @default(cuid())
+  userId    String   // Owner of this customer record
   name      String   // Will be deprecated, keeping for backward compatibility
   firstName String?  @db.VarChar(50) // Will become required after migration
   lastName  String?  @db.VarChar(50)
@@ -35,13 +39,16 @@ model Customer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   bookings  Booking[]
 
-  @@unique([email], name: "unique_customer_email")
+  @@unique([userId, email], name: "unique_user_customer_email")
+  @@index([userId])
 }
 
 model Booking {
   id              String        @id @default(cuid())
+  userId          String        // Owner of this booking
   customerId      String
   startDate       DateTime      // store date at 00:00Z
   endDate         DateTime      // inclusive range
@@ -55,14 +62,16 @@ model Booking {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   customer        Customer      @relation(fields: [customerId], references: [id])
   items           BookingItem[]
   payments        Payment[]     // track all payments made
 
+  @@index([userId])
   @@index([startDate])
   @@index([endDate])
   @@index([status])
-  @@unique([reference], name: "unique_booking_reference")
+  @@unique([userId, reference], name: "unique_user_booking_reference")
   @@map("Rental")
 }
 
@@ -95,6 +104,7 @@ model Payment {
 
 model Settings {
   id                    String   @id @default(cuid())
+  userId                String   @unique // Each user has their own settings
   businessName          String   @default("My Rental Business") @db.VarChar(100)
   currency              String   @default("USD") @db.VarChar(3) // ISO 4217 code
   currencySymbol        String   @default("$") @db.VarChar(5)
@@ -106,5 +116,102 @@ model Settings {
   defaultRentalDays     Int      @default(1)
   dateFormat            String   @default("MM/DD/YYYY") @db.VarChar(20)
   timezone              String   @default("UTC") @db.VarChar(64) // IANA timezone
+  createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// Authentication & Premium Features
+model User {
+  id                String        @id @default(cuid())
+  email             String        @unique @db.VarChar(254)
+  passwordHash      String
+  role              String        @default("user") @db.VarChar(20) // 'user' | 'admin'
+  firstName         String?       @db.VarChar(50)
+  lastName          String?       @db.VarChar(50)
+  businessName      String?       @db.VarChar(100) // Personalized business name for each user
+  logoUrl           String?       @db.VarChar(500) // URL to user's custom logo
+  emailVerified     Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  // User's own data
+  items             Item[]
+  customers         Customer[]
+  bookings          Booking[]
+  settings          Settings?
+
+  // Premium features
+  subscription      Subscription?
+  publicPage        PublicPage?
+  passwordResets    PasswordReset[]
+
+  @@index([email])
+}
+
+model Subscription {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  plan              String   @default("free") @db.VarChar(20) // 'free' | 'pro' | 'business'
+  status            String   @default("active") @db.VarChar(20) // 'active' | 'trialing' | 'past_due' | 'canceled'
+  currentPeriodEnd  DateTime?
+  stripeCustomerId  String?  @unique @db.VarChar(100)
+  stripeSubId       String?  @unique @db.VarChar(100)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PublicPage {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  slug            String   @unique @db.VarChar(100)
+  title           String   @db.VarChar(100)
+  phonePublic     String?  @db.VarChar(15)
+  emailPublic     String?  @db.VarChar(254)
+  itemsJson       Json     // Array of {itemId, displayName}
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  inquiries       PublicInquiry[]
+
+  @@index([slug])
+}
+
+model PublicInquiry {
+  id              String   @id @default(cuid())
+  publicPageId    String
+  name            String   @db.VarChar(100)
+  phone           String?  @db.VarChar(15)
+  email           String?  @db.VarChar(254)
+  message         String?  @db.Text
+  startDate       DateTime
+  endDate         DateTime
+  status          String   @default("new") @db.VarChar(20) // 'new' | 'contacted' | 'converted' | 'archived'
+  createdAt       DateTime @default(now())
+
+  page            PublicPage @relation(fields: [publicPageId], references: [id], onDelete: Cascade)
+
+  @@index([publicPageId])
+  @@index([createdAt])
+}
+
+model PasswordReset {
+  id              String   @id @default(cuid())
+  userId          String
+  token           String   @unique @db.VarChar(100)
+  expiresAt       DateTime
+  used            Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
 }

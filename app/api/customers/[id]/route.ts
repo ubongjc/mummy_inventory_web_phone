@@ -1,13 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/lib/auth.config";
 import { prisma } from "@/app/lib/prisma";
 import { updateCustomerSchema } from "@/app/lib/validation";
+import { secureLog } from "@/app/lib/security";
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
+
+    // Verify customer belongs to user (unless admin)
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    const isAdmin = user?.role === 'admin';
+
+    const existingCustomer = await prisma.customer.findUnique({
+      where: { id },
+      select: { userId: true }
+    });
+
+    if (!existingCustomer) {
+      return NextResponse.json({ error: "Customer not found" }, { status: 404 });
+    }
+
+    if (!isAdmin && existingCustomer.userId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const body = await request.json();
     const validated = updateCustomerSchema.parse(body);
 
@@ -30,7 +61,7 @@ export async function PATCH(
 
     return NextResponse.json(customer);
   } catch (error: any) {
-    console.error("Error updating customer:", error);
+    secureLog("[ERROR] Failed to update customer", { error: error.message });
     if (error.name === "ZodError") {
       return NextResponse.json(
         { error: "Invalid input", details: error.errors },
@@ -49,7 +80,34 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
+
+    // Verify customer belongs to user (unless admin)
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    const isAdmin = user?.role === 'admin';
+
+    const existingCustomer = await prisma.customer.findUnique({
+      where: { id },
+      select: { userId: true }
+    });
+
+    if (!existingCustomer) {
+      return NextResponse.json({ error: "Customer not found" }, { status: 404 });
+    }
+
+    if (!isAdmin && existingCustomer.userId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     // Check if customer has bookings
     const customerBookings = await prisma.booking.count({
@@ -69,7 +127,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error("Error deleting customer:", error);
+    secureLog("[ERROR] Failed to delete customer", { error: error.message });
     if (error.code === 'P2025') {
       return NextResponse.json(
         { error: "Customer not found" },

@@ -1,13 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/lib/auth.config";
 import { prisma } from "@/app/lib/prisma";
 import { toUTCMidnight } from "@/app/lib/dates";
+import { secureLog } from "@/app/lib/security";
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
+
+    // Verify booking belongs to user (unless admin)
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    const isAdmin = user?.role === 'admin';
+
+    const existingBooking = await prisma.booking.findUnique({
+      where: { id },
+      select: { userId: true }
+    });
+
+    if (!existingBooking) {
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
+
+    if (!isAdmin && existingBooking.userId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     // Delete the booking and all associated booking items and payments (cascade delete)
     await prisma.booking.delete({
@@ -16,7 +46,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error("Error deleting booking:", error);
+    secureLog("[ERROR] Failed to delete booking", { error: error.message });
     if (error.code === 'P2025') {
       return NextResponse.json(
         { error: "Booking not found" },
@@ -35,7 +65,35 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
+
+    // Verify booking belongs to user (unless admin)
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    const isAdmin = user?.role === 'admin';
+
+    const existingBooking = await prisma.booking.findUnique({
+      where: { id },
+      select: { userId: true }
+    });
+
+    if (!existingBooking) {
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
+
+    if (!isAdmin && existingBooking.userId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const body = await request.json();
 
     // Build update data object with only provided fields
@@ -61,7 +119,7 @@ export async function PATCH(
 
     return NextResponse.json(booking);
   } catch (error: any) {
-    console.error("Error updating booking:", error);
+    secureLog("[ERROR] Failed to update booking (PATCH)", { error: error.message });
     return NextResponse.json(
       { error: "Failed to update booking" },
       { status: 500 }
@@ -74,11 +132,59 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id: bookingId } = await params;
+
+    // Verify booking belongs to user (unless admin)
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    const isAdmin = user?.role === 'admin';
+
+    const existingBooking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      select: { userId: true }
+    });
+
+    if (!existingBooking) {
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
+
+    if (!isAdmin && existingBooking.userId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const body = await request.json();
 
     const startDate = toUTCMidnight(body.startDate);
     const endDate = toUTCMidnight(body.endDate);
+
+    // Verify customer belongs to current user
+    const customer = await prisma.customer.findUnique({
+      where: { id: body.customerId },
+      select: { userId: true }
+    });
+
+    if (!customer) {
+      return NextResponse.json(
+        { error: "Customer not found" },
+        { status: 404 }
+      );
+    }
+
+    if (customer.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: "Customer does not belong to you" },
+        { status: 403 }
+      );
+    }
 
     // Check availability for each item (excluding current booking)
     for (const bookingItem of body.items) {
@@ -93,10 +199,19 @@ export async function PUT(
         );
       }
 
-      // Get overlapping bookings (excluding the current booking being edited)
+      // Verify item belongs to current user
+      if (item.userId !== session.user.id) {
+        return NextResponse.json(
+          { error: `Item ${item.name} does not belong to you` },
+          { status: 403 }
+        );
+      }
+
+      // Get overlapping bookings (excluding the current booking being edited, only from current user)
       const overlappingBookings = await prisma.booking.findMany({
         where: {
           AND: [
+            { userId: session.user.id },
             { id: { not: bookingId } },
             { startDate: { lte: endDate } },
             { endDate: { gte: startDate } },
@@ -118,13 +233,13 @@ export async function PUT(
 
       while (currentDate <= endDateCheck) {
         // Calculate reserved quantity on this specific day
-        const reservedOnDay = overlappingBookings.reduce((sum, booking) => {
+        const reservedOnDay = overlappingBookings.reduce((sum: number, booking: any) => {
           const bookingStart = new Date(booking.startDate);
           const bookingEnd = new Date(booking.endDate);
 
           // Check if this booking overlaps with current day
           if (currentDate >= bookingStart && currentDate <= bookingEnd) {
-            return sum + booking.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
+            return sum + booking.items.reduce((itemSum: number, item: any) => itemSum + item.quantity, 0);
           }
           return sum;
         }, 0);
@@ -190,7 +305,7 @@ export async function PUT(
 
     return NextResponse.json(booking);
   } catch (error: any) {
-    console.error("Error updating booking:", error);
+    secureLog("[ERROR] Failed to update booking (PUT)", { error: error.message });
     return NextResponse.json(
       { error: "Failed to update booking" },
       { status: 500 }

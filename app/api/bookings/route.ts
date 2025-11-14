@@ -1,18 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/lib/auth.config";
 import { prisma } from "@/app/lib/prisma";
 import { createBookingSchema } from "@/app/lib/validation";
 import { toUTCMidnight, addOneDay, formatDateISO } from "@/app/lib/dates";
 import { getRandomBookingColor } from "@/app/lib/colors";
 import { toUtcDateOnly, toYmd, addDays } from "@/app/lib/dateUtils";
+import { secureLog } from "@/app/lib/security";
 import dayjs from "dayjs";
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if admin
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    const isAdmin = user?.role === 'admin';
+
     const { searchParams } = new URL(request.url);
     const start = searchParams.get("start");
     const end = searchParams.get("end");
 
-    let whereClause = {};
+    let whereClause: any = isAdmin ? {} : { userId: session.user.id };
 
     if (start && end) {
       const startDate = toUTCMidnight(start);
@@ -20,6 +37,7 @@ export async function GET(request: NextRequest) {
 
       whereClause = {
         AND: [
+          ...(isAdmin ? [] : [{ userId: session.user.id }]),
           { startDate: { lte: endDate } },
           { endDate: { gte: startDate } },
           { status: { in: ["CONFIRMED", "OUT"] } },
@@ -45,9 +63,9 @@ export async function GET(request: NextRequest) {
 
     // Format for FullCalendar if start and end are provided
     if (start && end) {
-      const events = bookings.map((booking) => {
+      const events = bookings.map((booking: any) => {
         const itemsSummary = booking.items
-          .map((ri) => `${ri.item.name} ×${ri.quantity}`)
+          .map((ri: any) => `${ri.item.name} ×${ri.quantity}`)
           .join(", ");
 
         // Use dateUtils helpers for consistent UTC date handling
@@ -62,7 +80,7 @@ export async function GET(request: NextRequest) {
         const customerFirstName = booking.customer.firstName || booking.customer.name;
         const customerFullName = `${booking.customer.firstName || booking.customer.name} ${booking.customer.lastName || ""}`.trim();
 
-        console.log(`[Calendar] Booking ${booking.id.substring(0, 8)}: "${customerFullName}" DB: ${booking.startDate.toISOString().split('T')[0]} to ${booking.endDate.toISOString().split('T')[0]}, Calendar: ${startDate} to ${endDate}, Color: ${(booking as any).color} → ${bgColor}`);
+        // Logging removed - contains customer PII
 
         return {
           id: booking.id,
@@ -72,7 +90,7 @@ export async function GET(request: NextRequest) {
           allDay: true,
           backgroundColor: bgColor,
           borderColor: borderColor,
-          bookingItemIds: booking.items.map(ri => ri.itemId),
+          bookingItemIds: booking.items.map((ri: any) => ri.itemId),
           extendedProps: {
             customerId: booking.customerId,
             customerName: customerFullName,
@@ -83,17 +101,13 @@ export async function GET(request: NextRequest) {
         };
       });
 
-      console.log(`[Calendar] Returning ${events.length} events for ${start} to ${end}`);
-      if (events.length > 0) {
-        const sample = events[0];
-        console.log('[Calendar] Sample event - id:', sample.id, 'start:', sample.start, 'end:', sample.end, 'allDay:', sample.allDay);
-      }
+      // Events returned successfully
       return NextResponse.json(events);
     }
 
     return NextResponse.json(bookings);
-  } catch (error) {
-    console.error("Error fetching bookings:", error);
+  } catch (error: any) {
+    secureLog("[ERROR] Failed to fetch bookings", { error: error.message });
     return NextResponse.json(
       { error: "Failed to fetch bookings" },
       { status: 500 }
@@ -103,18 +117,19 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
-    console.log('[API] Received booking data:', JSON.stringify(body, null, 2));
     const validated = createBookingSchema.parse(body);
-    console.log('[API] Validated initial payments:', validated.initialPayments);
 
     const startDate = toUTCMidnight(validated.startDate);
     const endDate = toUTCMidnight(validated.endDate);
 
-    console.log('[CREATE BOOKING] Input dates:', validated.startDate, 'to', validated.endDate);
-    console.log('[CREATE BOOKING] Parsed to UTC:', startDate.toISOString(), 'to', endDate.toISOString());
-
-    // Check availability for each item
+    // Check availability for each item (must belong to current user)
     for (const bookingItem of validated.items) {
       const item = await prisma.item.findUnique({
         where: { id: bookingItem.itemId },
@@ -127,10 +142,19 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Get all overlapping bookings for this item
+      // Verify item belongs to current user
+      if (item.userId !== session.user.id) {
+        return NextResponse.json(
+          { error: `Item ${item.name} does not belong to you` },
+          { status: 403 }
+        );
+      }
+
+      // Get all overlapping bookings for this item (only from current user)
       const overlappingBookings = await prisma.booking.findMany({
         where: {
           AND: [
+            { userId: session.user.id },
             { startDate: { lte: endDate } },
             { endDate: { gte: startDate } },
             { status: { in: ["CONFIRMED", "OUT"] } },
@@ -151,13 +175,13 @@ export async function POST(request: NextRequest) {
 
       while (currentDate <= endDateCheck) {
         // Calculate reserved quantity on this specific day
-        const reservedOnDay = overlappingBookings.reduce((sum, booking) => {
+        const reservedOnDay = overlappingBookings.reduce((sum: number, booking: any) => {
           const bookingStart = new Date(booking.startDate);
           const bookingEnd = new Date(booking.endDate);
 
           // Check if this booking overlaps with current day
           if (currentDate >= bookingStart && currentDate <= bookingEnd) {
-            return sum + booking.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
+            return sum + booking.items.reduce((itemSum: number, item: any) => itemSum + item.quantity, 0);
           }
           return sum;
         }, 0);
@@ -184,6 +208,26 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Verify customer belongs to current user
+    const customer = await prisma.customer.findUnique({
+      where: { id: validated.customerId },
+      select: { userId: true }
+    });
+
+    if (!customer) {
+      return NextResponse.json(
+        { error: "Customer not found" },
+        { status: 404 }
+      );
+    }
+
+    if (customer.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: "Customer does not belong to you" },
+        { status: 403 }
+      );
+    }
+
     // Validate that total payments don't exceed total price
     if (validated.totalPrice) {
       const advancePayment = validated.advancePayment || 0;
@@ -207,6 +251,7 @@ export async function POST(request: NextRequest) {
     // Create booking with random color
     const booking = await prisma.booking.create({
       data: {
+        userId: session.user.id, // Always set to current user
         customerId: validated.customerId,
         startDate,
         endDate,
@@ -244,7 +289,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(booking, { status: 201 });
   } catch (error: any) {
-    console.error("Error creating booking:", error);
+    secureLog("[ERROR] Failed to create booking", { error: error.message });
     if (error.name === "ZodError") {
       return NextResponse.json(
         { error: "Invalid input", details: error.errors },

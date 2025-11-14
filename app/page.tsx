@@ -8,7 +8,7 @@ import DayDrawer from "./components/DayDrawer";
 import AddItemModal from "./components/AddItemModal";
 import AddBookingModal from "./components/AddBookingModal";
 import CheckAvailabilityModal from "./components/CheckAvailabilityModal";
-import { CalendarDays, Package, Plus, Settings, Menu, X, Filter, CheckSquare, Square, Search } from "lucide-react";
+import { CalendarDays, Package, Plus, Settings, Menu, X, Filter, CheckSquare, Square, Search, Star } from "lucide-react";
 
 interface Item {
   id: string;
@@ -20,6 +20,16 @@ interface Item {
 interface ItemReservation {
   itemId: string;
   reserved: number;
+}
+
+interface UserProfile {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  businessName: string | null;
+  logoUrl: string | null;
+  role: string;
 }
 
 export default function Home() {
@@ -37,11 +47,27 @@ export default function Home() {
   const [itemSortBy, setItemSortBy] = useState<"name-asc" | "name-desc" | "quantity-desc" | "quantity-asc" | "unit">("name-asc");
   const [itemReservations, setItemReservations] = useState<Map<string, number>>(new Map());
   const [calendarDateRange, setCalendarDateRange] = useState<{ start: string; end: string } | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
-  // Fetch items on mount
+  // Fetch items and user profile on mount
   useEffect(() => {
     fetchItems();
+    fetchUserProfile();
   }, [refreshKey]);
+
+  // Refresh user profile when page becomes visible (e.g., navigating back from settings)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchUserProfile();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   const fetchItems = async () => {
     try {
@@ -52,6 +78,25 @@ export default function Home() {
       setSelectedItemIds(data.map((item: Item) => item.id));
     } catch (error) {
       console.error("Error fetching items:", error);
+    }
+  };
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch("/api/user/profile", {
+        cache: 'no-store', // Prevent caching to always get fresh data
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUserProfile(data);
+        console.log("User profile loaded:", data.businessName || "No business name set");
+      } else if (response.status === 401) {
+        console.log("User not authenticated - personalization features unavailable");
+      } else {
+        console.error("Failed to fetch user profile:", response.status);
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
     }
   };
 
@@ -194,6 +239,20 @@ export default function Home() {
               >
                 <Settings className="w-5 h-5" />
                 Settings
+              </Link>
+
+              {/* Separator */}
+              <div className="py-2">
+                <div className="border-t border-gray-300"></div>
+              </div>
+
+              <Link
+                href="/premium"
+                onClick={() => setIsMenuOpen(false)}
+                className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-yellow-500 to-amber-600 text-white rounded-xl hover:from-yellow-600 hover:to-amber-700 font-semibold shadow-lg transition-all"
+              >
+                <Star className="w-5 h-5 fill-yellow-300" />
+                Premium Features
               </Link>
             </div>
           </nav>
@@ -366,21 +425,40 @@ export default function Home() {
                 </button>
               </div>
 
-              <div className="relative w-10 h-10 rounded-xl shadow-lg overflow-hidden">
-                <Image
-                  src="/logo.jpeg"
-                  alt="Ufonime Logo"
-                  fill
-                  className="object-cover"
-                />
+              <div className="relative w-10 h-10 rounded-xl shadow-lg overflow-hidden flex-shrink-0">
+                {userProfile?.logoUrl ? (
+                  <img
+                    src={userProfile.logoUrl}
+                    alt="Company Logo"
+                    className="w-full h-full object-contain bg-white"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <Package className="w-6 h-6 text-white" />
+                  </div>
+                )}
               </div>
               <div>
-                <h1 className="text-base md:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
-                  Ufonime Booking Inventory
-                </h1>
-                <p className="text-[10px] text-gray-600 font-medium hidden md:block">Manage your bookings with ease</p>
+                <h2 className="text-sm md:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Hi {userProfile?.businessName || "there"}!
+                </h2>
+                <p className="text-[10px] md:text-xs text-gray-600 font-medium">
+                  Manage your bookings with ease
+                </p>
               </div>
             </div>
+
+            {/* Right side - App Title with Premium Link */}
+            <Link
+              href="/premium"
+              className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+              title="Premium Features"
+            >
+              <h1 className="text-sm md:text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
+                Very Simple Inventory
+              </h1>
+              <Star className="w-4 h-4 md:w-5 md:h-5 text-yellow-500 fill-yellow-400 flex-shrink-0" />
+            </Link>
           </div>
           {/* Check Availability Button */}
           <div className="mt-2">

@@ -1,22 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/lib/auth.config";
 import { prisma } from "@/app/lib/prisma";
 import { updateSettingsSchema } from "@/app/lib/validation";
+import { secureLog } from "@/app/lib/security";
 
 export async function GET() {
   try {
-    // Get or create settings (there should only be one settings record)
-    let settings = await prisma.settings.findFirst();
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Get or create settings for this user
+    let settings = await prisma.settings.findUnique({
+      where: { userId: session.user.id }
+    });
 
     if (!settings) {
-      // Create default settings if none exist
+      // Create default settings for this user
       settings = await prisma.settings.create({
-        data: {},
+        data: {
+          userId: session.user.id
+        },
       });
     }
 
     return NextResponse.json(settings);
   } catch (error: any) {
-    console.error("Error fetching settings:", error);
+    secureLog("[ERROR] Failed to fetch settings", { error: error.message });
     return NextResponse.json(
       { error: "Failed to fetch settings" },
       { status: 500 }
@@ -26,15 +39,26 @@ export async function GET() {
 
 export async function PATCH(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
     const validated = updateSettingsSchema.parse(body);
 
-    // Get or create settings
-    let settings = await prisma.settings.findFirst();
+    // Get or create settings for this user
+    let settings = await prisma.settings.findUnique({
+      where: { userId: session.user.id }
+    });
 
     if (!settings) {
       settings = await prisma.settings.create({
-        data: validated,
+        data: {
+          ...validated,
+          userId: session.user.id
+        },
       });
     } else {
       settings = await prisma.settings.update({
@@ -45,7 +69,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json(settings);
   } catch (error: any) {
-    console.error("Error updating settings:", error);
+    secureLog("[ERROR] Failed to update settings", { error: error.message });
     if (error.name === "ZodError") {
       return NextResponse.json(
         { error: "Invalid input", details: error.errors },
