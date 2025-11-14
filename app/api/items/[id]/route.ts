@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/lib/auth.config";
 import { prisma } from "@/app/lib/prisma";
 import { updateItemSchema } from "@/app/lib/validation";
 import { secureLog } from "@/app/lib/security";
@@ -8,7 +10,35 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
+
+    // Verify item belongs to user (unless admin)
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    const isAdmin = user?.role === 'admin';
+
+    const existingItem = await prisma.item.findUnique({
+      where: { id },
+      select: { userId: true }
+    });
+
+    if (!existingItem) {
+      return NextResponse.json({ error: "Item not found" }, { status: 404 });
+    }
+
+    if (!isAdmin && existingItem.userId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const body = await request.json();
     const validated = updateItemSchema.parse(body);
 
@@ -79,7 +109,34 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
+
+    // Verify item belongs to user (unless admin)
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    const isAdmin = user?.role === 'admin';
+
+    const existingItem = await prisma.item.findUnique({
+      where: { id },
+      select: { userId: true }
+    });
+
+    if (!existingItem) {
+      return NextResponse.json({ error: "Item not found" }, { status: 404 });
+    }
+
+    if (!isAdmin && existingItem.userId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     // Check if item is used in any bookings
     const itemBookings = await prisma.bookingItem.count({

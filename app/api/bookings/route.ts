@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/lib/auth.config";
 import { prisma } from "@/app/lib/prisma";
 import { createBookingSchema } from "@/app/lib/validation";
 import { toUTCMidnight, addOneDay, formatDateISO } from "@/app/lib/dates";
@@ -9,11 +11,25 @@ import dayjs from "dayjs";
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if admin
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    const isAdmin = user?.role === 'admin';
+
     const { searchParams } = new URL(request.url);
     const start = searchParams.get("start");
     const end = searchParams.get("end");
 
-    let whereClause = {};
+    let whereClause: any = isAdmin ? {} : { userId: session.user.id };
 
     if (start && end) {
       const startDate = toUTCMidnight(start);
@@ -21,6 +37,7 @@ export async function GET(request: NextRequest) {
 
       whereClause = {
         AND: [
+          ...(isAdmin ? [] : [{ userId: session.user.id }]),
           { startDate: { lte: endDate } },
           { endDate: { gte: startDate } },
           { status: { in: ["CONFIRMED", "OUT"] } },
@@ -100,13 +117,19 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
     const validated = createBookingSchema.parse(body);
 
     const startDate = toUTCMidnight(validated.startDate);
     const endDate = toUTCMidnight(validated.endDate);
 
-    // Check availability for each item
+    // Check availability for each item (must belong to current user)
     for (const bookingItem of validated.items) {
       const item = await prisma.item.findUnique({
         where: { id: bookingItem.itemId },
@@ -119,10 +142,19 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Get all overlapping bookings for this item
+      // Verify item belongs to current user
+      if (item.userId !== session.user.id) {
+        return NextResponse.json(
+          { error: `Item ${item.name} does not belong to you` },
+          { status: 403 }
+        );
+      }
+
+      // Get all overlapping bookings for this item (only from current user)
       const overlappingBookings = await prisma.booking.findMany({
         where: {
           AND: [
+            { userId: session.user.id },
             { startDate: { lte: endDate } },
             { endDate: { gte: startDate } },
             { status: { in: ["CONFIRMED", "OUT"] } },
@@ -176,6 +208,26 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Verify customer belongs to current user
+    const customer = await prisma.customer.findUnique({
+      where: { id: validated.customerId },
+      select: { userId: true }
+    });
+
+    if (!customer) {
+      return NextResponse.json(
+        { error: "Customer not found" },
+        { status: 404 }
+      );
+    }
+
+    if (customer.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: "Customer does not belong to you" },
+        { status: 403 }
+      );
+    }
+
     // Validate that total payments don't exceed total price
     if (validated.totalPrice) {
       const advancePayment = validated.advancePayment || 0;
@@ -199,6 +251,7 @@ export async function POST(request: NextRequest) {
     // Create booking with random color
     const booking = await prisma.booking.create({
       data: {
+        userId: session.user.id, // Always set to current user
         customerId: validated.customerId,
         startDate,
         endDate,

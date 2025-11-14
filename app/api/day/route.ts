@@ -1,10 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/lib/auth.config";
 import { prisma } from "@/app/lib/prisma";
 import { toUTCMidnight } from "@/app/lib/dates";
 import { secureLog } from "@/app/lib/security";
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if admin
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    const isAdmin = user?.role === 'admin';
+
     const { searchParams } = new URL(request.url);
     const dateStr = searchParams.get("date");
 
@@ -18,10 +34,11 @@ export async function GET(request: NextRequest) {
     // Parse the date string directly as YYYY-MM-DD at UTC midnight
     const targetDate = new Date(dateStr + "T00:00:00.000Z");
 
-    // Get all bookings that span this date (inclusive)
+    // Get all bookings that span this date (inclusive, filtered by user unless admin)
     // A booking is active on targetDate if: startDate <= targetDate AND endDate >= targetDate
     const bookings = await prisma.booking.findMany({
       where: {
+        ...(isAdmin ? {} : { userId: session.user.id }),
         startDate: { lte: targetDate },
         endDate: { gte: targetDate },
         status: { in: ["CONFIRMED", "OUT"] },
@@ -40,8 +57,9 @@ export async function GET(request: NextRequest) {
       orderBy: { startDate: "asc" },
     });
 
-    // Get all items and calculate remaining for this date
+    // Get all items for this user and calculate remaining for this date
     const items = await prisma.item.findMany({
+      where: isAdmin ? {} : { userId: session.user.id },
       include: {
         bookingItems: {
           include: {
