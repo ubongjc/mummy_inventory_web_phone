@@ -90,11 +90,11 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-bold text-black mb-2">Access Denied</h1>
           <p className="text-gray-600 mb-6">{error}</p>
           <Link
-            href="/"
+            href="/dashboard"
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Home
+            Back to Dashboard
           </Link>
         </div>
       </div>
@@ -113,11 +113,11 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Link
-              href="/"
+              href="/dashboard"
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white rounded-lg font-semibold transition-all duration-200 shadow-md text-sm"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to Home
+              Back to Dashboard
             </Link>
             <div className="flex-1">
               <h1 className="text-2xl font-bold text-black flex items-center gap-2">

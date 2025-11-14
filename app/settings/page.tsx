@@ -215,11 +215,11 @@ export default function SettingsPage() {
         <div className="bg-white rounded-lg sm:rounded-2xl shadow-lg sm:shadow-2xl p-2 sm:p-4 mb-3 sm:mb-6 border border-gray-200">
           <div className="flex items-center justify-between mb-2 sm:mb-4 gap-2">
             <Link
-              href="/"
+              href="/dashboard"
               className="flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 bg-gradient-to-r from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white rounded-lg sm:rounded-xl font-semibold transition-all duration-200 shadow-md sm:shadow-lg text-xs sm:text-sm"
             >
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
-              Back to Home Page
+              Back to Dashboard
             </Link>
             <button
               onClick={handleSave}

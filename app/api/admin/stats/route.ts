@@ -21,15 +21,17 @@ export async function GET(request: NextRequest) {
 
     // Get user statistics
     const totalUsers = await prisma.user.count();
-    const freeUsers = await prisma.subscription.count({
-      where: { plan: "free", status: "active" },
-    });
+
+    // Count users by plan
     const proUsers = await prisma.subscription.count({
       where: { plan: "pro", status: "active" },
     });
     const businessUsers = await prisma.subscription.count({
       where: { plan: "business", status: "active" },
     });
+
+    // Free users = all users without pro/business subscriptions
+    const freeUsers = totalUsers - proUsers - businessUsers;
 
     // Get recent users (last 30 days)
     const thirtyDaysAgo = new Date();

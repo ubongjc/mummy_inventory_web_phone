@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LogIn, Mail, Lock, AlertCircle } from "lucide-react";
+import { LogIn, Mail, Lock, AlertCircle, Home } from "lucide-react";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -28,8 +28,8 @@ export default function SignInPage() {
       if (result?.error) {
         setError(result.error);
       } else if (result?.ok) {
-        // Redirect to home page after successful sign in
-        router.push("/");
+        // Redirect to dashboard after successful sign in
+        router.push("/dashboard");
         router.refresh();
       }
     } catch (err: any) {
@@ -41,6 +41,15 @@ export default function SignInPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
+      {/* Back to Home Link */}
+      <Link
+        href="/"
+        className="fixed top-4 left-4 flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-blue-600 rounded-lg shadow-md hover:shadow-lg transition-all font-semibold"
+      >
+        <Home className="w-4 h-4" />
+        <span className="hidden sm:inline">Back to Home</span>
+      </Link>
+
       <div className="w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">

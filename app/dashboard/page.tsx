@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import Calendar from "./components/Calendar";
-import DayDrawer from "./components/DayDrawer";
-import AddItemModal from "./components/AddItemModal";
-import AddBookingModal from "./components/AddBookingModal";
-import CheckAvailabilityModal from "./components/CheckAvailabilityModal";
-import { CalendarDays, Package, Plus, Settings, Menu, X, Filter, CheckSquare, Square, Search, Star, Shield } from "lucide-react";
+import Calendar from "../components/Calendar";
+import DayDrawer from "../components/DayDrawer";
+import AddItemModal from "../components/AddItemModal";
+import AddBookingModal from "../components/AddBookingModal";
+import CheckAvailabilityModal from "../components/CheckAvailabilityModal";
+import { CalendarDays, Package, Plus, Settings, Menu, X, Filter, CheckSquare, Square, Search, Star, Shield, LogOut } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 interface Item {
   id: string;
@@ -266,6 +267,21 @@ export default function Home() {
                 <Star className="w-5 h-5 fill-yellow-300" />
                 Premium Features
               </Link>
+
+              {/* Separator */}
+              <div className="py-2">
+                <div className="border-t border-gray-300"></div>
+              </div>
+
+              <button
+                onClick={() => {
+                  signOut({ callbackUrl: "/" });
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-gray-500 to-gray-700 text-white rounded-xl hover:from-gray-600 hover:to-gray-800 font-semibold shadow-lg transition-all"
+              >
+                <LogOut className="w-5 h-5" />
+                Log Out
+              </button>
             </div>
           </nav>
         </div>
