@@ -8,7 +8,7 @@ import DayDrawer from "./components/DayDrawer";
 import AddItemModal from "./components/AddItemModal";
 import AddBookingModal from "./components/AddBookingModal";
 import CheckAvailabilityModal from "./components/CheckAvailabilityModal";
-import { CalendarDays, Package, Plus, Settings, Menu, X, Filter, CheckSquare, Square, Search, Star } from "lucide-react";
+import { CalendarDays, Package, Plus, Settings, Menu, X, Filter, CheckSquare, Square, Search, Star, Shield } from "lucide-react";
 
 interface Item {
   id: string;
@@ -240,6 +240,18 @@ export default function Home() {
                 <Settings className="w-5 h-5" />
                 Settings
               </Link>
+
+              {/* Admin Panel - Only visible to admin users */}
+              {userProfile?.role === 'admin' && (
+                <Link
+                  href="/admin"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-red-600 to-rose-700 text-white rounded-xl hover:from-red-700 hover:to-rose-800 font-semibold shadow-lg transition-all"
+                >
+                  <Shield className="w-5 h-5" />
+                  Admin Dashboard
+                </Link>
+              )}
 
               {/* Separator */}
               <div className="py-2">
