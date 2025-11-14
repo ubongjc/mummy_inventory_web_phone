@@ -10,6 +10,7 @@ datasource db {
 
 model Item {
   id             String    @id @default(cuid())
+  userId         String    // Owner of this item
   name           String    @db.VarChar(50)
   unit           String    @db.VarChar(16) // "pcs" etc. - letters only
   totalQuantity  Int       // authoritative stock count (0-100000)
@@ -18,13 +19,16 @@ model Item {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   bookingItems   BookingItem[]
 
-  @@unique([name], name: "unique_item_name")
+  @@unique([userId, name], name: "unique_user_item_name")
+  @@index([userId])
 }
 
 model Customer {
   id        String   @id @default(cuid())
+  userId    String   // Owner of this customer record
   name      String   // Will be deprecated, keeping for backward compatibility
   firstName String?  @db.VarChar(50) // Will become required after migration
   lastName  String?  @db.VarChar(50)
@@ -35,13 +39,16 @@ model Customer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   bookings  Booking[]
 
-  @@unique([email], name: "unique_customer_email")
+  @@unique([userId, email], name: "unique_user_customer_email")
+  @@index([userId])
 }
 
 model Booking {
   id              String        @id @default(cuid())
+  userId          String        // Owner of this booking
   customerId      String
   startDate       DateTime      // store date at 00:00Z
   endDate         DateTime      // inclusive range
@@ -55,14 +62,16 @@ model Booking {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   customer        Customer      @relation(fields: [customerId], references: [id])
   items           BookingItem[]
   payments        Payment[]     // track all payments made
 
+  @@index([userId])
   @@index([startDate])
   @@index([endDate])
   @@index([status])
-  @@unique([reference], name: "unique_booking_reference")
+  @@unique([userId, reference], name: "unique_user_booking_reference")
   @@map("Rental")
 }
 
@@ -95,6 +104,7 @@ model Payment {
 
 model Settings {
   id                    String   @id @default(cuid())
+  userId                String   @unique // Each user has their own settings
   businessName          String   @default("My Rental Business") @db.VarChar(100)
   currency              String   @default("USD") @db.VarChar(3) // ISO 4217 code
   currencySymbol        String   @default("$") @db.VarChar(5)
@@ -106,7 +116,12 @@ model Settings {
   defaultRentalDays     Int      @default(1)
   dateFormat            String   @default("MM/DD/YYYY") @db.VarChar(20)
   timezone              String   @default("UTC") @db.VarChar(64) // IANA timezone
+  createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 // Authentication & Premium Features
@@ -123,6 +138,13 @@ model User {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
+  // User's own data
+  items             Item[]
+  customers         Customer[]
+  bookings          Booking[]
+  settings          Settings?
+
+  // Premium features
   subscription      Subscription?
   publicPage        PublicPage?
   passwordResets    PasswordReset[]
