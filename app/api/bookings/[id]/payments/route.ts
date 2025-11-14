@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/lib/auth.config";
 import { prisma } from "@/app/lib/prisma";
 import { secureLog } from "@/app/lib/security";
 
@@ -7,10 +9,16 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id: bookingId } = await params;
     const body = await request.json();
 
-    // Validate booking exists
+    // Validate booking exists and belongs to user
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
@@ -22,6 +30,21 @@ export async function POST(
       return NextResponse.json(
         { error: "Booking not found" },
         { status: 404 }
+      );
+    }
+
+    // Verify booking belongs to current user (unless admin)
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    const isAdmin = user?.role === 'admin';
+
+    if (!isAdmin && booking.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: "Forbidden" },
+        { status: 403 }
       );
     }
 

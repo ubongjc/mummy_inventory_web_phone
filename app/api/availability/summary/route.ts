@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/lib/auth.config";
 import { prisma } from "@/app/lib/prisma";
 import { parseYmd } from "@/app/lib/dateUtils";
+import { secureLog } from "@/app/lib/security";
 
 /**
  * GET /api/availability/summary?start=YYYY-MM-DD&end=YYYY-MM-DD
@@ -8,6 +11,20 @@ import { parseYmd } from "@/app/lib/dateUtils";
  */
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if admin
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    const isAdmin = user?.role === 'admin';
+
     const { searchParams } = new URL(request.url);
     const startStr = searchParams.get("start");
     const endStr = searchParams.get("end");
@@ -22,10 +39,11 @@ export async function GET(request: NextRequest) {
     const startDate = parseYmd(startStr);
     const endDate = parseYmd(endStr);
 
-    // Get all bookings that overlap with the date range
+    // Get all bookings that overlap with the date range (filtered by user unless admin)
     const bookings = await prisma.booking.findMany({
       where: {
         AND: [
+          ...(isAdmin ? [] : [{ userId: session.user.id }]),
           { startDate: { lte: endDate } },
           { endDate: { gte: startDate } },
           { status: { in: ["CONFIRMED", "OUT"] } },
@@ -60,8 +78,8 @@ export async function GET(request: NextRequest) {
     const summary = Object.values(reservedByItem);
 
     return NextResponse.json(summary);
-  } catch (error) {
-    console.error("Error fetching availability summary:", error);
+  } catch (error: any) {
+    secureLog("[ERROR] Failed to fetch availability summary", { error: error.message });
     return NextResponse.json(
       { error: "Failed to fetch availability summary" },
       { status: 500 }

@@ -1,18 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/lib/auth.config";
 import { prisma } from "@/app/lib/prisma";
 import { createCustomerSchema } from "@/app/lib/validation";
+import { secureLog } from "@/app/lib/security";
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if admin
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    const isAdmin = user?.role === 'admin';
+
     const customers = await prisma.customer.findMany({
+      where: isAdmin ? {} : { userId: session.user.id },
       orderBy: [
         { firstName: "asc" },
         { lastName: "asc" }
       ],
     });
     return NextResponse.json(customers);
-  } catch (error) {
-    console.error("Error fetching customers:", error);
+  } catch (error: any) {
+    secureLog("[ERROR] Failed to fetch customers", { error: error.message });
     return NextResponse.json(
       { error: "Failed to fetch customers" },
       { status: 500 }
@@ -22,16 +40,23 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
     const validated = createCustomerSchema.parse(body);
 
     // Create full name for backward compatibility
     const fullName = `${validated.firstName}${validated.lastName ? ' ' + validated.lastName : ''}`.trim();
 
-    // Check for duplicate email (if email is provided)
+    // Check for duplicate email for this user (if email is provided)
     if (validated.email) {
       const existingEmail = await prisma.customer.findFirst({
         where: {
+          userId: session.user.id,
           email: validated.email,
         },
       });
@@ -47,9 +72,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Check for duplicate customer by full name
+    // Check for duplicate customer by full name for this user
     const existingCustomers = await prisma.customer.findMany({
       where: {
+        userId: session.user.id,
         firstName: validated.firstName,
         ...(validated.lastName && { lastName: validated.lastName })
       }
@@ -69,12 +95,13 @@ export async function POST(request: NextRequest) {
       data: {
         ...validated,
         name: fullName, // Set name for backward compatibility
+        userId: session.user.id, // Always set to current user
       },
     });
 
     return NextResponse.json(customer, { status: 201 });
   } catch (error: any) {
-    console.error("Error creating customer:", error);
+    secureLog("[ERROR] Failed to create customer", { error: error.message });
     if (error.name === "ZodError") {
       return NextResponse.json(
         { error: "Invalid input", details: error.errors },
