@@ -88,6 +88,11 @@ table {
   flex-shrink: 0 !important;
 }
 
+/* Left chunk (< > today) - move inward more */
+.fc .fc-toolbar-chunk:nth-child(1) {
+  padding-left: 8px !important;
+}
+
 /* Center chunk can grow to keep title centered */
 .fc .fc-toolbar-chunk:nth-child(2) {
   flex: 1 !important;
@@ -95,11 +100,16 @@ table {
   justify-content: center !important;
 }
 
+/* Right chunk (month week day) - move inward slightly */
+.fc .fc-toolbar-chunk:nth-child(3) {
+  padding-right: 6px !important;
+}
+
 /* Buttons auto-size to text; no giant boxes */
 .fc .fc-button {
-  padding: 2px 4px !important;
-  height: auto !important;
-  min-height: 0 !important;
+  padding: 4px 4px !important;
+  height: 18px !important;
+  min-height: 18px !important;
   min-width: 0 !important;
   border-radius: 6px !important;
   font-weight: 600 !important;
