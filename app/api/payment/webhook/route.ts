@@ -79,21 +79,25 @@ async function handleSuccessfulPayment(data: any) {
 
     // Update user's premium status
     if (metadata?.userId) {
-      await prisma.settings.upsert({
+      await prisma.subscription.upsert({
         where: { userId: metadata.userId },
         create: {
           userId: metadata.userId,
-          plan: 'premium',
+          plan: 'pro',
+          status: 'active',
+          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         update: {
-          plan: 'premium',
+          plan: 'pro',
+          status: 'active',
+          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
           updatedAt: new Date(),
         },
       });
 
-      console.log('User upgraded to premium:', metadata.userId);
+      console.log('User upgraded to pro plan:', metadata.userId);
     }
 
     // TODO: Send confirmation email

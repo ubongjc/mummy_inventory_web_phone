@@ -54,7 +54,7 @@ export default function Error({
         </h1>
 
         <p className="text-gray-600 mb-6 text-center">
-          We're sorry, but something unexpected happened. Please try refreshing the page or going back to the homepage.
+          We&apos;re sorry, but something unexpected happened. Please try refreshing the page or going back to the homepage.
         </p>
 
         {process.env.NODE_ENV === 'development' && (

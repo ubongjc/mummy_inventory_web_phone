@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/lib/auth';
+import { authOptions } from '@/app/lib/auth.config';
 import { createPaystackService } from '@/app/lib/paystack';
 import { applyRateLimit } from '@/app/lib/security';
 import { prisma } from '@/app/lib/prisma';

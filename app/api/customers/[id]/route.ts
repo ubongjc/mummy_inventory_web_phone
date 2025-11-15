@@ -43,7 +43,7 @@ export async function PATCH(
     const validated = updateCustomerSchema.parse(body);
 
     // If firstName or lastName are being updated, also update the name field
-    let dataToUpdate = { ...validated };
+    const dataToUpdate = { ...validated };
     if (validated.firstName !== undefined || validated.lastName !== undefined) {
       // Get current customer data if we need to combine with existing values
       const currentCustomer = await prisma.customer.findUnique({ where: { id } });

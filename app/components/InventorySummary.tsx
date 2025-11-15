@@ -182,9 +182,15 @@ export default function InventorySummary() {
 
   const getStatusColor = (remaining: number, total: number) => {
     const percentage = (remaining / total) * 100;
-    if (percentage === 0) return "text-red-600 bg-red-50";
-    if (percentage < 30) return "text-orange-600 bg-orange-50";
-    if (percentage < 60) return "text-yellow-600 bg-yellow-50";
+    if (percentage === 0) {
+      return "text-red-600 bg-red-50";
+    }
+    if (percentage < 30) {
+      return "text-orange-600 bg-orange-50";
+    }
+    if (percentage < 60) {
+      return "text-yellow-600 bg-yellow-50";
+    }
     return "text-green-600 bg-green-50";
   };
 

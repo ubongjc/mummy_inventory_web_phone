@@ -40,13 +40,19 @@ export async function hasFeature(
     select: { plan: true, status: true },
   });
 
-  if (!subscription) return false;
+  if (!subscription) {
+    return false;
+  }
 
   // Free plan has no premium features
-  if (subscription.plan === "free") return false;
+  if (subscription.plan === "free") {
+    return false;
+  }
 
   // Inactive subscriptions don't get features
-  if (!["active", "trialing"].includes(subscription.status)) return false;
+  if (!["active", "trialing"].includes(subscription.status)) {
+    return false;
+  }
 
   // Pro and Business plans get all features (for now)
   return ["pro", "business"].includes(subscription.plan);

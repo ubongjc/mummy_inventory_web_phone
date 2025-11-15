@@ -67,10 +67,18 @@ export async function PATCH(request: NextRequest) {
 
     // Build update object with only provided fields
     const updateData: any = {};
-    if (businessName !== undefined) updateData.businessName = businessName || null;
-    if (logoUrl !== undefined) updateData.logoUrl = logoUrl || null;
-    if (firstName !== undefined) updateData.firstName = firstName || null;
-    if (lastName !== undefined) updateData.lastName = lastName || null;
+    if (businessName !== undefined) {
+      updateData.businessName = businessName || null;
+    }
+    if (logoUrl !== undefined) {
+      updateData.logoUrl = logoUrl || null;
+    }
+    if (firstName !== undefined) {
+      updateData.firstName = firstName || null;
+    }
+    if (lastName !== undefined) {
+      updateData.lastName = lastName || null;
+    }
 
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
