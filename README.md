@@ -1,215 +1,528 @@
-# Rental Inventory Management System
+# Very Simple Inventory 📦
 
-A modern web application for tracking rental inventory with a beautiful calendar interface. Built with Next.js 15, PostgreSQL, and FullCalendar.
+A modern, intuitive web application for rental businesses to manage inventory, bookings, customers, and payments. Built with Next.js 15, PostgreSQL, and a beautiful calendar interface.
 
-## Features
+**Live Demo**: [verysimpleinventory.com](https://verysimpleinventory.com)
 
-- **Visual Calendar Interface**: Month, week, and day views for easy navigation
-- **Rental Management**: Track active rentals, customer information, and due dates
-- **Real-time Availability**: See item availability for any date
-- **Conflict Prevention**: System warns when trying to overbook items
-- **Responsive Design**: Works on desktop, tablet, and mobile devices
+---
 
-## Tech Stack
+## ✨ Features
 
-- **Frontend**: Next.js 15 (App Router), React 18, TypeScript
-- **UI**: Tailwind CSS, FullCalendar, Lucide Icons
-- **Database**: PostgreSQL with Prisma ORM
-- **Validation**: Zod schemas
-- **Date Handling**: date-fns
+### 📅 **Visual Calendar Management**
+- Interactive monthly calendar with FullCalendar
+- Color-coded bookings for easy identification
+- Click any date to view detailed booking information
+- Filter calendar by specific items
+- Day drawer showing all bookings and availability
 
-## Getting Started
+### 📦 **Inventory Management**
+- Unlimited inventory items
+- Track quantities, units, and pricing
+- Real-time availability checking
+- Search and sort capabilities
+- Low stock threshold alerts
+- Item-level notes and descriptions
 
-### Prerequisites
+### 👥 **Customer Management**
+- Store customer contact information
+- Track booking history per customer
+- Email and phone validation
+- Search and filter customers
+- Quick customer creation during booking
+
+### 📋 **Booking Management**
+- Multi-item bookings with quantities
+- Date range selection with validation
+- Status tracking (Confirmed, Out, Returned, Cancelled)
+- Reference numbers (BKG-######)
+- Payment tracking with balance calculation
+- Overdue payment identification
+- Color coding for visual organization
+- Booking notes and custom fields
+
+### 💰 **Payment Tracking**
+- Total price and advance payment
+- Multiple payment records per booking
+- Payment due dates
+- Balance calculation
+- 13+ currency support
+- Payment history with notes
+
+### 🔐 **Authentication & Security**
+- Secure email/password sign up and sign in
+- Password strength requirements
+- Forgot password with email recovery
+- Bcrypt password hashing (12 rounds)
+- Rate limiting (5 attempts/hour for sign-up)
+- XSS protection and input sanitization
+- CSRF protection
+- HTTP-only secure cookies
+- Role-based access (User, Admin)
+
+### 🎨 **Modern UI/UX**
+- Responsive design (mobile, tablet, desktop)
+- Gradient color scheme
+- Toast notifications
+- Loading states
+- Form validation with clear error messages
+- Character counters
+- Touch-friendly controls
+- Mobile hamburger menu
+
+### ⚙️ **Settings & Configuration**
+- Business information
+- Currency selection (USD, EUR, GBP, NGN, INR, JPY, CNY, KRW, CAD, AUD, ZAR, BRL, MXN)
+- Date format preferences (MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD, etc.)
+- Timezone support (50+ timezones)
+- Tax rate configuration
+- Low stock threshold
+- Default rental duration
+
+### 🔍 **Advanced Features**
+- Global search across bookings
+- Multi-criteria filtering
+- Custom date ranges
+- Default filter preferences
+- Availability conflict detection
+- Pagination for large datasets
+- Sort by multiple fields
+- Export-ready data structure
+
+---
+
+## 🚀 Tech Stack
+
+### Frontend
+- **Next.js 15** - React framework with App Router
+- **React 18** - UI library
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Utility-first styling
+- **FullCalendar** - Interactive calendar
+- **Lucide Icons** - Modern icon library
+- **date-fns** - Date manipulation
+- **date-fns-tz** - Timezone support
+
+### Backend
+- **Next.js API Routes** - RESTful endpoints
+- **NextAuth.js** - Authentication
+- **PostgreSQL** - Primary database
+- **Prisma ORM** - Type-safe database access
+- **Zod** - Runtime validation
+- **Bcrypt** - Password hashing
+
+### Email
+- **Resend** - Email delivery service
+- **Custom email templates** - Password reset emails
+
+### Deployment
+- **Vercel** - Hosting and CI/CD
+- **Neon/Supabase** - Managed PostgreSQL
+
+---
+
+## 📋 Prerequisites
 
 - Node.js 18+ installed
-- PostgreSQL database (local or cloud like Neon, Supabase)
+- PostgreSQL database (local or cloud)
+- Resend account (for password reset emails)
 
-### Installation
+---
 
-1. **Install dependencies**
+## 🛠️ Installation
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/yourusername/very-simple-inventory.git
+cd very-simple-inventory
+```
+
+### 2. Install Dependencies
 
 ```bash
 npm install
 ```
 
-2. **Set up your database**
+### 3. Configure Environment Variables
 
-Update the `.env` file with your PostgreSQL connection string:
+Create a `.env` file in the root directory:
 
 ```env
+# Database
 DATABASE_URL="postgresql://user:password@localhost:5432/rental_inventory?schema=public"
+
+# Authentication
+NEXTAUTH_SECRET="your-secret-key-here"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Email (Resend)
+RESEND_API_KEY="re_xxxxxxxxxxxx"
+EMAIL_FROM_ADDRESS="support@verysimpleinventory.com"
+EMAIL_FROM_NAME="VerySimple Inventory Support"
 ```
 
-For a free cloud database, you can use:
-- **Neon**: https://neon.tech (recommended for free tier)
+**Get a free database:**
+- **Neon**: https://neon.tech (recommended)
 - **Supabase**: https://supabase.com
 
-3. **Run database migrations**
+**Get Resend API key:**
+- Sign up at https://resend.com
+- Verify your domain or use `onboarding@resend.dev` for testing
+
+### 4. Set Up Database
+
+Run migrations to create tables:
 
 ```bash
 npx prisma migrate dev --name init
 ```
 
-4. **Seed the database with sample data**
+Generate Prisma Client:
+
+```bash
+npx prisma generate
+```
+
+(Optional) Seed with sample data:
 
 ```bash
 npx ts-node prisma/seed.ts
 ```
 
-5. **Start the development server**
+### 5. Start Development Server
 
 ```bash
 npm run dev
 ```
 
-6. **Open your browser**
+Open http://localhost:3000 in your browser.
 
-Navigate to [http://localhost:3000](http://localhost:3000)
+---
 
-## Usage
+## 📖 Usage
+
+### Getting Started
+
+1. **Sign Up**: Create your account at `/auth/sign-up`
+2. **Add Inventory**: Go to Inventory page and add your rental items
+3. **Add Customers**: Create customer profiles
+4. **Create Bookings**: Use the calendar or All Bookings page
+5. **Track Payments**: Record payments and track balances
+6. **Check Availability**: Use the availability checker before confirming bookings
+
+### Password Reset
+
+If you forget your password:
+1. Go to `/auth/forgot-password`
+2. Enter your email
+3. Check your inbox (and spam folder)
+4. Click the reset link
+5. Set a new password
 
 ### Calendar Interface
 
-- **Click on any date** to view rentals and availability for that day
-- **Navigate** using the prev/next buttons or select different views (Month/Week/Day)
-- **Color coding**:
-  - Blue: Confirmed rentals
-  - Red: Items currently out (picked up)
+- **Click dates** to view bookings
+- **Filter items** to focus on specific inventory
+- **Color coding** helps identify different bookings
+- **Day drawer** shows detailed booking information
 
-### Managing Data
+### All Bookings Page
 
-The application provides API endpoints for managing:
+- **Search** by customer, item, or reference
+- **Filter** by date range and status
+- **Sort** by various criteria
+- **Save default filters** for your preferred view
+- **Edit/Delete** bookings directly
 
-- **Items** (`/api/items`): Create and manage inventory items
-- **Customers** (`/api/customers`): Manage customer information
-- **Rentals** (`/api/rentals`): Create and track rentals
-- **Availability** (`/api/day?date=YYYY-MM-DD`): Check availability for specific dates
+### Availability Checker
 
-### Database Schema
+1. Click "Check Availability"
+2. Select date range
+3. See item-by-item availability
+4. Color-coded results (green/orange/red)
 
-The system uses four main models:
+---
 
-- **Item**: Inventory items (tables, chairs, etc.) with total quantity
-- **Customer**: Customer contact information
-- **Rental**: Bookings with start/end dates and status
-- **RentalItem**: Line items linking rentals to specific items and quantities
-
-## Development
-
-### Project Structure
+## 🗂️ Project Structure
 
 ```
-rental-inventory/
+very-simple-inventory/
 ├── app/
-│   ├── api/              # API routes
-│   ├── components/       # React components
-│   ├── lib/             # Utilities (Prisma, validation, dates)
-│   ├── styles/          # Global CSS
-│   ├── layout.tsx       # Root layout
-│   └── page.tsx         # Home page with calendar
+│   ├── (marketing)/          # Marketing pages
+│   ├── api/                  # API routes
+│   │   ├── auth/             # Authentication endpoints
+│   │   ├── bookings/         # Booking CRUD
+│   │   ├── customers/        # Customer CRUD
+│   │   ├── items/            # Inventory CRUD
+│   │   ├── payment/          # Payment tracking
+│   │   └── user/             # User profile
+│   ├── auth/                 # Auth pages (sign-in, sign-up, forgot password)
+│   ├── bookings/             # All bookings page
+│   ├── components/           # React components
+│   ├── customers/            # Customers page
+│   ├── dashboard/            # Main calendar dashboard
+│   ├── inventory/            # Inventory management
+│   ├── lib/                  # Utilities
+│   │   ├── auth.ts           # Auth configuration
+│   │   ├── email.ts          # Email sending (Resend)
+│   │   ├── prisma.ts         # Database client
+│   │   ├── ratelimit.ts      # Rate limiting
+│   │   └── security.ts       # Security utilities
+│   ├── premium/              # Premium features page
+│   ├── settings/             # Settings page
+│   ├── styles/               # Global CSS
+│   ├── layout.tsx            # Root layout
+│   └── page.tsx              # Marketing homepage
 ├── prisma/
-│   ├── schema.prisma    # Database schema
-│   └── seed.ts          # Seed script
+│   ├── schema.prisma         # Database schema
+│   ├── seed.ts               # Seed script
+│   └── migrations/           # Database migrations
+├── public/                   # Static assets
+│   ├── favicon.svg           # Box emoji favicon
+│   ├── icon-192x192.png      # PWA icon
+│   └── manifest.json         # PWA manifest
+├── middleware.ts             # Next.js middleware (auth)
 └── package.json
 ```
 
+---
+
+## 🔒 Security Features
+
+- **Password Requirements**: 8+ characters, uppercase, lowercase, number
+- **Rate Limiting**: 5 sign-up attempts per hour per IP
+- **Password Hashing**: Bcrypt with 12 rounds
+- **XSS Protection**: Input sanitization
+- **CSRF Protection**: Via NextAuth
+- **SQL Injection Prevention**: Via Prisma ORM
+- **Secure Sessions**: HTTP-only cookies, 30-day expiry
+- **Password Reset**: Secure token-based with 1-hour expiration
+- **Email Verification**: Coming soon
+
+---
+
+## 📊 Database Schema
+
+### Core Models
+
+**User**
+- Email, password (hashed), role
+- Business settings (name, currency, timezone)
+
+**Item**
+- Name, unit, quantity, price
+- Notes, timestamps
+
+**Customer**
+- First name, last name
+- Phone, email, address, notes
+
+**Booking**
+- Customer reference
+- Start/end dates
+- Status, reference number, notes
+- Color coding
+- Payment information
+
+**BookingItem**
+- Links bookings to items
+- Quantity per item
+
+**Payment**
+- Amount, date, notes
+- Links to booking
+
+**PasswordResetToken**
+- Token, expiry, used status
+- Links to user
+
+---
+
+## 🚢 Deployment
+
+### Deploy to Vercel
+
+1. **Push to GitHub**
+
+```bash
+git push origin main
+```
+
+2. **Import to Vercel**
+   - Go to https://vercel.com
+   - Click "New Project"
+   - Import your GitHub repository
+
+3. **Configure Environment Variables**
+   - Add all variables from `.env`
+   - Update `NEXTAUTH_URL` to your production URL
+
+4. **Deploy**
+   - Vercel will automatically build and deploy
+
+5. **Run Database Migrations**
+
+```bash
+npx prisma migrate deploy
+```
+
+### Custom Domain
+
+1. Go to Vercel project settings
+2. Navigate to Domains
+3. Add your domain (e.g., `verysimpleinventory.com`)
+4. Update DNS records as instructed
+5. SSL certificate will be auto-configured
+
+---
+
+## 📧 Email Setup (Resend)
+
+### 1. Sign Up for Resend
+- Go to https://resend.com
+- Create a free account
+
+### 2. Add Your Domain
+- Go to Domains section
+- Add your domain (e.g., `verysimpleinventory.com`)
+- Add DNS records provided by Resend
+
+### 3. Configure Environment Variables
+
+```env
+RESEND_API_KEY="re_xxxxxxxxxxxx"
+EMAIL_FROM_ADDRESS="support@yourdomain.com"
+EMAIL_FROM_NAME="Your Business Name"
+NEXTAUTH_URL="https://yourdomain.com"
+```
+
+### 4. Test Password Reset
+1. Go to `/auth/forgot-password`
+2. Enter your email
+3. Check inbox for reset email
+4. Click link and set new password
+
+---
+
+## 🧪 Development
+
 ### Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npx prisma studio` - Open Prisma Studio to view/edit data
-- `npx prisma migrate dev` - Create and apply migrations
-- `npx ts-node prisma/seed.ts` - Run seed script
-
-## Deployment
-
-### Deploying to Vercel
-
-1. Push your code to GitHub
-2. Import the repository in Vercel
-3. Add your `DATABASE_URL` environment variable
-4. Deploy!
-
-Vercel will automatically:
-- Install dependencies
-- Generate Prisma Client
-- Build the Next.js application
-
-### Database Setup
-
-Before deploying, make sure to:
-1. Create a production database (Neon, Supabase, etc.)
-2. Run migrations: `npx prisma migrate deploy`
-3. Optionally seed with data: `npx ts-node prisma/seed.ts`
-
-## Customization
-
-### Adding New Item Types
-
-Edit `prisma/seed.ts` to add your own inventory items:
-
-```typescript
-await prisma.item.create({
-  data: {
-    name: "Your Item Name",
-    unit: "pcs",
-    totalQuantity: 50,
-    minQuantity: 5,
-  },
-});
-```
-
-### Modifying the Calendar
-
-The calendar component is located at `app/components/Calendar.tsx`. You can customize:
-- Initial view (month/week/day)
-- Colors and styling
-- Event display format
-- Header toolbar options
-
-## Troubleshooting
-
-### Database Connection Issues
-
-If you see connection errors:
-1. Check your `DATABASE_URL` in `.env`
-2. Ensure PostgreSQL is running (if local)
-3. Verify your database credentials
-
-### Prisma Client Errors
-
-If Prisma Client is not found:
 ```bash
-npx prisma generate
+# Development
+npm run dev              # Start dev server
+npm run build            # Build for production
+npm start                # Start production server
+
+# Database
+npx prisma studio        # Open database GUI
+npx prisma migrate dev   # Create migration
+npx prisma generate      # Generate Prisma Client
+npx ts-node prisma/seed.ts  # Seed database
+
+# Testing
+npm test                 # Run tests (when available)
 ```
 
-### Clear and Reset Database
+### Database Reset
 
-To start fresh:
+To clear and reseed the database:
+
 ```bash
 npx prisma migrate reset
 npx ts-node prisma/seed.ts
 ```
 
-## Future Enhancements
+---
 
-- Email/SMS notifications for upcoming returns
-- Barcode scanning for item tracking
-- CSV export for reports
-- Multi-location support
-- Payment integration
-- Printable pick lists and contracts
+## 🎯 Roadmap
 
-## License
+### Upcoming Features
+- [ ] Email/SMS notifications
+- [ ] PDF invoice generation
+- [ ] WhatsApp integration
+- [ ] Multi-location support
+- [ ] Team member accounts
+- [ ] API access & webhooks
+- [ ] Mobile apps (iOS, Android)
+- [ ] Barcode/QR scanning
+- [ ] Advanced analytics
+- [ ] Dark mode
+- [ ] Offline mode
+- [ ] Bulk import/export
 
-MIT
+---
 
-## Support
+## 📚 Documentation
 
-For issues or questions, please check the documentation at:
-- [Next.js Docs](https://nextjs.org/docs)
-- [Prisma Docs](https://www.prisma.io/docs)
-- [FullCalendar Docs](https://fullcalendar.io/docs)
-# mummy_inventory_web_phone
+- **FEATURES.md** - Complete feature list
+- **HOW_TO_USE_VSI.md** - User guide
+- **EMAIL_SETUP.md** - Email configuration guide
+- **SECURITY_FIXES.md** - Security audit and fixes
+- **SETUP_PREMIUM.md** - Premium features setup
+
+---
+
+## 🐛 Troubleshooting
+
+### Database Connection Errors
+- Verify `DATABASE_URL` in `.env`
+- Ensure PostgreSQL is running
+- Check network/firewall settings
+
+### Prisma Client Not Found
+```bash
+npx prisma generate
+```
+
+### Email Not Sending
+- Verify Resend API key
+- Check domain verification in Resend
+- Look for errors in server logs
+- Test with `onboarding@resend.dev` first
+
+### Build Errors
+```bash
+rm -rf .next node_modules
+npm install
+npm run build
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+---
+
+## 📄 License
+
+Proprietary - All rights reserved
+
+---
+
+## 💬 Support
+
+- **Documentation**: See docs in this repository
+- **Issues**: Report bugs via GitHub Issues
+- **Email**: support@verysimpleinventory.com
+
+---
+
+## 🙏 Acknowledgments
+
+- Built with [Next.js](https://nextjs.org)
+- Calendar by [FullCalendar](https://fullcalendar.io)
+- Icons by [Lucide](https://lucide.dev)
+- Email by [Resend](https://resend.com)
+
+---
+
+**Very Simple Inventory** - Making rental management simple 📦
+
+Version 2.0.0 | Last Updated: November 2024
