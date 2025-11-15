@@ -97,14 +97,14 @@ table {
 
 /* Buttons auto-size to text; no giant boxes */
 .fc .fc-button {
-  padding: 2px 6px !important;
+  padding: 2px 4px !important;
   height: auto !important;
   min-height: 0 !important;
   min-width: 0 !important;
   border-radius: 6px !important;
   font-weight: 600 !important;
   line-height: 1 !important;
-  font-size: 0.65rem !important;
+  font-size: 0.55rem !important;
   transition: all 0.2s ease !important;
   border: none !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
