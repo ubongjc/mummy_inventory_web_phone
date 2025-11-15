@@ -117,13 +117,13 @@ table {
 
 /* Buttons auto-size to text; no giant boxes */
 .fc .fc-button {
-  padding: 4px 4px !important;
-  height: 18px !important;
-  min-height: 18px !important;
+  padding: 6px 4px 4px 4px !important;
+  height: auto !important;
+  min-height: 0 !important;
   min-width: 0 !important;
   border-radius: 6px !important;
   font-weight: 600 !important;
-  line-height: 1 !important;
+  line-height: 1.2 !important;
   font-size: 0.55rem !important;
   transition: all 0.2s ease !important;
   border: none !important;
@@ -137,7 +137,7 @@ table {
 
 @media (min-width: 768px) {
   .fc .fc-button {
-    padding: 6px 12px !important;
+    padding: 8px 12px 6px 12px !important;
     font-size: 0.9rem !important;
     border-radius: 10px !important;
   }
