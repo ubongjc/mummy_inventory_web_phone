@@ -499,24 +499,11 @@ export default function Home() {
                 </button>
               </div>
 
-              <div className="relative w-10 h-10 rounded-xl shadow-lg overflow-hidden flex-shrink-0">
-                {userProfile?.logoUrl ? (
-                  <img
-                    src={userProfile.logoUrl}
-                    alt="Company Logo"
-                    className="w-full h-full object-contain bg-white"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                    <Package className="w-6 h-6 text-white" />
-                  </div>
-                )}
-              </div>
               <div>
                 <h2 className="text-sm md:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Hi {userProfile?.businessName || 'there'}!
+                  Hi {settings?.businessName || 'there'}!
                 </h2>
-                <p className="text-[10px] md:text-xs text-gray-600 font-medium">
+                <p className="text-[10px] md:text-xs text-gray-600 font-medium whitespace-nowrap">
                   Manage your bookings with ease
                 </p>
               </div>
@@ -528,7 +515,7 @@ export default function Home() {
               className="flex items-center hover:opacity-80 transition-opacity"
               title="Premium Features"
             >
-              <Star className="w-5 h-5 md:w-6 md:h-6 text-yellow-500 fill-yellow-400 flex-shrink-0" />
+              <Star className="w-10 h-10 md:w-12 md:h-12 text-yellow-500 fill-yellow-400 flex-shrink-0" />
             </Link>
           </div>
           {/* Check Availability Button */}
