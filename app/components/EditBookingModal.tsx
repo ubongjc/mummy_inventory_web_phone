@@ -224,7 +224,9 @@ export default function EditBookingModal({
         const rented = bookingsData
           .filter((r: any) => {
             // Exclude the current booking being edited
-            if (booking && r.id === booking.id) return false;
+            if (booking && r.id === booking.id) {
+              return false;
+            }
 
             const bookingStartDate = new Date(r.startDate);
             const bookingEndDate = new Date(r.endDate);
@@ -290,7 +292,9 @@ export default function EditBookingModal({
     setError("");
 
     try {
-      if (!booking) throw new Error("No booking to edit");
+      if (!booking) {
+        throw new Error("No booking to edit");
+      }
 
       // Validate advance payment doesn't exceed total price
       const parsedTotalPrice = totalPrice ? parseFloat(totalPrice) : 0;
@@ -353,7 +357,9 @@ export default function EditBookingModal({
   };
 
 
-  if (!isOpen || !booking) return null;
+  if (!isOpen || !booking) {
+    return null;
+  }
 
   return (
     <>

@@ -22,7 +22,8 @@ export function AppTextarea({
   className,
   ...props
 }: AppTextareaProps) {
-  const textareaId = id ?? React.useId();
+  const generatedId = React.useId();
+  const textareaId = id ?? generatedId;
   const msgId = `${textareaId}-error`;
   const hasError = Boolean(error);
 

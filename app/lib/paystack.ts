@@ -3,6 +3,8 @@
  * Handles payment initialization, verification, and webhooks
  */
 
+import crypto from 'crypto';
+
 export interface PaystackConfig {
   publicKey: string;
   secretKey: string;
@@ -109,7 +111,6 @@ export class PaystackService {
    * Validate Paystack webhook signature
    */
   validateWebhook(signature: string, body: string): boolean {
-    const crypto = require('crypto');
     const hash = crypto
       .createHmac('sha512', this.secretKey)
       .update(body)

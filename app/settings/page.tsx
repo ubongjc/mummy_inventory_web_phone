@@ -85,7 +85,9 @@ export default function SettingsPage() {
   const fetchSettings = async () => {
     try {
       const response = await fetch("/api/settings");
-      if (!response.ok) throw new Error("Failed to fetch settings");
+      if (!response.ok) {
+        throw new Error("Failed to fetch settings");
+      }
       const data = await response.json();
       setSettings(data);
     } catch (error) {
@@ -109,7 +111,9 @@ export default function SettingsPage() {
   };
 
   const handleSave = async () => {
-    if (!settings) return;
+    if (!settings) {
+      return;
+    }
 
     setSaving(true);
     setMessage(null);
@@ -121,7 +125,9 @@ export default function SettingsPage() {
         body: JSON.stringify(settings),
       });
 
-      if (!response.ok) throw new Error("Failed to save settings");
+      if (!response.ok) {
+        throw new Error("Failed to save settings");
+      }
 
       const updatedSettings = await response.json();
       setSettings(updatedSettings);
@@ -138,7 +144,9 @@ export default function SettingsPage() {
   };
 
   const updateSetting = <K extends keyof Settings>(key: K, value: Settings[K]) => {
-    if (!settings) return;
+    if (!settings) {
+      return;
+    }
     setSettings({ ...settings, [key]: value });
   };
 
@@ -154,12 +162,16 @@ export default function SettingsPage() {
   };
 
   const updateProfile = <K extends keyof UserProfile>(key: K, value: UserProfile[K]) => {
-    if (!userProfile) return;
+    if (!userProfile) {
+      return;
+    }
     setUserProfile({ ...userProfile, [key]: value });
   };
 
   const handleSaveProfile = async () => {
-    if (!userProfile) return;
+    if (!userProfile) {
+      return;
+    }
 
     setSavingProfile(true);
     setMessage(null);
@@ -176,7 +188,9 @@ export default function SettingsPage() {
         }),
       });
 
-      if (!response.ok) throw new Error("Failed to save profile");
+      if (!response.ok) {
+        throw new Error("Failed to save profile");
+      }
 
       const updatedProfile = await response.json();
       setUserProfile(updatedProfile);

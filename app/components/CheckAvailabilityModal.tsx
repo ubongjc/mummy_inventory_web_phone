@@ -303,7 +303,9 @@ export default function CheckAvailabilityModal({
     checkItemsAvailability();
   }, [startDate, endDate, bookingItems, items]);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <>

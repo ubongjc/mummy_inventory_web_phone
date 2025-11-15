@@ -28,7 +28,9 @@ export function useSettings() {
   const fetchSettings = async () => {
     try {
       const response = await fetch("/api/settings");
-      if (!response.ok) throw new Error("Failed to fetch settings");
+      if (!response.ok) {
+        throw new Error("Failed to fetch settings");
+      }
       const data = await response.json();
       setSettings(data);
       setError(null);
@@ -41,10 +43,14 @@ export function useSettings() {
   };
 
   const formatCurrency = (amount: number | null | undefined | any): string => {
-    if (amount === null || amount === undefined) return "-";
+    if (amount === null || amount === undefined) {
+      return "-";
+    }
     // Convert Decimal objects to numbers
     const numAmount = typeof amount === 'number' ? amount : Number(amount);
-    if (!settings) return `$${numAmount.toFixed(2)}`;
+    if (!settings) {
+      return `$${numAmount.toFixed(2)}`;
+    }
     return `${settings.currencySymbol}${numAmount.toFixed(2)}`;
   };
 

@@ -148,7 +148,9 @@ export function getClientIp(request: NextRequest): string {
  * Sanitize string input to prevent XSS
  */
 export function sanitizeString(input: string): string {
-  if (typeof input !== "string") return "";
+  if (typeof input !== "string") {
+    return "";
+  }
 
   // Remove HTML tags
   let sanitized = input.replace(/<[^>]*>/g, "");

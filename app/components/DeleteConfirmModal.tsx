@@ -35,7 +35,9 @@ export default function DeleteConfirmModal({
     onClose();
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <>
