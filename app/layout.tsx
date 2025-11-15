@@ -16,13 +16,30 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
+      { url: "/icon.svg", type: "image/svg+xml" },
     ],
-    apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+  },
+  openGraph: {
+    title: "Very Simple Inventory 📦",
+    description: "Manage your rental business with inventory tracking, bookings, customer management, and premium features",
+    url: "https://verysimpleinventory.com",
+    siteName: "Very Simple Inventory",
+    images: [
+      {
+        url: "/og-image.svg",
+        width: 1200,
+        height: 630,
+        alt: "Very Simple Inventory 📦",
+      },
     ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Very Simple Inventory 📦",
+    description: "Manage your rental business with inventory tracking, bookings, and customers",
+    images: ["/og-image.svg"],
   },
   themeColor: "#2563eb",
 };
