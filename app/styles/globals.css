@@ -66,12 +66,19 @@ table {
 /* Keep the toolbar on a single line */
 .fc .fc-toolbar {
   flex-wrap: nowrap !important;
-  margin-bottom: 1rem !important;
+  margin-bottom: 2.5rem !important;
   padding: 0 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
   gap: 4px !important;
+}
+
+/* Mobile spacing adjustment */
+@media (max-width: 768px) {
+  .fc .fc-toolbar {
+    margin-bottom: 1.5rem !important;
+  }
 }
 
 .fc .fc-header-toolbar,
