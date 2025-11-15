@@ -47,22 +47,23 @@ export default function HomePage() {
               <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
                 <Package className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
                 Very Simple Inventory
               </h1>
             </div>
             <div className="flex items-center gap-2">
               <Link
                 href="/auth/sign-in"
-                className="px-2 py-1 md:px-4 md:py-2 text-gray-700 hover:text-blue-600 font-semibold transition-colors text-xs md:text-base"
+                className="px-2 py-1 md:px-4 md:py-2 text-gray-700 hover:text-blue-600 font-semibold transition-colors text-xs md:text-base whitespace-nowrap"
               >
                 Log In
               </Link>
               <Link
                 href="/auth/sign-up"
-                className="px-2 py-1 md:px-6 md:py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md text-xs md:text-base"
+                className="px-2 py-1 md:px-6 md:py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md text-xs md:text-base whitespace-nowrap"
               >
-                Sign Up Free
+                <span className="md:hidden">Sign Up</span>
+                <span className="hidden md:inline">Sign Up Free</span>
               </Link>
             </div>
           </div>
@@ -109,84 +110,84 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="max-w-7xl mx-auto px-4 py-8 md:py-16 bg-white rounded-2xl md:rounded-3xl shadow-xl mb-8 md:mb-16">
-        <div className="text-center mb-12">
-          <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+      <section className="max-w-7xl mx-auto px-4 py-4 md:py-16 bg-white rounded-2xl md:rounded-3xl shadow-xl mb-4 md:mb-16">
+        <div className="text-center mb-4 md:mb-12">
+          <h3 className="text-lg md:text-4xl font-bold text-gray-900 mb-2 md:mb-4">
             Everything You Need to Run Your Rental Business
           </h3>
-          <p className="text-lg text-gray-600">
+          <p className="text-sm md:text-lg text-gray-600">
             Powerful features designed for rental businesses of all sizes
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-8">
           {/* Feature 1 */}
-          <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border-2 border-blue-200">
-            <div className="p-3 bg-blue-600 rounded-xl w-fit mb-4">
-              <CalendarDays className="w-6 h-6 text-white" />
+          <div className="p-3 md:p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg md:rounded-2xl border-2 border-blue-200">
+            <div className="p-2 md:p-3 bg-blue-600 rounded-lg md:rounded-xl w-fit mb-2 md:mb-4">
+              <CalendarDays className="w-4 h-4 md:w-6 md:h-6 text-white" />
             </div>
-            <h4 className="text-xl font-bold text-gray-900 mb-2">Visual Calendar</h4>
-            <p className="text-gray-600">
+            <h4 className="text-xs md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Visual Calendar</h4>
+            <p className="text-[10px] md:text-base text-gray-600">
               See all your bookings at a glance with an intuitive calendar view. Quickly spot
               conflicts and available dates.
             </p>
           </div>
 
           {/* Feature 2 */}
-          <div className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl border-2 border-purple-200">
-            <div className="p-3 bg-purple-600 rounded-xl w-fit mb-4">
-              <Package className="w-6 h-6 text-white" />
+          <div className="p-3 md:p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg md:rounded-2xl border-2 border-purple-200">
+            <div className="p-2 md:p-3 bg-purple-600 rounded-lg md:rounded-xl w-fit mb-2 md:mb-4">
+              <Package className="w-4 h-4 md:w-6 md:h-6 text-white" />
             </div>
-            <h4 className="text-xl font-bold text-gray-900 mb-2">Inventory Tracking</h4>
-            <p className="text-gray-600">
+            <h4 className="text-xs md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Inventory Tracking</h4>
+            <p className="text-[10px] md:text-base text-gray-600">
               Manage your rental items with ease. Track quantities, availability, and get low stock
               alerts automatically.
             </p>
           </div>
 
           {/* Feature 3 */}
-          <div className="p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl border-2 border-green-200">
-            <div className="p-3 bg-green-600 rounded-xl w-fit mb-4">
-              <Users className="w-6 h-6 text-white" />
+          <div className="p-3 md:p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-lg md:rounded-2xl border-2 border-green-200">
+            <div className="p-2 md:p-3 bg-green-600 rounded-lg md:rounded-xl w-fit mb-2 md:mb-4">
+              <Users className="w-4 h-4 md:w-6 md:h-6 text-white" />
             </div>
-            <h4 className="text-xl font-bold text-gray-900 mb-2">Customer Management</h4>
-            <p className="text-gray-600">
+            <h4 className="text-xs md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Customer Management</h4>
+            <p className="text-[10px] md:text-base text-gray-600">
               Keep track of your customers and their booking history. Build better relationships and
               improve service.
             </p>
           </div>
 
           {/* Feature 4 */}
-          <div className="p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl border-2 border-orange-200">
-            <div className="p-3 bg-orange-600 rounded-xl w-fit mb-4">
-              <BarChart3 className="w-6 h-6 text-white" />
+          <div className="p-3 md:p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg md:rounded-2xl border-2 border-orange-200">
+            <div className="p-2 md:p-3 bg-orange-600 rounded-lg md:rounded-xl w-fit mb-2 md:mb-4">
+              <BarChart3 className="w-4 h-4 md:w-6 md:h-6 text-white" />
             </div>
-            <h4 className="text-xl font-bold text-gray-900 mb-2">Real-time Analytics</h4>
-            <p className="text-gray-600">
+            <h4 className="text-xs md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Real-time Analytics</h4>
+            <p className="text-[10px] md:text-base text-gray-600">
               Track your business performance with detailed analytics. Monitor revenue, bookings,
               and popular items.
             </p>
           </div>
 
           {/* Feature 5 */}
-          <div className="p-6 bg-gradient-to-br from-pink-50 to-pink-100 rounded-2xl border-2 border-pink-200">
-            <div className="p-3 bg-pink-600 rounded-xl w-fit mb-4">
-              <Clock className="w-6 h-6 text-white" />
+          <div className="p-3 md:p-6 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg md:rounded-2xl border-2 border-pink-200">
+            <div className="p-2 md:p-3 bg-pink-600 rounded-lg md:rounded-xl w-fit mb-2 md:mb-4">
+              <Clock className="w-4 h-4 md:w-6 md:h-6 text-white" />
             </div>
-            <h4 className="text-xl font-bold text-gray-900 mb-2">Availability Checker</h4>
-            <p className="text-gray-600">
+            <h4 className="text-xs md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Availability Checker</h4>
+            <p className="text-[10px] md:text-base text-gray-600">
               Instantly check item availability for any date range. Speed up customer inquiries and
               bookings.
             </p>
           </div>
 
           {/* Feature 6 */}
-          <div className="p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl border-2 border-indigo-200">
-            <div className="p-3 bg-indigo-600 rounded-xl w-fit mb-4">
-              <Smartphone className="w-6 h-6 text-white" />
+          <div className="p-3 md:p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg md:rounded-2xl border-2 border-indigo-200">
+            <div className="p-2 md:p-3 bg-indigo-600 rounded-lg md:rounded-xl w-fit mb-2 md:mb-4">
+              <Smartphone className="w-4 h-4 md:w-6 md:h-6 text-white" />
             </div>
-            <h4 className="text-xl font-bold text-gray-900 mb-2">Mobile Friendly</h4>
-            <p className="text-gray-600">
+            <h4 className="text-xs md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Mobile Friendly</h4>
+            <p className="text-[10px] md:text-base text-gray-600">
               Access your inventory from anywhere. Fully responsive design works perfectly on phones
               and tablets.
             </p>
@@ -195,43 +196,43 @@ export default function HomePage() {
       </section>
 
       {/* How It Works Section */}
-      <section className="max-w-7xl mx-auto px-4 py-16 mb-16">
-        <div className="text-center mb-12">
-          <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+      <section className="max-w-7xl mx-auto px-4 py-4 md:py-16 mb-4 md:mb-16">
+        <div className="text-center mb-4 md:mb-12">
+          <h3 className="text-lg md:text-4xl font-bold text-gray-900 mb-2 md:mb-4">
             Get Started in Minutes
           </h3>
-          <p className="text-lg text-gray-600">
+          <p className="text-sm md:text-lg text-gray-600">
             Three simple steps to start managing your rental inventory
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-3 md:grid-cols-3 gap-3 md:gap-8">
           <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+            <div className="w-10 h-10 md:w-16 md:h-16 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-base md:text-2xl font-bold mx-auto mb-2 md:mb-4">
               1
             </div>
-            <h4 className="text-xl font-bold text-gray-900 mb-2">Sign Up Free</h4>
-            <p className="text-gray-600">
+            <h4 className="text-xs md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Sign Up Free</h4>
+            <p className="text-[10px] md:text-base text-gray-600">
               Create your account in seconds. No credit card required to get started.
             </p>
           </div>
 
           <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+            <div className="w-10 h-10 md:w-16 md:h-16 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-full flex items-center justify-center text-base md:text-2xl font-bold mx-auto mb-2 md:mb-4">
               2
             </div>
-            <h4 className="text-xl font-bold text-gray-900 mb-2">Add Your Items</h4>
-            <p className="text-gray-600">
+            <h4 className="text-xs md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Add Your Items</h4>
+            <p className="text-[10px] md:text-base text-gray-600">
               Quickly add your rental inventory items with quantities and details.
             </p>
           </div>
 
           <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-orange-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+            <div className="w-10 h-10 md:w-16 md:h-16 bg-gradient-to-r from-pink-500 to-orange-600 text-white rounded-full flex items-center justify-center text-base md:text-2xl font-bold mx-auto mb-2 md:mb-4">
               3
             </div>
-            <h4 className="text-xl font-bold text-gray-900 mb-2">Start Booking</h4>
-            <p className="text-gray-600">
+            <h4 className="text-xs md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Start Booking</h4>
+            <p className="text-[10px] md:text-base text-gray-600">
               Create bookings, track availability, and grow your rental business.
             </p>
           </div>
@@ -239,119 +240,81 @@ export default function HomePage() {
       </section>
 
       {/* Premium Features - Coming Soon */}
-      <section className="max-w-7xl mx-auto px-4 py-16 mb-16">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full font-semibold text-sm mb-4">
-            <Clock className="w-4 h-4" />
+      <section className="max-w-7xl mx-auto px-4 py-4 md:py-16 mb-4 md:mb-16">
+        <div className="text-center mb-4 md:mb-12">
+          <div className="inline-flex items-center gap-1 md:gap-2 bg-purple-100 text-purple-700 px-2 py-1 md:px-4 md:py-2 rounded-full font-semibold text-xs md:text-sm mb-2 md:mb-4">
+            <Clock className="w-3 h-3 md:w-4 md:h-4" />
             Coming Soon
           </div>
-          <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h3 className="text-lg md:text-4xl font-bold text-gray-900 mb-2 md:mb-4">
             Premium Features on the Way
           </h3>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+          <p className="text-sm md:text-lg text-gray-600 max-w-3xl mx-auto">
             We're working hard to bring you advanced features to take your rental business to the next level.
             These features are currently in development and will be available soon.
           </p>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12">
-          <div className="grid md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl p-3 md:p-12">
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-6">
             {/* Premium Feature 1 */}
-            <div className="flex items-start gap-4 p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border-2 border-blue-200">
-              <div className="p-3 bg-blue-600 rounded-xl flex-shrink-0">
-                <Star className="w-6 h-6 text-white" />
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg md:rounded-2xl border border-blue-200 md:border-2">
+              <div className="p-1.5 md:p-3 bg-blue-600 rounded-lg md:rounded-xl flex-shrink-0">
+                <Star className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-lg font-bold text-gray-900 mb-2">Advanced Analytics Dashboard</h4>
-                <p className="text-gray-600">
-                  Get deep insights into your business with comprehensive analytics, revenue tracking,
-                  and performance metrics.
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Advanced Analytics</h4>
+                <p className="text-[10px] md:text-base text-gray-600">
+                  Deep insights with comprehensive analytics and revenue tracking.
                 </p>
-                <span className="inline-block mt-2 text-sm text-blue-600 font-semibold">Not yet available</span>
               </div>
             </div>
 
             {/* Premium Feature 2 */}
-            <div className="flex items-start gap-4 p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl border-2 border-purple-200">
-              <div className="p-3 bg-purple-600 rounded-xl flex-shrink-0">
-                <Users className="w-6 h-6 text-white" />
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg md:rounded-2xl border border-purple-200 md:border-2">
+              <div className="p-1.5 md:p-3 bg-purple-600 rounded-lg md:rounded-xl flex-shrink-0">
+                <Users className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-lg font-bold text-gray-900 mb-2">Multi-User Access</h4>
-                <p className="text-gray-600">
-                  Collaborate with your team by adding multiple users with different permission levels
-                  to your account.
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Multi-User Access</h4>
+                <p className="text-[10px] md:text-base text-gray-600">
+                  Add team members with different permission levels.
                 </p>
-                <span className="inline-block mt-2 text-sm text-purple-600 font-semibold">Not yet available</span>
               </div>
             </div>
 
             {/* Premium Feature 3 */}
-            <div className="flex items-start gap-4 p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl border-2 border-green-200">
-              <div className="p-3 bg-green-600 rounded-xl flex-shrink-0">
-                <TrendingUp className="w-6 h-6 text-white" />
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-lg md:rounded-2xl border border-green-200 md:border-2">
+              <div className="p-1.5 md:p-3 bg-green-600 rounded-lg md:rounded-xl flex-shrink-0">
+                <TrendingUp className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-lg font-bold text-gray-900 mb-2">Custom Branding</h4>
-                <p className="text-gray-600">
-                  Personalize your booking pages and customer communications with your own logo,
-                  colors, and branding.
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Custom Branding</h4>
+                <p className="text-[10px] md:text-base text-gray-600">
+                  Personalize with your own logo, colors, and branding.
                 </p>
-                <span className="inline-block mt-2 text-sm text-green-600 font-semibold">Not yet available</span>
               </div>
             </div>
 
             {/* Premium Feature 4 */}
-            <div className="flex items-start gap-4 p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl border-2 border-orange-200">
-              <div className="p-3 bg-orange-600 rounded-xl flex-shrink-0">
-                <BarChart3 className="w-6 h-6 text-white" />
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg md:rounded-2xl border border-orange-200 md:border-2">
+              <div className="p-1.5 md:p-3 bg-orange-600 rounded-lg md:rounded-xl flex-shrink-0">
+                <BarChart3 className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-lg font-bold text-gray-900 mb-2">Data Export & Reports</h4>
-                <p className="text-gray-600">
-                  Export your data to CSV or PDF formats and generate detailed reports for
-                  accounting and analysis.
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Data Export & Reports</h4>
+                <p className="text-[10px] md:text-base text-gray-600">
+                  Export to CSV or PDF and generate detailed reports.
                 </p>
-                <span className="inline-block mt-2 text-sm text-orange-600 font-semibold">Not yet available</span>
-              </div>
-            </div>
-
-            {/* Premium Feature 5 */}
-            <div className="flex items-start gap-4 p-6 bg-gradient-to-br from-pink-50 to-pink-100 rounded-2xl border-2 border-pink-200">
-              <div className="p-3 bg-pink-600 rounded-xl flex-shrink-0">
-                <Zap className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h4 className="text-lg font-bold text-gray-900 mb-2">API Access</h4>
-                <p className="text-gray-600">
-                  Integrate with your existing systems and build custom workflows using our
-                  comprehensive API.
-                </p>
-                <span className="inline-block mt-2 text-sm text-pink-600 font-semibold">Not yet available</span>
-              </div>
-            </div>
-
-            {/* Premium Feature 6 */}
-            <div className="flex items-start gap-4 p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl border-2 border-indigo-200">
-              <div className="p-3 bg-indigo-600 rounded-xl flex-shrink-0">
-                <CheckCircle className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h4 className="text-lg font-bold text-gray-900 mb-2">Priority Support</h4>
-                <p className="text-gray-600">
-                  Get faster response times and dedicated support from our team to keep your
-                  business running smoothly.
-                </p>
-                <span className="inline-block mt-2 text-sm text-indigo-600 font-semibold">Not yet available</span>
               </div>
             </div>
           </div>
 
-          <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border-2 border-blue-200 text-center">
-            <p className="text-gray-700 font-semibold mb-2">
+          <div className="col-span-2 mt-2 md:mt-8 p-3 md:p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg md:rounded-2xl border md:border-2 border-blue-200 text-center">
+            <p className="text-xs md:text-base text-gray-700 font-semibold mb-1 md:mb-2">
               Want to be notified when premium features launch?
             </p>
-            <p className="text-gray-600">
+            <p className="text-[10px] md:text-base text-gray-600">
               Sign up for a free account now and we'll let you know as soon as these features become available.
             </p>
           </div>
@@ -359,47 +322,47 @@ export default function HomePage() {
       </section>
 
       {/* About Section */}
-      <section className="max-w-7xl mx-auto px-4 py-16 mb-16">
-        <div className="bg-white rounded-3xl shadow-xl p-12">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+      <section className="max-w-7xl mx-auto px-4 py-4 md:py-16 mb-4 md:mb-16">
+        <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl p-4 md:p-12">
+          <div className="grid md:grid-cols-2 gap-4 md:gap-12 items-center">
             <div>
-              <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+              <h3 className="text-lg md:text-4xl font-bold text-gray-900 mb-2 md:mb-6">
                 About Very Simple Inventory
               </h3>
-              <p className="text-lg text-gray-600 mb-4">
+              <p className="text-xs md:text-lg text-gray-600 mb-2 md:mb-4">
                 We built Very Simple Inventory because rental businesses deserve better tools.
                 Managing inventory, bookings, and customers shouldn't be complicated or expensive.
               </p>
-              <p className="text-lg text-gray-600 mb-4">
+              <p className="text-xs md:text-lg text-gray-600 hidden md:block mb-4">
                 Our mission is to help rental businesses of all sizes streamline their operations,
                 reduce manual work, and focus on what matters most: growing their business and
                 serving their customers.
               </p>
-              <p className="text-lg text-gray-600">
+              <p className="text-xs md:text-lg text-gray-600 hidden md:block">
                 Whether you're renting equipment, party supplies, or anything in between, Very
                 Simple Inventory gives you the tools you need to succeed.
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl border-2 border-blue-200">
-                <TrendingUp className="w-8 h-8 text-blue-600 mb-2" />
-                <div className="text-3xl font-bold text-gray-900">1000+</div>
-                <div className="text-gray-600">Active Users</div>
+            <div className="grid grid-cols-2 gap-2 md:gap-4">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 md:p-6 rounded-lg md:rounded-2xl border md:border-2 border-blue-200">
+                <TrendingUp className="w-4 h-4 md:w-8 md:h-8 text-blue-600 mb-1 md:mb-2" />
+                <div className="text-base md:text-3xl font-bold text-gray-900">1000+</div>
+                <div className="text-[10px] md:text-base text-gray-600">Active Users</div>
               </div>
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl border-2 border-purple-200">
-                <Package className="w-8 h-8 text-purple-600 mb-2" />
-                <div className="text-3xl font-bold text-gray-900">50k+</div>
-                <div className="text-gray-600">Items Managed</div>
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-3 md:p-6 rounded-lg md:rounded-2xl border md:border-2 border-purple-200">
+                <Package className="w-4 h-4 md:w-8 md:h-8 text-purple-600 mb-1 md:mb-2" />
+                <div className="text-base md:text-3xl font-bold text-gray-900">50k+</div>
+                <div className="text-[10px] md:text-base text-gray-600">Items Managed</div>
               </div>
-              <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl border-2 border-green-200">
-                <CalendarDays className="w-8 h-8 text-green-600 mb-2" />
-                <div className="text-3xl font-bold text-gray-900">100k+</div>
-                <div className="text-gray-600">Bookings Created</div>
+              <div className="bg-gradient-to-br from-green-50 to-green-100 p-3 md:p-6 rounded-lg md:rounded-2xl border md:border-2 border-green-200">
+                <CalendarDays className="w-4 h-4 md:w-8 md:h-8 text-green-600 mb-1 md:mb-2" />
+                <div className="text-base md:text-3xl font-bold text-gray-900">100k+</div>
+                <div className="text-[10px] md:text-base text-gray-600">Bookings Created</div>
               </div>
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-2xl border-2 border-orange-200">
-                <Star className="w-8 h-8 text-orange-600 mb-2" />
-                <div className="text-3xl font-bold text-gray-900">4.9</div>
-                <div className="text-gray-600">Average Rating</div>
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-3 md:p-6 rounded-lg md:rounded-2xl border md:border-2 border-orange-200">
+                <Star className="w-4 h-4 md:w-8 md:h-8 text-orange-600 mb-1 md:mb-2" />
+                <div className="text-base md:text-3xl font-bold text-gray-900">4.9</div>
+                <div className="text-[10px] md:text-base text-gray-600">Average Rating</div>
               </div>
             </div>
           </div>
