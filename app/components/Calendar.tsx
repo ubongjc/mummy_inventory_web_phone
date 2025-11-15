@@ -285,6 +285,16 @@ export default function Calendar({
               center: 'title',
               right: 'dayGridMonth,dayGridWeek,dayGridDay',
             }}
+            buttonText={{
+              today: 'Today',
+              month: 'Month',
+              week: 'Week',
+              day: 'Day',
+            }}
+            titleFormat={{
+              year: 'numeric',
+              month: 'long',
+            }}
             // Mobile-optimized settings
             views={{
               dayGridMonth: {

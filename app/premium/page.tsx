@@ -141,88 +141,31 @@ export default function PremiumPage() {
         {/* Hero Section */}
         <div className="text-center max-w-3xl mx-auto">
           <h2 className="text-lg md:text-4xl font-bold text-black mb-2 md:mb-4">
-            Take Your Rental Business to the Next Level
+            Premium Features Coming Soon
           </h2>
           <p className="text-xs md:text-lg text-gray-700">
-            Get more bookings, automate your workflow, and grow your revenue with Premium features
+            These powerful features are currently in development and will be available soon to help you grow your rental business
           </p>
         </div>
 
         {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-6">
           {features.map((feature, index) => (
             <div
               key={index}
-              className="bg-white rounded-lg md:rounded-2xl shadow-lg p-3 md:p-6 border border-gray-200 hover:shadow-xl transition-all"
+              className="bg-white rounded-lg md:rounded-2xl shadow-lg p-2 md:p-6 border border-gray-200 hover:shadow-xl transition-all"
             >
               <div
-                className={`inline-block p-2 md:p-3 bg-gradient-to-r ${feature.color} rounded-lg md:rounded-xl mb-2 md:mb-4`}
+                className={`inline-block p-1.5 md:p-3 bg-gradient-to-r ${feature.color} rounded-lg md:rounded-xl mb-1 md:mb-4`}
               >
                 <div className="text-white">{feature.icon}</div>
               </div>
-              <h3 className="text-sm md:text-xl font-bold text-black mb-1 md:mb-2">
+              <h3 className="text-xs md:text-xl font-bold text-black mb-1 md:mb-2">
                 {feature.title}
               </h3>
-              <p className="text-xs md:text-base text-gray-600">{feature.description}</p>
+              <p className="text-[10px] md:text-base text-gray-600">{feature.description}</p>
             </div>
           ))}
-        </div>
-
-        {/* Pricing Section */}
-        <div className="pt-4 md:pt-8">
-          <div className="text-center mb-4 md:mb-8">
-            <h2 className="text-lg md:text-3xl font-bold text-black mb-1 md:mb-2">
-              Choose Your Plan
-            </h2>
-            <p className="text-xs md:text-base text-gray-600">
-              Start with a 14-day free trial. No credit card required.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-3 md:gap-6">
-            {plans.map((plan, index) => (
-              <div
-                key={index}
-                className={`bg-white rounded-lg md:rounded-2xl shadow-lg p-4 md:p-8 border-2 ${
-                  plan.popular ? 'border-yellow-500 relative' : 'border-gray-200'
-                } hover:shadow-xl transition-all`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-2 md:-top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="inline-block px-2 py-0.5 md:px-4 md:py-1 bg-gradient-to-r from-yellow-500 to-amber-600 text-white text-[10px] md:text-sm font-bold rounded-full shadow-lg">
-                      MOST POPULAR
-                    </span>
-                  </div>
-                )}
-
-                <div className="text-center mb-3 md:mb-6">
-                  <h3 className="text-base md:text-2xl font-bold text-black mb-1 md:mb-2">
-                    {plan.name}
-                  </h3>
-                  <div className="flex items-baseline justify-center gap-0.5 md:gap-1 mb-1">
-                    <span className="text-2xl md:text-4xl font-bold text-black">{plan.price}</span>
-                    <span className="text-xs md:text-base text-gray-600">/{plan.period}</span>
-                  </div>
-                </div>
-
-                <ul className="space-y-1.5 md:space-y-3 mb-4 md:mb-8">
-                  {plan.features.map((feature, fIndex) => (
-                    <li key={fIndex} className="flex items-start gap-1.5 md:gap-2">
-                      <CheckCircle className="w-3.5 h-3.5 md:w-5 md:h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 text-xs md:text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  disabled={plan.ctaDisabled}
-                  className={`w-full py-2 md:py-3 bg-gradient-to-r ${plan.color} text-white font-bold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed text-xs md:text-base`}
-                >
-                  {plan.cta}
-                </button>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Trust Section */}
@@ -255,22 +198,6 @@ export default function PremiumPage() {
               </ul>
             </div>
           </div>
-        </div>
-
-        {/* CTA Section */}
-        <div className="text-center bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg md:rounded-2xl shadow-xl p-6 md:p-12">
-          <h2 className="text-base md:text-3xl font-bold text-white mb-2 md:mb-4">
-            Ready to Grow Your Business?
-          </h2>
-          <p className="text-xs md:text-xl text-white/90 mb-4 md:mb-8">
-            Join hundreds of rental businesses using Premium to increase bookings and revenue
-          </p>
-          <button className="px-4 py-2 md:px-8 md:py-4 bg-white text-blue-600 font-bold rounded-lg hover:bg-gray-100 transition-all shadow-lg text-sm md:text-lg">
-            Start Your Free Trial
-          </button>
-          <p className="text-white/80 text-[10px] md:text-sm mt-2 md:mt-4">
-            No credit card required • Cancel anytime
-          </p>
         </div>
       </main>
     </div>

@@ -82,9 +82,9 @@ export default function SignUpPage() {
       {/* Back to Home Link */}
       <Link
         href="/"
-        className="fixed top-2 left-2 md:top-4 md:left-4 flex items-center gap-1 md:gap-2 px-2 py-1 md:px-4 md:py-2 bg-white text-gray-700 hover:text-blue-600 rounded-lg shadow-md hover:shadow-lg transition-all font-semibold text-xs md:text-base"
+        className="fixed top-2 left-2 md:top-4 md:left-4 flex items-center gap-2 px-6 py-4 md:px-8 md:py-5 bg-white text-gray-700 hover:text-blue-600 rounded-lg shadow-md hover:shadow-lg transition-all font-semibold text-base md:text-lg"
       >
-        <Home className="w-3 h-3 md:w-4 md:h-4" />
+        <Home className="w-8 h-8 md:w-10 md:h-10" />
         <span className="hidden sm:inline">Back to Home</span>
       </Link>
 

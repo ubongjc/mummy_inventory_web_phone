@@ -106,7 +106,7 @@ model Payment {
 model Settings {
   id                    String   @id @default(cuid())
   userId                String   @unique // Each user has their own settings
-  businessName          String   @default("My Rental Business") @db.VarChar(100)
+  businessName          String   @default("My Rental Business") @db.VarChar(25)
   currency              String   @default("USD") @db.VarChar(3) // ISO 4217 code
   currencySymbol        String   @default("$") @db.VarChar(5)
   businessPhone         String?  @db.VarChar(15) // E.164 format

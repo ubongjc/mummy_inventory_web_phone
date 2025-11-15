@@ -288,9 +288,12 @@ export default function SettingsPage() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium"
                 placeholder="My Booking Business"
                 minLength={2}
-                maxLength={100}
+                maxLength={25}
                 required
               />
+              <p className="text-xs text-gray-600 mt-1">
+                {settings.businessName.length}/25 characters
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
