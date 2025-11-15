@@ -40,28 +40,28 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-3 md:p-4">
       {/* Back to Home Link */}
       <Link
         href="/"
-        className="fixed top-4 left-4 flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-blue-600 rounded-lg shadow-md hover:shadow-lg transition-all font-semibold"
+        className="fixed top-2 left-2 md:top-4 md:left-4 flex items-center gap-2 px-2 py-1.5 md:px-4 md:py-2 bg-white text-gray-700 hover:text-blue-600 rounded-lg shadow-md hover:shadow-lg transition-all font-semibold text-xs md:text-base"
       >
-        <Home className="w-4 h-4" />
+        <Home className="w-3 h-3 md:w-4 md:h-4" />
         <span className="hidden sm:inline">Back to Home</span>
       </Link>
 
       <div className="w-full max-w-md">
         {/* Logo/Header */}
-        <div className="text-center mb-8">
-          <div className="inline-block p-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-lg mb-4">
-            <LogIn className="w-12 h-12 text-white" />
+        <div className="text-center mb-4 md:mb-8">
+          <div className="inline-block p-3 md:p-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl md:rounded-2xl shadow-lg mb-2 md:mb-4">
+            <LogIn className="w-8 h-8 md:w-12 md:h-12 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-black mb-2">Welcome Back</h1>
-          <p className="text-gray-600">Sign in to your rental management account</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-black mb-1 md:mb-2">Welcome Back</h1>
+          <p className="text-sm md:text-base text-gray-600">Sign in to your rental management account</p>
         </div>
 
         {/* Sign In Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
+        <div className="bg-white rounded-xl md:rounded-2xl shadow-xl p-4 md:p-8 border border-gray-200">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
@@ -116,7 +116,7 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-2.5 md:py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>

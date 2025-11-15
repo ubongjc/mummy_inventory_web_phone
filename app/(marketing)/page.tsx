@@ -51,16 +51,16 @@ export default function HomePage() {
                 Very Simple Inventory
               </h1>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Link
                 href="/auth/sign-in"
-                className="px-4 py-2 text-gray-700 hover:text-blue-600 font-semibold transition-colors"
+                className="px-2 py-1.5 md:px-4 md:py-2 text-gray-700 hover:text-blue-600 font-semibold transition-colors text-xs md:text-base"
               >
                 Log In
               </Link>
               <Link
                 href="/auth/sign-up"
-                className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md"
+                className="px-3 py-1.5 md:px-6 md:py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md text-xs md:text-base"
               >
                 Sign Up Free
               </Link>
@@ -70,46 +70,46 @@ export default function HomePage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 py-16 md:py-24">
+      <section className="max-w-7xl mx-auto px-4 py-8 md:py-24">
         <div className="text-center">
-          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-semibold text-sm mb-6">
-            <Zap className="w-4 h-4" />
+          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full font-semibold text-xs mb-4">
+            <Zap className="w-3 h-3" />
             Simple. Powerful. Affordable.
           </div>
-          <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+          <h2 className="text-2xl md:text-6xl font-bold text-gray-900 mb-4">
             Rental Inventory Management
             <br />
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Made Simple
             </span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+          <p className="text-sm md:text-xl text-gray-600 max-w-3xl mx-auto mb-6">
             Manage your rental business with ease. Track inventory, bookings, and customers all in
             one place. No complicated setup, no hidden fees.
           </p>
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4">
             <Link
               href="/auth/sign-up"
-              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl text-lg flex items-center gap-2"
+              className="w-full md:w-auto px-4 py-2.5 md:px-8 md:py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-lg md:rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl text-sm md:text-lg flex items-center justify-center gap-2"
             >
               Get Started Free
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
             </Link>
             <Link
               href="/auth/sign-in"
-              className="px-8 py-4 bg-white text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-all shadow-md border-2 border-gray-200 text-lg"
+              className="w-full md:w-auto px-4 py-2.5 md:px-8 md:py-4 bg-white text-gray-700 font-bold rounded-lg md:rounded-xl hover:bg-gray-50 transition-all shadow-md border-2 border-gray-200 text-sm md:text-lg"
             >
               Log In
             </Link>
           </div>
-          <p className="text-sm text-gray-500 mt-4">
+          <p className="text-xs md:text-sm text-gray-500 mt-3">
             No credit card required • Free forever plan available
           </p>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="max-w-7xl mx-auto px-4 py-16 bg-white rounded-3xl shadow-xl mb-16">
+      <section className="max-w-7xl mx-auto px-4 py-8 md:py-16 bg-white rounded-2xl md:rounded-3xl shadow-xl mb-8 md:mb-16">
         <div className="text-center mb-12">
           <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Everything You Need to Run Your Rental Business
@@ -407,26 +407,26 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="max-w-7xl mx-auto px-4 py-16 mb-16">
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-3xl shadow-2xl p-12 text-center">
-          <h3 className="text-3xl md:text-4xl font-bold text-white mb-6">
+      <section className="max-w-7xl mx-auto px-4 py-8 md:py-16 mb-8 md:mb-16">
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-12 text-center">
+          <h3 className="text-xl md:text-4xl font-bold text-white mb-3 md:mb-6">
             Ready to Simplify Your Rental Business?
           </h3>
-          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-sm md:text-xl text-blue-100 mb-6 md:mb-8 max-w-2xl mx-auto">
             Join thousands of rental businesses already using Very Simple Inventory. Start your free
             account today.
           </p>
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4">
             <Link
               href="/auth/sign-up"
-              className="px-8 py-4 bg-white text-blue-600 font-bold rounded-xl hover:bg-gray-100 transition-all shadow-lg text-lg flex items-center gap-2"
+              className="w-full md:w-auto px-4 py-2.5 md:px-8 md:py-4 bg-white text-blue-600 font-bold rounded-lg md:rounded-xl hover:bg-gray-100 transition-all shadow-lg text-sm md:text-lg flex items-center justify-center gap-2"
             >
               Get Started Free
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
             </Link>
             <Link
               href="/auth/sign-in"
-              className="px-8 py-4 bg-blue-700 text-white font-bold rounded-xl hover:bg-blue-800 transition-all text-lg border-2 border-white/20"
+              className="w-full md:w-auto px-4 py-2.5 md:px-8 md:py-4 bg-blue-700 text-white font-bold rounded-lg md:rounded-xl hover:bg-blue-800 transition-all text-sm md:text-lg border-2 border-white/20"
             >
               Log In
             </Link>

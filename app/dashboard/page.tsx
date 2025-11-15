@@ -503,7 +503,7 @@ export default function Home() {
                 <h2 className="text-sm md:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Hi {settings?.businessName || 'there'}!
                 </h2>
-                <p className="text-[10px] md:text-xs text-gray-600 font-medium">
+                <p className="text-[10px] md:text-xs text-gray-600 font-medium whitespace-nowrap">
                   Manage your bookings with ease
                 </p>
               </div>
@@ -515,7 +515,7 @@ export default function Home() {
               className="flex items-center hover:opacity-80 transition-opacity"
               title="Premium Features"
             >
-              <Star className="w-5 h-5 md:w-6 md:h-6 text-yellow-500 fill-yellow-400 flex-shrink-0" />
+              <Star className="w-10 h-10 md:w-12 md:h-12 text-yellow-500 fill-yellow-400 flex-shrink-0" />
             </Link>
           </div>
           {/* Check Availability Button */}
