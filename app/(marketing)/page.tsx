@@ -16,6 +16,11 @@ import {
   BarChart3,
   Zap,
   ArrowRight,
+  Globe,
+  MapPin,
+  Bell,
+  CreditCard,
+  Headphones,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -54,13 +59,13 @@ export default function HomePage() {
             <div className="flex items-center gap-2 ml-4">
               <Link
                 href="/auth/sign-in"
-                className="px-3 py-1.5 md:px-4 md:py-2 bg-white border-2 border-blue-500 text-blue-600 hover:bg-blue-50 font-bold rounded-lg transition-all shadow-sm text-xs md:text-base whitespace-nowrap"
+                className="px-2.5 py-1 md:px-4 md:py-1.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md text-xs md:text-base whitespace-nowrap"
               >
                 Log In
               </Link>
               <Link
                 href="/auth/sign-up"
-                className="px-3 py-1.5 md:px-6 md:py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md text-xs md:text-base whitespace-nowrap"
+                className="px-2.5 py-1 md:px-4 md:py-1.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md text-xs md:text-base whitespace-nowrap"
               >
                 <span className="md:hidden">Sign Up</span>
                 <span className="hidden md:inline">Sign Up Free</span>
@@ -256,16 +261,16 @@ export default function HomePage() {
         </div>
 
         <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl p-3 md:p-12">
-          <div className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-6">
             {/* Premium Feature 1 */}
             <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg md:rounded-2xl border border-blue-200 md:border-2">
               <div className="p-1.5 md:p-3 bg-blue-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <Star className="w-3 h-3 md:w-6 md:h-6 text-white" />
+                <Globe className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Advanced Analytics</h4>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Public Booking Page</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
-                  Deep insights with comprehensive analytics and revenue tracking.
+                  Share a custom link so customers can check availability and inquire about rentals directly on your branded page
                 </p>
               </div>
             </div>
@@ -273,12 +278,12 @@ export default function HomePage() {
             {/* Premium Feature 2 */}
             <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg md:rounded-2xl border border-purple-200 md:border-2">
               <div className="p-1.5 md:p-3 bg-purple-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <Users className="w-3 h-3 md:w-6 md:h-6 text-white" />
+                <MapPin className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Multi-User Access</h4>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Events Near You</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
-                  Add team members with different permission levels.
+                  Get notified about local events like weddings, festivals, and conferences that could need your rentals
                 </p>
               </div>
             </div>
@@ -286,12 +291,12 @@ export default function HomePage() {
             {/* Premium Feature 3 */}
             <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-lg md:rounded-2xl border border-green-200 md:border-2">
               <div className="p-1.5 md:p-3 bg-green-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <TrendingUp className="w-3 h-3 md:w-6 md:h-6 text-white" />
+                <Bell className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Custom Branding</h4>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Smart Notifications</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
-                  Personalize with your own logo, colors, and branding.
+                  Email and SMS alerts for new inquiries, overdue payments, low stock, and upcoming events
                 </p>
               </div>
             </div>
@@ -302,9 +307,35 @@ export default function HomePage() {
                 <BarChart3 className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Data Export & Reports</h4>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Custom Analytics</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
-                  Export to CSV or PDF and generate detailed reports.
+                  Track utilization rates, revenue trends, conversion rates, and identify your most profitable items
+                </p>
+              </div>
+            </div>
+
+            {/* Premium Feature 5 */}
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg md:rounded-2xl border border-pink-200 md:border-2">
+              <div className="p-1.5 md:p-3 bg-pink-600 rounded-lg md:rounded-xl flex-shrink-0">
+                <CreditCard className="w-3 h-3 md:w-6 md:h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Online Payments</h4>
+                <p className="text-[10px] md:text-base text-gray-600">
+                  Let customers pay securely through the app with Stripe. Automatic payment tracking and receipts
+                </p>
+              </div>
+            </div>
+
+            {/* Premium Feature 6 */}
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg md:rounded-2xl border border-indigo-200 md:border-2">
+              <div className="p-1.5 md:p-3 bg-indigo-600 rounded-lg md:rounded-xl flex-shrink-0">
+                <Headphones className="w-3 h-3 md:w-6 md:h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Priority Support</h4>
+                <p className="text-[10px] md:text-base text-gray-600">
+                  Get faster response times and dedicated support for your rental business
                 </p>
               </div>
             </div>
