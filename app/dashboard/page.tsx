@@ -522,8 +522,8 @@ export default function Home() {
                 </button>
               </div>
 
-              <div className="pt-0.5 flex-1 min-w-0 max-w-[60%]">
-                <h2 className="text-lg md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight">
+              <div className="pt-0.5 flex-1 overflow-visible">
+                <h2 className="text-lg md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight whitespace-nowrap">
                   Hi,
                   {(settings?.businessName || userProfile?.businessName) && (
                     <>
