@@ -1,6 +1,6 @@
 {
-  "name": "Rental Inventory Manager",
-  "short_name": "Rental Inventory",
+  "name": "Very Simple Inventory",
+  "short_name": "VSI",
   "version": "2.0.0",
   "description": "Professional rental inventory and booking management system",
   "start_url": "/",
