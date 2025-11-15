@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { UserPlus, Mail, Lock, User, AlertCircle, CheckCircle, Home } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, AlertCircle, CheckCircle, Home, Briefcase } from 'lucide-react';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -14,6 +14,7 @@ export default function SignUpPage() {
     confirmPassword: '',
     firstName: '',
     lastName: '',
+    businessName: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -47,6 +48,7 @@ export default function SignUpPage() {
           password: formData.password,
           firstName: formData.firstName,
           lastName: formData.lastName,
+          businessName: formData.businessName,
         }),
       });
 
@@ -139,6 +141,27 @@ export default function SignUpPage() {
                   className="w-full px-2 md:px-4 py-2 md:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-xs md:text-sm font-bold text-black mb-1 md:mb-2">
+                Business Name <span className="text-gray-500 font-normal">(Optional)</span>
+              </label>
+              <div className="relative">
+                <Briefcase className="absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
+                <input
+                  type="text"
+                  name="businessName"
+                  value={formData.businessName}
+                  onChange={handleChange}
+                  placeholder="My Rental Business"
+                  maxLength={25}
+                  className="w-full pl-8 md:pl-11 pr-2 md:pr-4 py-2 md:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base"
+                />
+              </div>
+              <p className="text-[10px] md:text-xs text-gray-500 mt-1">
+                {formData.businessName.length}/25 characters
+              </p>
             </div>
 
             <div>

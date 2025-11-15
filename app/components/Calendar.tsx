@@ -117,7 +117,7 @@ export default function Calendar({
 
   return (
     <div
-      className="h-full bg-white rounded-2xl shadow-2xl p-4 md:p-6 md:pr-8 border border-gray-200"
+      className="calendar-root h-full bg-white rounded-2xl shadow-2xl p-4 md:p-6 md:pr-8 border border-gray-200"
       role="region"
       aria-label="Rental booking calendar"
     >

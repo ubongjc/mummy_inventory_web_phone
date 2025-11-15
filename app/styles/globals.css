@@ -63,21 +63,48 @@ table {
   --fc-small-font-size: 0.85rem;
 }
 
+/* Calendar root with normalized button heights */
+.calendar-root {
+  --fc-toolbar-btn-h: 24px;
+}
+
+/* Add breathing room above toolbar to prevent button clipping */
+.calendar-root .fc .fc-header-toolbar {
+  margin-top: 10px !important;
+  overflow: visible !important;
+}
+
+@media (min-width: 768px) {
+  .calendar-root .fc .fc-header-toolbar {
+    margin-top: 12px !important;
+  }
+}
+
 /* Keep the toolbar on a single line */
 .fc .fc-toolbar {
   flex-wrap: nowrap !important;
-  margin-bottom: 1rem !important;
-  padding: 0 !important;
+  margin-bottom: 0.5rem !important;
+  padding: 0.25rem 0 0 0 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
   gap: 4px !important;
 }
 
+/* Mobile spacing adjustment */
+@media (max-width: 768px) {
+  .fc .fc-toolbar {
+    margin-bottom: 0.5rem !important;
+  }
+}
+
 .fc .fc-header-toolbar,
 .fc .fc-toolbar-ltr {
   padding: 0 !important;
-  margin: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  margin-top: 0 !important;
+  /* margin-bottom is controlled by .fc-toolbar rule above */
 }
 
 /* Keep chunks tight with small gaps */
@@ -105,32 +132,58 @@ table {
   padding-right: 6px !important;
 }
 
-/* Buttons auto-size to text; no giant boxes */
-.fc .fc-button {
-  padding: 4px 4px !important;
-  height: 18px !important;
-  min-height: 18px !important;
+/* ==== Equal vertical height; preserve widths ==== */
+/* Normalize all toolbar buttons (prev/next/today/Month/Week/Day) */
+.calendar-root .fc .fc-toolbar .fc-button,
+.calendar-root .fc .fc-toolbar .fc-button-primary {
+  height: var(--fc-toolbar-btn-h) !important;
+  min-height: 0 !important;
   min-width: 0 !important;
+  width: auto !important;
+
+  /* Control vertical space only - remove vertical padding */
+  padding-block: 0 !important;
+  padding-inline: 4px !important;
+
+  /* Prevent extra vertical expansion */
+  line-height: 1 !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+
+  /* Preserve existing styles */
   border-radius: 6px !important;
   font-weight: 600 !important;
-  line-height: 1 !important;
   font-size: 0.55rem !important;
   transition: all 0.2s ease !important;
   border: none !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
   margin: 0 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  box-sizing: border-box !important;
+  white-space: nowrap !important;
 }
 
 @media (min-width: 768px) {
-  .fc .fc-button {
-    padding: 6px 12px !important;
+  .calendar-root .fc .fc-toolbar .fc-button,
+  .calendar-root .fc .fc-toolbar .fc-button-primary {
+    padding-inline: 12px !important;
     font-size: 0.9rem !important;
     border-radius: 10px !important;
   }
+}
+
+/* Center icon glyphs vertically for < and > */
+.calendar-root .fc .fc-toolbar .fc-button .fc-icon,
+.calendar-root .fc .fc-toolbar .fc-button > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  line-height: 1 !important;
+}
+
+/* Leave title alone - height should remain auto */
+.calendar-root .fc .fc-toolbar-title {
+  height: auto !important;
 }
 
 .fc .fc-button-primary {
@@ -176,7 +229,11 @@ table {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-transform: uppercase !important;
-  white-space: nowrap !important;
+  white-space: normal !important;
+  text-align: center !important;
+  line-height: 1.1 !important;
+  max-width: 100% !important;
+  overflow-wrap: break-word !important;
 }
 
 @media (min-width: 768px) {

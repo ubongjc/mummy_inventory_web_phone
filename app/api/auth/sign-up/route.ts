@@ -35,6 +35,10 @@ const signUpSchema = z.object({
     .string()
     .max(50, "Last name must be 50 characters or less")
     .optional(),
+  businessName: z
+    .string()
+    .max(25, "Business name must be 25 characters or less")
+    .optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -61,6 +65,9 @@ export async function POST(request: NextRequest) {
     const lastName = validated.lastName
       ? sanitizeString(validated.lastName)
       : undefined;
+    const businessName = validated.businessName
+      ? sanitizeString(validated.businessName)
+      : undefined;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -85,6 +92,7 @@ export async function POST(request: NextRequest) {
         passwordHash,
         firstName,
         lastName,
+        businessName,
         subscription: {
           create: {
             plan: "free",
@@ -97,6 +105,7 @@ export async function POST(request: NextRequest) {
         email: true,
         firstName: true,
         lastName: true,
+        businessName: true,
       },
     });
 

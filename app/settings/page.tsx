@@ -131,6 +131,12 @@ export default function SettingsPage() {
 
       const updatedSettings = await response.json();
       setSettings(updatedSettings);
+
+      // Update localStorage cache when settings are saved
+      if (updatedSettings.businessName) {
+        localStorage.setItem('settingsBusinessName', updatedSettings.businessName);
+      }
+
       setMessage({ type: "success", text: "Settings saved successfully!" });
 
       // Clear success message after 3 seconds
@@ -194,6 +200,12 @@ export default function SettingsPage() {
 
       const updatedProfile = await response.json();
       setUserProfile(updatedProfile);
+
+      // Update localStorage cache when profile is saved
+      if (updatedProfile.businessName) {
+        localStorage.setItem('businessName', updatedProfile.businessName);
+      }
+
       setMessage({ type: "success", text: "Business branding saved successfully!" });
 
       // Clear success message after 3 seconds
