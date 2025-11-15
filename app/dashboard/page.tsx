@@ -579,9 +579,8 @@ export default function Home() {
           {/* Empty State Message */}
           {items.length === 0 && (
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-lg p-4 mb-4 text-center">
-              <p className="text-lg font-bold text-gray-800 mb-1">📦 Add an item to get started</p>
-              <p className="text-sm text-gray-600">
-                Create your first inventory item to start managing bookings and checking availability
+              <p className="text-lg font-bold text-gray-800">
+                📦 Welcome! Add an item to begin. Click the menu icon (☰) and Add Item
               </p>
             </div>
           )}

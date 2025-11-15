@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     siteName: "Very Simple Inventory",
     images: [
       {
-        url: "/og-image.svg",
+        url: "/og-image.svg?v=2",
         width: 1200,
         height: 630,
         alt: "Very Simple Inventory",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Very Simple Inventory",
     description: "Manage your rental business with inventory tracking, bookings, and customers",
-    images: ["/og-image.svg"],
+    images: ["/og-image.svg?v=2"],
   },
   themeColor: "#2563eb",
 };
