@@ -46,15 +46,17 @@ export default function CalendarVanilla({ onDateClick }: CalendarVanillaProps) {
   }, []);
 
   useEffect(() => {
-    if (!scriptLoaded || !calendarRef.current || loading) return;
+    if (!scriptLoaded || !calendarRef.current || loading) {
+      return;
+    }
 
-    // @ts-ignore - FullCalendar loaded via CDN
+    // @ts-expect-error - FullCalendar loaded via CDN
     if (typeof FullCalendar === 'undefined') {
       console.error('FullCalendar not loaded');
       return;
     }
 
-    // @ts-ignore
+    // @ts-expect-error - FullCalendar loaded via CDN
     const calendar = new FullCalendar.Calendar(calendarRef.current, {
       initialView: 'dayGridMonth',
       events: events,

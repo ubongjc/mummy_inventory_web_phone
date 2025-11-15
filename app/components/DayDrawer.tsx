@@ -113,7 +113,9 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
   }, [isOpen, onClose]);
 
   const fetchDayData = async () => {
-    if (!date) return;
+    if (!date) {
+      return;
+    }
 
     setLoading(true);
     try {
@@ -203,7 +205,9 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {

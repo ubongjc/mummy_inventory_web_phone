@@ -56,9 +56,13 @@ export default function DatePicker({
   }, [isOpen]);
 
   const formatDisplayDate = (dateStr: string) => {
-    if (!dateStr) return "";
+    if (!dateStr) {
+      return "";
+    }
     const date = new Date(dateStr + "T00:00:00");
-    if (isNaN(date.getTime())) return "";
+    if (isNaN(date.getTime())) {
+      return "";
+    }
 
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
@@ -96,8 +100,12 @@ export default function DatePicker({
     const dateString = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
     // Check if date is within min/max range
-    if (minDate && dateString < minDate) return;
-    if (maxDate && dateString > maxDate) return;
+    if (minDate && dateString < minDate) {
+      return;
+    }
+    if (maxDate && dateString > maxDate) {
+      return;
+    }
 
     onChange(dateString);
     setIsOpen(false); // Close immediately after selection
@@ -116,13 +124,19 @@ export default function DatePicker({
     const month = currentMonth.getMonth();
     const dateString = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
-    if (minDate && dateString < minDate) return true;
-    if (maxDate && dateString > maxDate) return true;
+    if (minDate && dateString < minDate) {
+      return true;
+    }
+    if (maxDate && dateString > maxDate) {
+      return true;
+    }
     return false;
   };
 
   const isSelectedDate = (day: number) => {
-    if (!value) return false;
+    if (!value) {
+      return false;
+    }
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
     const dateString = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;

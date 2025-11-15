@@ -17,7 +17,8 @@ export function AppInput({
   className,
   ...props
 }: AppInputProps) {
-  const inputId = id ?? React.useId();
+  const generatedId = React.useId();
+  const inputId = id ?? generatedId;
   const msgId = `${inputId}-error`;
   const hasError = Boolean(error);
 

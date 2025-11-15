@@ -100,9 +100,15 @@ export default function BookingsPage() {
     if (savedDefaults) {
       try {
         const defaults = JSON.parse(savedDefaults);
-        if (defaults.dateRangeFilter) setDateRangeFilter(defaults.dateRangeFilter);
-        if (defaults.sortBy) setSortBy(defaults.sortBy);
-        if (defaults.statusFilter) setStatusFilter(defaults.statusFilter);
+        if (defaults.dateRangeFilter) {
+          setDateRangeFilter(defaults.dateRangeFilter);
+        }
+        if (defaults.sortBy) {
+          setSortBy(defaults.sortBy);
+        }
+        if (defaults.statusFilter) {
+          setStatusFilter(defaults.statusFilter);
+        }
       } catch (error) {
         console.error("Error loading default filters:", error);
       }
@@ -259,7 +265,9 @@ export default function BookingsPage() {
 
         filtered = filtered.filter((booking) => {
           // Must have a total price
-          if (!booking.totalPrice) return false;
+          if (!booking.totalPrice) {
+            return false;
+          }
 
           // Calculate balance remaining
           const totalPaid = (booking.advancePayment ? Number(booking.advancePayment) : 0) +
@@ -267,7 +275,9 @@ export default function BookingsPage() {
           const balance = Number(booking.totalPrice) - totalPaid;
 
           // Must have outstanding balance
-          if (balance <= 0) return false;
+          if (balance <= 0) {
+            return false;
+          }
 
           // Check if payment is overdue based on either paymentDueDate or endDate
           let isOverdue = false;

@@ -43,7 +43,9 @@ const ItemFormSchema = z.object({
     .optional()
     .refine(
       (val) => {
-        if (!val || val === "") return true;
+        if (!val || val === "") {
+          return true;
+        }
         const num = parseFloat(val);
         return !isNaN(num) && /^\d+(\.\d{1,2})?$/.test(val) && num <= 1000000;
       },
@@ -123,10 +125,14 @@ export default function AddItemModal({
   const onInvalid = () => {
     // Focus on first error for accessibility
     const firstError = Object.keys(errors)[0] as keyof ItemFormValues | undefined;
-    if (firstError) setFocus(firstError);
+    if (firstError) {
+      setFocus(firstError);
+    }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <>

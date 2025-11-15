@@ -9,7 +9,7 @@ export default function TestSimple() {
       <p className="mb-4 text-gray-700">
         This uses the absolute MINIMUM FullCalendar config with hardcoded events.
         <br />
-        If this doesn't work, the issue is with the FullCalendar package itself.
+        If this doesn&apos;t work, the issue is with the FullCalendar package itself.
       </p>
       <div style={{ height: "600px" }}>
         <CalendarSimple onDateClick={(date) => console.log("Clicked:", date)} />

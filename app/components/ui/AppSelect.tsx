@@ -18,7 +18,8 @@ export function AppSelect({
   children,
   ...props
 }: AppSelectProps) {
-  const selectId = id ?? React.useId();
+  const generatedId = React.useId();
+  const selectId = id ?? generatedId;
   const msgId = `${selectId}-error`;
   const hasError = Boolean(error);
 

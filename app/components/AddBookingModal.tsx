@@ -660,7 +660,9 @@ export default function AddBookingModal({
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <>
@@ -729,7 +731,9 @@ export default function AddBookingModal({
                     <select
                       ref={(el) => {
                         itemSelectRefs.current[index] = el;
-                        if (index === 0) (firstItemSelectRef as React.MutableRefObject<HTMLSelectElement | null>).current = el;
+                        if (index === 0) {
+                          (firstItemSelectRef as React.MutableRefObject<HTMLSelectElement | null>).current = el;
+                        }
                       }}
                       value={bookingItem.itemId}
                       onChange={(e) => {

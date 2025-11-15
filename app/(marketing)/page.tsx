@@ -238,124 +238,122 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Pricing Section */}
+      {/* Premium Features - Coming Soon */}
       <section className="max-w-7xl mx-auto px-4 py-16 mb-16">
         <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full font-semibold text-sm mb-4">
+            <Clock className="w-4 h-4" />
+            Coming Soon
+          </div>
           <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Simple, Transparent Pricing
+            Premium Features on the Way
           </h3>
-          <p className="text-lg text-gray-600">Choose the plan that fits your business needs</p>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            We're working hard to bring you advanced features to take your rental business to the next level.
+            These features are currently in development and will be available soon.
+          </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {/* Free Plan */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-gray-200">
-            <h4 className="text-2xl font-bold text-gray-900 mb-2">Free</h4>
-            <div className="text-4xl font-bold text-gray-900 mb-4">
-              $0<span className="text-lg text-gray-600">/month</span>
+        <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12">
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Premium Feature 1 */}
+            <div className="flex items-start gap-4 p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border-2 border-blue-200">
+              <div className="p-3 bg-blue-600 rounded-xl flex-shrink-0">
+                <Star className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">Advanced Analytics Dashboard</h4>
+                <p className="text-gray-600">
+                  Get deep insights into your business with comprehensive analytics, revenue tracking,
+                  and performance metrics.
+                </p>
+                <span className="inline-block mt-2 text-sm text-blue-600 font-semibold">Not yet available</span>
+              </div>
             </div>
-            <p className="text-gray-600 mb-6">Perfect for getting started</p>
-            <ul className="space-y-3 mb-8">
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700">Up to 50 items</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700">Basic booking management</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700">Customer tracking</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700">Mobile access</span>
-              </li>
-            </ul>
-            <Link
-              href="/auth/sign-up"
-              className="block w-full px-6 py-3 bg-gray-200 text-gray-900 font-bold rounded-lg hover:bg-gray-300 transition-all text-center"
-            >
-              Get Started
-            </Link>
+
+            {/* Premium Feature 2 */}
+            <div className="flex items-start gap-4 p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl border-2 border-purple-200">
+              <div className="p-3 bg-purple-600 rounded-xl flex-shrink-0">
+                <Users className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">Multi-User Access</h4>
+                <p className="text-gray-600">
+                  Collaborate with your team by adding multiple users with different permission levels
+                  to your account.
+                </p>
+                <span className="inline-block mt-2 text-sm text-purple-600 font-semibold">Not yet available</span>
+              </div>
+            </div>
+
+            {/* Premium Feature 3 */}
+            <div className="flex items-start gap-4 p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl border-2 border-green-200">
+              <div className="p-3 bg-green-600 rounded-xl flex-shrink-0">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">Custom Branding</h4>
+                <p className="text-gray-600">
+                  Personalize your booking pages and customer communications with your own logo,
+                  colors, and branding.
+                </p>
+                <span className="inline-block mt-2 text-sm text-green-600 font-semibold">Not yet available</span>
+              </div>
+            </div>
+
+            {/* Premium Feature 4 */}
+            <div className="flex items-start gap-4 p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl border-2 border-orange-200">
+              <div className="p-3 bg-orange-600 rounded-xl flex-shrink-0">
+                <BarChart3 className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">Data Export & Reports</h4>
+                <p className="text-gray-600">
+                  Export your data to CSV or PDF formats and generate detailed reports for
+                  accounting and analysis.
+                </p>
+                <span className="inline-block mt-2 text-sm text-orange-600 font-semibold">Not yet available</span>
+              </div>
+            </div>
+
+            {/* Premium Feature 5 */}
+            <div className="flex items-start gap-4 p-6 bg-gradient-to-br from-pink-50 to-pink-100 rounded-2xl border-2 border-pink-200">
+              <div className="p-3 bg-pink-600 rounded-xl flex-shrink-0">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">API Access</h4>
+                <p className="text-gray-600">
+                  Integrate with your existing systems and build custom workflows using our
+                  comprehensive API.
+                </p>
+                <span className="inline-block mt-2 text-sm text-pink-600 font-semibold">Not yet available</span>
+              </div>
+            </div>
+
+            {/* Premium Feature 6 */}
+            <div className="flex items-start gap-4 p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl border-2 border-indigo-200">
+              <div className="p-3 bg-indigo-600 rounded-xl flex-shrink-0">
+                <CheckCircle className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">Priority Support</h4>
+                <p className="text-gray-600">
+                  Get faster response times and dedicated support from our team to keep your
+                  business running smoothly.
+                </p>
+                <span className="inline-block mt-2 text-sm text-indigo-600 font-semibold">Not yet available</span>
+              </div>
+            </div>
           </div>
 
-          {/* Pro Plan */}
-          <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl shadow-xl p-8 border-4 border-blue-500 relative">
-            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-bold">
-              MOST POPULAR
-            </div>
-            <h4 className="text-2xl font-bold text-gray-900 mb-2">Pro</h4>
-            <div className="text-4xl font-bold text-gray-900 mb-4">
-              $29<span className="text-lg text-gray-600">/month</span>
-            </div>
-            <p className="text-gray-600 mb-6">For growing businesses</p>
-            <ul className="space-y-3 mb-8">
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700">Unlimited items</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700">Advanced analytics</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700">Priority support</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700">Custom branding</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700">Export data</span>
-              </li>
-            </ul>
-            <Link
-              href="/auth/sign-up"
-              className="block w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all text-center shadow-md"
-            >
-              Start Free Trial
-            </Link>
-          </div>
-
-          {/* Business Plan */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-gray-200">
-            <h4 className="text-2xl font-bold text-gray-900 mb-2">Business</h4>
-            <div className="text-4xl font-bold text-gray-900 mb-4">
-              $79<span className="text-lg text-gray-600">/month</span>
-            </div>
-            <p className="text-gray-600 mb-6">For established businesses</p>
-            <ul className="space-y-3 mb-8">
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700">Everything in Pro</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700">Multi-user access</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700">API access</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700">Dedicated support</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700">Custom integrations</span>
-              </li>
-            </ul>
-            <Link
-              href="/auth/sign-up"
-              className="block w-full px-6 py-3 bg-gray-900 text-white font-bold rounded-lg hover:bg-gray-800 transition-all text-center"
-            >
-              Contact Sales
-            </Link>
+          <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border-2 border-blue-200 text-center">
+            <p className="text-gray-700 font-semibold mb-2">
+              Want to be notified when premium features launch?
+            </p>
+            <p className="text-gray-600">
+              Sign up for a free account now and we'll let you know as soon as these features become available.
+            </p>
           </div>
         </div>
       </section>
@@ -470,14 +468,6 @@ export default function HomePage() {
                   >
                     Log In
                   </Link>
-                </li>
-                <li>
-                  <a
-                    href="#pricing"
-                    className="text-gray-600 hover:text-blue-600 transition-colors"
-                  >
-                    Pricing
-                  </a>
                 </li>
               </ul>
             </div>

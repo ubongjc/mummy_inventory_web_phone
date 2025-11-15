@@ -98,8 +98,12 @@ export async function PATCH(
 
     // Build update data object with only provided fields
     const updateData: any = {};
-    if (body.status !== undefined) updateData.status = body.status;
-    if (body.color !== undefined) updateData.color = body.color;
+    if (body.status !== undefined) {
+      updateData.status = body.status;
+    }
+    if (body.color !== undefined) {
+      updateData.color = body.color;
+    }
 
     const booking = await prisma.booking.update({
       where: { id },

@@ -15,7 +15,9 @@ export function normalizeText(text: string): string {
  * Examples: "john doe" -> "John Doe", "o'brien" -> "O'Brien", "mary-jane" -> "Mary-Jane"
  */
 export function toTitleCase(text: string): string {
-  if (!text) return text;
+  if (!text) {
+    return text;
+  }
 
   return text
     .trim()
@@ -24,7 +26,9 @@ export function toTitleCase(text: string): string {
     .split(/(\s+|-|')/) // Split on spaces, hyphens, and apostrophes
     .map((word, index, array) => {
       // Don't capitalize separators (spaces, hyphens, apostrophes)
-      if (word === ' ' || word === '-' || word === "'") return word;
+      if (word === ' ' || word === '-' || word === "'") {
+        return word;
+      }
 
       // Capitalize first letter of each word part
       if (word.length > 0) {
@@ -40,7 +44,9 @@ export function toTitleCase(text: string): string {
  * Removes all non-digit characters except leading +
  */
 export function normalizePhone(phone: string): string {
-  if (!phone) return phone;
+  if (!phone) {
+    return phone;
+  }
 
   const trimmed = phone.trim();
   const hasPlus = trimmed.startsWith('+');
