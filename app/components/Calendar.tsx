@@ -1,11 +1,10 @@
-"use client";
+'use client';
 
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import listPlugin from "@fullcalendar/list";
-import interactionPlugin from "@fullcalendar/interaction";
-import { useEffect, useState, useRef } from "react";
-import { textColorFor } from "@/app/lib/contrast";
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin from '@fullcalendar/interaction';
+import { useEffect, useState, useRef } from 'react';
+import { textColorFor } from '@/app/lib/contrast';
 
 interface CalendarProps {
   onDateClick: (date: Date) => void;
@@ -13,12 +12,16 @@ interface CalendarProps {
   onDateRangeChange?: (start: string, end: string) => void;
 }
 
-export default function Calendar({ onDateClick, selectedItemIds, onDateRangeChange }: CalendarProps) {
+export default function Calendar({
+  onDateClick,
+  selectedItemIds,
+  onDateRangeChange,
+}: CalendarProps) {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const isFetchingRef = useRef(false);
-  const lastFetchRef = useRef("");
+  const lastFetchRef = useRef('');
   const calendarRef = useRef<any>(null);
 
   // Detect mobile screen size
@@ -44,20 +47,18 @@ export default function Calendar({ onDateClick, selectedItemIds, onDateRangeChan
     isFetchingRef.current = true;
     lastFetchRef.current = fetchKey;
     try {
-      const startStr = start.toISOString().split("T")[0];
-      const endStr = end.toISOString().split("T")[0];
+      const startStr = start.toISOString().split('T')[0];
+      const endStr = end.toISOString().split('T')[0];
 
       // Notify parent about date range change
       if (onDateRangeChange) {
         onDateRangeChange(startStr, endStr);
       }
 
-      const response = await fetch(
-        `/api/bookings?start=${startStr}&end=${endStr}`
-      );
+      const response = await fetch(`/api/bookings?start=${startStr}&end=${endStr}`);
 
       if (!response.ok) {
-        throw new Error("Failed to fetch events");
+        throw new Error('Failed to fetch events');
       }
 
       let data = await response.json();
@@ -69,8 +70,9 @@ export default function Calendar({ onDateClick, selectedItemIds, onDateRangeChan
       } else {
         data = data.filter((event: any) => {
           // Check if the booking has any of the selected items
-          return event.bookingItemIds && event.bookingItemIds.some((itemId: string) =>
-            selectedItemIds.includes(itemId)
+          return (
+            event.bookingItemIds &&
+            event.bookingItemIds.some((itemId: string) => selectedItemIds.includes(itemId))
           );
         });
       }
@@ -81,20 +83,24 @@ export default function Calendar({ onDateClick, selectedItemIds, onDateRangeChan
         data.forEach((event: any) => {
           const startDate = new Date(event.start);
           const endDate = new Date(event.end);
-          const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-          console.log(`  - "${event.title.substring(0, 30)}...": ${event.start} to ${event.end} (${daysDiff} days) [allDay=${event.allDay}]`);
+          const daysDiff = Math.ceil(
+            (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+          );
+          console.log(
+            `  - "${event.title.substring(0, 30)}...": ${event.start} to ${event.end} (${daysDiff} days) [allDay=${event.allDay}]`
+          );
         });
       }
 
       // Apply appropriate text color based on background
       const eventsWithTextColor = data.map((event: any) => ({
         ...event,
-        textColor: textColorFor(event.backgroundColor || "#3b82f6"),
+        textColor: textColorFor(event.backgroundColor || '#3b82f6'),
       }));
 
       setEvents(eventsWithTextColor);
     } catch (error) {
-      console.error("Error fetching events:", error);
+      console.error('Error fetching events:', error);
     } finally {
       setLoading(false);
       isFetchingRef.current = false;
@@ -110,20 +116,37 @@ export default function Calendar({ onDateClick, selectedItemIds, onDateRangeChan
   }, [selectedItemIds]);
 
   return (
-    <div className="h-full bg-white rounded-2xl shadow-2xl p-4 md:p-6 md:pr-8 border border-gray-200">
+    <div
+      className="h-full bg-white rounded-2xl shadow-2xl p-4 md:p-6 md:pr-8 border border-gray-200"
+      role="region"
+      aria-label="Rental booking calendar"
+    >
       {loading ? (
-        <div className="flex items-center justify-center h-full">
+        <div
+          className="flex items-center justify-center h-full"
+          role="status"
+          aria-live="polite"
+          aria-label="Loading calendar data"
+        >
           <div className="flex flex-col items-center gap-3">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div
+              className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
+              aria-hidden="true"
+            ></div>
             <div className="text-black text-lg font-bold">Loading calendar...</div>
           </div>
         </div>
       ) : (
         <div className="h-full">
+          {/* Screen reader announcement for calendar updates */}
+          <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+            {events.length} booking{events.length !== 1 ? 's' : ''} displayed on calendar
+          </div>
+
           <FullCalendar
             ref={calendarRef}
-            plugins={[dayGridPlugin, listPlugin, interactionPlugin]}
-            initialView={isMobile ? "listWeek" : "dayGridMonth"}
+            plugins={[dayGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
             events={events}
             editable={false}
             eventStartEditable={false}
@@ -147,9 +170,31 @@ export default function Calendar({ onDateClick, selectedItemIds, onDateRangeChan
             moreLinkClick={(info) => {
               // When "+X more" link is clicked, open the day drawer for that date
               onDateClick(info.date);
-              return "popover"; // Can also return "week", "day", or custom function
+              return 'popover'; // Can also return "week", "day", or custom function
             }}
             eventDidMount={(info) => {
+              // Add accessibility attributes to event elements
+              const eventEl = info.el;
+              eventEl.setAttribute('role', 'button');
+              eventEl.setAttribute('tabindex', '0');
+
+              // Format accessible label for the event
+              const startDate = info.event.start
+                ? new Date(info.event.start).toLocaleDateString()
+                : '';
+              const endDate = info.event.end ? new Date(info.event.end).toLocaleDateString() : '';
+              const ariaLabel = `${info.event.title}. From ${startDate}${endDate ? ` to ${endDate}` : ''}. Press Enter or Space to view details.`;
+              eventEl.setAttribute('aria-label', ariaLabel);
+
+              // Add keyboard support for events
+              eventEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  const eventDate = new Date(info.event.start!);
+                  onDateClick(eventDate);
+                }
+              });
+
               // Debug: Log when events are mounted
               console.log('[FullCalendar eventDidMount]', {
                 title: info.event.title,
@@ -159,33 +204,102 @@ export default function Calendar({ onDateClick, selectedItemIds, onDateRangeChan
                 display: info.event.display,
                 element: info.el,
                 isStart: info.isStart,
-                isEnd: info.isEnd
+                isEnd: info.isEnd,
               });
             }}
             datesSet={(dateInfo) => {
               // Refetch events when the view changes (month/week/day navigation)
               fetchEvents(dateInfo.start, dateInfo.end);
+
+              // Add ARIA labels to calendar navigation buttons after render
+              setTimeout(() => {
+                const calendar = calendarRef.current;
+                if (calendar) {
+                  const calendarApi = calendar.getApi();
+                  const calendarEl = calendarApi.el;
+
+                  // Add labels to navigation buttons
+                  const prevButton = calendarEl.querySelector('.fc-prev-button') as HTMLElement;
+                  const nextButton = calendarEl.querySelector('.fc-next-button') as HTMLElement;
+                  const todayButton = calendarEl.querySelector('.fc-today-button') as HTMLElement;
+                  const monthButton = calendarEl.querySelector(
+                    '.fc-dayGridMonth-button'
+                  ) as HTMLElement;
+                  const weekButton = calendarEl.querySelector(
+                    '.fc-dayGridWeek-button'
+                  ) as HTMLElement;
+                  const dayButton = calendarEl.querySelector(
+                    '.fc-dayGridDay-button'
+                  ) as HTMLElement;
+
+                  if (prevButton) {
+                    prevButton.setAttribute('aria-label', 'Previous period');
+                  }
+                  if (nextButton) {
+                    nextButton.setAttribute('aria-label', 'Next period');
+                  }
+                  if (todayButton) {
+                    todayButton.setAttribute('aria-label', 'Go to today');
+                  }
+                  if (monthButton) {
+                    monthButton.setAttribute('aria-label', 'Switch to month view');
+                  }
+                  if (weekButton) {
+                    weekButton.setAttribute('aria-label', 'Switch to week view');
+                  }
+                  if (dayButton) {
+                    dayButton.setAttribute('aria-label', 'Switch to day view');
+                  }
+
+                  // Add label to calendar title
+                  const titleEl = calendarEl.querySelector('.fc-toolbar-title') as HTMLElement;
+                  if (titleEl) {
+                    titleEl.setAttribute('aria-live', 'polite');
+                    titleEl.setAttribute('aria-atomic', 'true');
+                  }
+
+                  // Add labels to day cells
+                  const dayCells = calendarEl.querySelectorAll('.fc-daygrid-day');
+                  dayCells.forEach((cell: Element) => {
+                    const htmlCell = cell as HTMLElement;
+                    const dateAttr = htmlCell.getAttribute('data-date');
+                    if (dateAttr) {
+                      const date = new Date(dateAttr);
+                      const formattedDate = date.toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      });
+                      htmlCell.setAttribute(
+                        'aria-label',
+                        `${formattedDate}. Click to create booking.`
+                      );
+                    }
+                  });
+                }
+              }, 100);
             }}
             headerToolbar={{
-              left: "prev,next today",
-              center: "title",
-              right: "dayGridMonth,listWeek",
+              left: 'prev,next today',
+              center: 'title',
+              right: 'dayGridMonth,dayGridWeek,dayGridDay',
             }}
             // Mobile-optimized settings
             views={{
-              listWeek: {
-                buttonText: 'List',
-              },
               dayGridMonth: {
                 buttonText: 'Month',
+              },
+              dayGridWeek: {
+                buttonText: 'Week',
+              },
+              dayGridDay: {
+                buttonText: 'Day',
               },
             }}
             // Better mobile experience
             windowResize={(arg) => {
-              // Automatically switch to list view on small screens
-              if (window.innerWidth < 768 && arg.view.type !== 'listWeek') {
-                arg.view.calendar.changeView('listWeek');
-              }
+              // Keep current view on resize
             }}
             height="100%"
             // Touch optimization
