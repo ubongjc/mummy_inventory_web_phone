@@ -6,6 +6,7 @@ import { prisma } from '@/app/lib/prisma';
 /**
  * Admin endpoint to update all payment due dates to match rental end dates
  * This ensures payment due dates are on or after the rental end date
+ * Run this once after deployment to fix existing data
  */
 export async function POST() {
   try {
