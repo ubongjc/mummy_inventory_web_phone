@@ -173,9 +173,15 @@ export default function SettingsPage() {
 
     if (hasErrors || errors.businessPhone || errors.businessEmail) {
       const errorMessages = [];
-      if (newErrors.businessName) errorMessages.push(newErrors.businessName);
-      if (errors.businessPhone) errorMessages.push(errors.businessPhone);
-      if (errors.businessEmail) errorMessages.push(errors.businessEmail);
+      if (newErrors.businessName) {
+        errorMessages.push(newErrors.businessName);
+      }
+      if (errors.businessPhone) {
+        errorMessages.push(errors.businessPhone);
+      }
+      if (errors.businessEmail) {
+        errorMessages.push(errors.businessEmail);
+      }
 
       setMessage({
         type: "error",

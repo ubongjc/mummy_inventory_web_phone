@@ -45,8 +45,12 @@ export default function SignInPage() {
 
     if (hasErrors) {
       const errorMessages = [];
-      if (newFieldErrors.email) errorMessages.push(newFieldErrors.email);
-      if (newFieldErrors.password) errorMessages.push(newFieldErrors.password);
+      if (newFieldErrors.email) {
+        errorMessages.push(newFieldErrors.email);
+      }
+      if (newFieldErrors.password) {
+        errorMessages.push(newFieldErrors.password);
+      }
       setError(errorMessages.join(". "));
       return;
     }
