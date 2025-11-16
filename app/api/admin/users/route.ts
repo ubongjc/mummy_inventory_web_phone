@@ -45,7 +45,7 @@ export async function GET() {
     });
 
     // Transform the data to flatten the subscription plan
-    const transformedUsers = users.map((user) => ({
+    const transformedUsers = users.map((user: typeof users[number]) => ({
       ...user,
       plan: user.subscription?.plan || "free",
       subscription: undefined, // Remove the nested subscription object

@@ -18,11 +18,12 @@ export default function Calendar({
   onDateRangeChange,
 }: CalendarProps) {
   const [events, setEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const isFetchingRef = useRef(false);
   const lastFetchRef = useRef('');
   const calendarRef = useRef<any>(null);
+  const hasLoadedOnce = useRef(false);
 
   // Detect mobile screen size
   useEffect(() => {
@@ -99,10 +100,13 @@ export default function Calendar({
       }));
 
       setEvents(eventsWithTextColor);
+      hasLoadedOnce.current = true;
     } catch (error) {
       console.error('Error fetching events:', error);
     } finally {
-      setLoading(false);
+      if (initialLoading) {
+        setInitialLoading(false);
+      }
       isFetchingRef.current = false;
     }
   };
@@ -121,7 +125,7 @@ export default function Calendar({
       role="region"
       aria-label="Rental booking calendar"
     >
-      {loading ? (
+      {initialLoading ? (
         <div
           className="flex items-center justify-center h-full"
           role="status"

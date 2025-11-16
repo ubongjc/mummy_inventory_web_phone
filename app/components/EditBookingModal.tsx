@@ -5,6 +5,8 @@ import { X, Plus } from "lucide-react";
 import { useSettings } from "@/app/hooks/useSettings";
 import DatePicker from "./DatePicker";
 import { PaymentPanel } from "./payments/PaymentPanel";
+import NotesModal from "./NotesModal";
+import NotesDisplay from "./NotesDisplay";
 
 interface BookingItem {
   id: string;
@@ -81,6 +83,7 @@ export default function EditBookingModal({
   const [endDate, setEndDate] = useState("");
   const [bookingItems, setBookingItems] = useState<{ itemId: string; quantity: number }[]>([]);
   const [notes, setNotes] = useState("");
+  const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
   const [status, setStatus] = useState("CONFIRMED");
   const [totalPrice, setTotalPrice] = useState("");
   const [advancePayment, setAdvancePayment] = useState("");
@@ -745,16 +748,13 @@ export default function EditBookingModal({
               <label className="block text-xs font-bold mb-1 text-black">
                 Notes (optional)
               </label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                maxLength={50}
-                className="w-full px-2 py-1.5 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm"
-                rows={2}
-              />
-              <p className="text-xs text-gray-600 mt-1">
-                {notes.length}/50 characters
-              </p>
+              <div className="px-2 py-1.5 border-2 border-gray-400 rounded bg-gray-50">
+                <NotesDisplay
+                  notes={notes}
+                  onClick={() => setIsNotesModalOpen(true)}
+                  maxPreviewLength={30}
+                />
+              </div>
             </div>
 
             <div className="flex gap-2 pt-2 sticky bottom-0 bg-white border-t mt-2 -mx-3 -mb-3 px-3 py-2">
@@ -776,6 +776,16 @@ export default function EditBookingModal({
           </form>
         </div>
       </div>
+
+      {/* Notes Modal */}
+      <NotesModal
+        isOpen={isNotesModalOpen}
+        onClose={() => setIsNotesModalOpen(false)}
+        onSave={(newNotes) => setNotes(newNotes)}
+        initialNotes={notes}
+        title="Booking Notes"
+        maxLength={50}
+      />
     </>
   );
 }

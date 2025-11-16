@@ -23,15 +23,12 @@ export async function GET(request: NextRequest) {
     const totalUsers = await prisma.user.count();
 
     // Count users by plan
-    const proUsers = await prisma.subscription.count({
-      where: { plan: "pro", status: "active" },
-    });
-    const businessUsers = await prisma.subscription.count({
-      where: { plan: "business", status: "active" },
+    const premiumUsers = await prisma.subscription.count({
+      where: { plan: "premium", status: "active" },
     });
 
-    // Free users = all users without pro/business subscriptions
-    const freeUsers = totalUsers - proUsers - businessUsers;
+    // Free users = all users without premium subscriptions
+    const freeUsers = totalUsers - premiumUsers;
 
     // Get recent users (last 30 days)
     const thirtyDaysAgo = new Date();
@@ -65,8 +62,7 @@ export async function GET(request: NextRequest) {
       users: {
         total: totalUsers,
         free: freeUsers,
-        pro: proUsers,
-        business: businessUsers,
+        premium: premiumUsers,
         newThisMonth: newUsers,
       },
       publicPages: {

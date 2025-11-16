@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Calendar, Search, ChevronDown, ChevronUp, Trash2, Edit2, User, Package, Maximize2, Minimize2, ChevronLeft, ChevronRight, Plus, X, CheckSquare, Square, Filter, Menu, Settings, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Calendar, Search, ChevronDown, ChevronUp, Trash2, Edit2, User, Package, Maximize2, Minimize2, ChevronLeft, ChevronRight, Plus, X, CheckSquare, Square, Filter, Menu, Settings } from "lucide-react";
 import EditBookingModal from "../components/EditBookingModal";
 import DatePicker from "../components/DatePicker";
-import DeleteConfirmModal from "../components/DeleteConfirmModal";
+import NotesDisplay from "../components/NotesDisplay";
+import NotesModal from "../components/NotesModal";
 import { useSettings } from "@/app/hooks/useSettings";
 import { toZonedTime } from "date-fns-tz";
 
@@ -89,12 +90,15 @@ export default function BookingsPage() {
   const [itemSearchQuery, setItemSearchQuery] = useState("");
   const [itemSortBy, setItemSortBy] = useState<"name-asc" | "name-desc" | "quantity-desc" | "quantity-asc" | "unit">("name-asc");
   const [isDefaultFiltersOpen, setIsDefaultFiltersOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // Temporary state for editing defaults in the dropdown
   const [tempDateRangeFilter, setTempDateRangeFilter] = useState<DateRangeFilter>(dateRangeFilter);
   const [tempSortBy, setTempSortBy] = useState<SortOption>(sortBy);
   const [tempStatusFilter, setTempStatusFilter] = useState<StatusFilter>(statusFilter);
+
+  // Notes modal state
+  const [bookingNotesModalOpen, setBookingNotesModalOpen] = useState(false);
+  const [currentBookingNotes, setCurrentBookingNotes] = useState<{ id: string; notes: string } | null>(null);
 
   // Load default filters from localStorage on mount
   useEffect(() => {
@@ -415,6 +419,31 @@ export default function BookingsPage() {
     fetchBookings(); // Refresh the bookings list
   };
 
+  // Notes handlers
+  const handleOpenBookingNotes = (booking: Booking) => {
+    setCurrentBookingNotes({ id: booking.id, notes: booking.notes || "" });
+    setBookingNotesModalOpen(true);
+  };
+
+  const handleSaveBookingNotes = async (notes: string) => {
+    if (!currentBookingNotes) {
+      throw new Error("No booking selected");
+    }
+
+    const response = await fetch(`/api/bookings/${currentBookingNotes.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notes }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to update booking notes");
+    }
+
+    await fetchBookings();
+    // Modal will close itself and trigger onClose which resets state
+  };
+
   const handleUpdateBookingColor = async (bookingId: string, color: string) => {
     try {
       const response = await fetch(`/api/bookings/${bookingId}`, {
@@ -503,24 +532,6 @@ export default function BookingsPage() {
       fetchBookings();
     } catch (err: any) {
       setPaymentError(err.message);
-    }
-  };
-
-  const handleDeleteAllBookings = async () => {
-    try {
-      const response = await fetch("/api/bookings/bulk", { method: "DELETE" });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete all bookings");
-      }
-
-      // Refresh bookings
-      await fetchBookings();
-      setIsDeleteModalOpen(false);
-      alert("All bookings deleted successfully");
-    } catch (error) {
-      console.error("Error deleting all bookings:", error);
-      alert("Failed to delete all bookings. Please try again.");
     }
   };
 
@@ -778,28 +789,18 @@ export default function BookingsPage() {
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-2">
+            {/* Default Filters Button */}
+            <div className="relative">
               <button
-                onClick={() => setIsDeleteModalOpen(true)}
-                className="flex items-center gap-1 px-2 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition-colors text-xs"
-                title="Delete all bookings"
+                onClick={() => setIsDefaultFiltersOpen(!isDefaultFiltersOpen)}
+                className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-semibold transition-all shadow-md text-[10px]"
               >
-                <AlertTriangle className="w-3 h-3" />
-                <span className="hidden sm:inline">Delete All</span>
+                <Settings className="w-3 h-3" />
+                <span className="flex flex-col items-center leading-tight">
+                  <span>DEFAULT</span>
+                  <span>FILTERS</span>
+                </span>
               </button>
-
-              <div className="relative">
-                <button
-                  onClick={() => setIsDefaultFiltersOpen(!isDefaultFiltersOpen)}
-                  className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-semibold transition-all shadow-md text-[10px]"
-                >
-                  <Settings className="w-3 h-3" />
-                  <span className="flex flex-col items-center leading-tight">
-                    <span>DEFAULT</span>
-                    <span>FILTERS</span>
-                  </span>
-                </button>
 
               {/* Dropdown Menu */}
               {isDefaultFiltersOpen && (
@@ -893,7 +894,6 @@ export default function BookingsPage() {
                   </div>
                 </>
               )}
-              </div>
             </div>
           </div>
         </div>
@@ -1300,12 +1300,13 @@ export default function BookingsPage() {
                         )}
 
                         {/* Notes */}
-                        {booking.notes && (
-                          <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
-                            <div className="text-[9px] font-bold text-gray-700 mb-1">NOTES</div>
-                            <p className="text-[10px] text-black font-medium">{booking.notes}</p>
-                          </div>
-                        )}
+                        <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
+                          <div className="text-[9px] font-bold text-gray-700 mb-1">NOTES</div>
+                          <NotesDisplay
+                            notes={booking.notes || ""}
+                            onClick={() => handleOpenBookingNotes(booking)}
+                          />
+                        </div>
 
                         {/* Actions */}
                         <div className="flex gap-1">
@@ -1383,14 +1384,16 @@ export default function BookingsPage() {
         booking={selectedBooking}
       />
 
-      {/* Delete All Bookings Modal */}
-      <DeleteConfirmModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDeleteAllBookings}
-        title="Delete All Bookings"
-        message="This will permanently delete all your bookings. This action cannot be undone!"
-        itemCount={bookings.length}
+      {/* Booking Notes Modal */}
+      <NotesModal
+        isOpen={bookingNotesModalOpen}
+        onClose={() => {
+          setBookingNotesModalOpen(false);
+          setCurrentBookingNotes(null);
+        }}
+        initialNotes={currentBookingNotes?.notes || ""}
+        onSave={handleSaveBookingNotes}
+        title="Booking Notes"
       />
     </div>
   );

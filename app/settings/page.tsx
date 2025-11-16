@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Settings as SettingsIcon, Save, Building2, DollarSign, Globe, Calendar, AlertTriangle, ArrowLeft, Home, Package, CalendarDays, Image as ImageIcon, User } from "lucide-react";
+import { sanitizeInput, phoneRegex, emailRegex } from "@/app/lib/clientValidation";
 
 interface Settings {
   id: string;
-  businessName: string;
+  businessName: string | null;
   currency: string;
   currencySymbol: string;
   businessPhone: string | null;
@@ -56,17 +57,34 @@ const DATE_FORMAT_OPTIONS = [
 const TIMEZONE_OPTIONS = [
   { value: "UTC", label: "UTC (Coordinated Universal Time)" },
   { value: "America/New_York", label: "Eastern Time (US & Canada)" },
+  { value: "America/Toronto", label: "Toronto (Canada)" },
   { value: "America/Chicago", label: "Central Time (US & Canada)" },
   { value: "America/Denver", label: "Mountain Time (US & Canada)" },
   { value: "America/Los_Angeles", label: "Pacific Time (US & Canada)" },
+  { value: "America/Vancouver", label: "Vancouver (Canada)" },
+  { value: "America/Phoenix", label: "Phoenix (US)" },
+  { value: "America/Anchorage", label: "Alaska" },
+  { value: "Pacific/Honolulu", label: "Hawaii" },
+  { value: "America/Mexico_City", label: "Mexico City" },
+  { value: "America/Sao_Paulo", label: "São Paulo" },
+  { value: "America/Buenos_Aires", label: "Buenos Aires" },
   { value: "Europe/London", label: "London" },
   { value: "Europe/Paris", label: "Paris" },
+  { value: "Europe/Berlin", label: "Berlin" },
+  { value: "Europe/Rome", label: "Rome" },
+  { value: "Europe/Madrid", label: "Madrid" },
+  { value: "Europe/Moscow", label: "Moscow" },
   { value: "Asia/Tokyo", label: "Tokyo" },
   { value: "Asia/Shanghai", label: "Shanghai" },
   { value: "Asia/Dubai", label: "Dubai" },
+  { value: "Asia/Singapore", label: "Singapore" },
+  { value: "Asia/Hong_Kong", label: "Hong Kong" },
+  { value: "Asia/Kolkata", label: "Mumbai/Kolkata" },
   { value: "Africa/Lagos", label: "Lagos" },
+  { value: "Africa/Cairo", label: "Cairo" },
   { value: "Africa/Johannesburg", label: "Johannesburg" },
   { value: "Australia/Sydney", label: "Sydney" },
+  { value: "Pacific/Auckland", label: "Auckland" },
 ];
 
 export default function SettingsPage() {
@@ -76,8 +94,11 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  const [deleteConfirmText, setDeleteConfirmText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [errors, setErrors] = useState({
+    businessName: "",
+    businessPhone: "",
+    businessEmail: "",
+  });
 
   useEffect(() => {
     fetchSettings();
@@ -114,6 +135,60 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     if (!settings) {
+      return;
+    }
+
+    // Validate all fields before saving
+    let hasErrors = false;
+    const newErrors = {
+      businessName: "",
+      businessPhone: "",
+      businessEmail: "",
+    };
+
+    // Validate business name (optional)
+    if (settings.businessName && settings.businessName.trim().length > 0) {
+      if (settings.businessName.trim().length < 2) {
+        newErrors.businessName = "Business name must be at least 2 characters if provided";
+        hasErrors = true;
+      } else if (settings.businessName.length > 25) {
+        newErrors.businessName = "Business name must be less than 25 characters";
+        hasErrors = true;
+      }
+    }
+
+    // Validate business phone if provided
+    if (settings.businessPhone) {
+      if (!validateBusinessPhone(settings.businessPhone)) {
+        hasErrors = true;
+      }
+    }
+
+    // Validate business email if provided
+    if (settings.businessEmail) {
+      if (!validateBusinessEmail(settings.businessEmail)) {
+        hasErrors = true;
+      }
+    }
+
+    setErrors(newErrors);
+
+    if (hasErrors || errors.businessPhone || errors.businessEmail) {
+      const errorMessages = [];
+      if (newErrors.businessName) {
+        errorMessages.push(newErrors.businessName);
+      }
+      if (errors.businessPhone) {
+        errorMessages.push(errors.businessPhone);
+      }
+      if (errors.businessEmail) {
+        errorMessages.push(errors.businessEmail);
+      }
+
+      setMessage({
+        type: "error",
+        text: errorMessages.join(". "),
+      });
       return;
     }
 
@@ -158,6 +233,50 @@ export default function SettingsPage() {
     setSettings({ ...settings, [key]: value });
   };
 
+  const validateBusinessPhone = (value: string) => {
+    if (!value) {
+      setErrors((prev) => ({ ...prev, businessPhone: "" }));
+      return true;
+    }
+    const sanitized = sanitizeInput(value);
+    if (sanitized.length < 8) {
+      setErrors((prev) => ({ ...prev, businessPhone: "Phone number must be at least 8 digits" }));
+      return false;
+    }
+    if (sanitized.length > 15) {
+      setErrors((prev) => ({ ...prev, businessPhone: "Phone number must be less than 15 digits" }));
+      return false;
+    }
+    if (!phoneRegex.test(sanitized)) {
+      setErrors((prev) => ({ ...prev, businessPhone: "Please enter a valid phone number (e.g., +2341234567890 or +11234567890)" }));
+      return false;
+    }
+    setErrors((prev) => ({ ...prev, businessPhone: "" }));
+    return true;
+  };
+
+  const validateBusinessEmail = (value: string) => {
+    if (!value) {
+      setErrors((prev) => ({ ...prev, businessEmail: "" }));
+      return true;
+    }
+    const sanitized = sanitizeInput(value);
+    if (sanitized.length < 3) {
+      setErrors((prev) => ({ ...prev, businessEmail: "Email must be at least 3 characters" }));
+      return false;
+    }
+    if (sanitized.length > 254) {
+      setErrors((prev) => ({ ...prev, businessEmail: "Email must be less than 254 characters" }));
+      return false;
+    }
+    if (!emailRegex.test(sanitized)) {
+      setErrors((prev) => ({ ...prev, businessEmail: "Please enter a valid email address (e.g., business@example.com)" }));
+      return false;
+    }
+    setErrors((prev) => ({ ...prev, businessEmail: "" }));
+    return true;
+  };
+
   const updateCurrency = (code: string) => {
     const currency = CURRENCY_OPTIONS.find((c) => c.code === code);
     if (currency && settings) {
@@ -175,6 +294,52 @@ export default function SettingsPage() {
     }
     setUserProfile({ ...userProfile, [key]: value });
   };
+
+  // Request location permission and get timezone
+  const requestLocationForTimezone = async () => {
+    if ("geolocation" in navigator) {
+      try {
+        const permission = await navigator.permissions.query({ name: "geolocation" });
+
+        if (permission.state === "denied") {
+          alert("Location access denied. Please enable location services in your browser settings to auto-detect timezone.");
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            try {
+              // Use timezone API to get timezone from coordinates
+              const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+              updateSetting("timezone", timezone);
+              alert(`Timezone set to: ${timezone}`);
+            } catch (error) {
+              console.error("Error getting timezone:", error);
+              alert("Could not determine timezone from your location.");
+            }
+          },
+          (error) => {
+            console.error("Geolocation error:", error);
+            alert("Could not access your location. Please set timezone manually.");
+          }
+        );
+      } catch (error) {
+        console.error("Error requesting location:", error);
+        // Fallback to browser timezone
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        updateSetting("timezone", timezone);
+      }
+    } else {
+      alert("Geolocation is not supported by your browser. Please set timezone manually.");
+    }
+  };
+
+  // Set initial business email from user email
+  useEffect(() => {
+    if (userProfile?.email && settings && !settings.businessEmail) {
+      updateSetting("businessEmail", userProfile.email);
+    }
+  }, [userProfile, settings]);
 
   const handleSaveProfile = async () => {
     if (!userProfile) {
@@ -217,40 +382,6 @@ export default function SettingsPage() {
       setMessage({ type: "error", text: "Failed to save business branding" });
     } finally {
       setSavingProfile(false);
-    }
-  };
-
-  const handleDeleteAccount = async () => {
-    if (deleteConfirmText !== "delete account") {
-      setMessage({ type: "error", text: 'Please type "delete account" to confirm' });
-      return;
-    }
-
-    if (!confirm("Are you absolutely sure? This will permanently delete your account and all your data. This action CANNOT be undone!")) {
-      return;
-    }
-
-    setIsDeleting(true);
-    setMessage(null);
-
-    try {
-      const response = await fetch("/api/user/account", {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete account");
-      }
-
-      // Clear all localStorage
-      localStorage.clear();
-
-      // Redirect to sign-in page
-      window.location.href = "/auth/sign-in?deleted=true";
-    } catch (error) {
-      console.error("Error deleting account:", error);
-      setMessage({ type: "error", text: "Failed to delete account. Please try again." });
-      setIsDeleting(false);
     }
   };
 
@@ -318,58 +449,106 @@ export default function SettingsPage() {
         )}
 
         {/* Business Information */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 border border-gray-200">
-          <div className="flex items-center gap-2 mb-4">
-            <Building2 className="w-6 h-6 text-blue-600" />
-            <h2 className="text-xl font-bold text-black">Business Information</h2>
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-200">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+            <h2 className="text-lg sm:text-xl font-bold text-black">Business Information</h2>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div>
               <label className="block text-sm font-bold text-black mb-2">
-                Business Name <span className="text-red-500">*</span>
+                Business Name <span className="text-gray-500 font-normal">(Optional)</span>
               </label>
               <input
                 type="text"
-                value={settings.businessName}
-                onChange={(e) => updateSetting("businessName", e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium"
-                placeholder="My Booking Business"
-                minLength={2}
+                value={settings.businessName || ''}
+                onChange={(e) => {
+                  updateSetting("businessName", e.target.value);
+                  // Clear error when user starts typing
+                  if (errors.businessName) {
+                    setErrors((prev) => ({ ...prev, businessName: "" }));
+                  }
+                }}
+                className={`w-full px-3 sm:px-4 py-2 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium text-sm sm:text-base ${
+                  errors.businessName ? 'border-red-500' : 'border-gray-300'
+                }`}
                 maxLength={25}
-                required
+                placeholder="My Rental Business"
               />
-              <p className="text-xs text-gray-600 mt-1">
-                {settings.businessName.length}/25 characters
-              </p>
+              {errors.businessName ? (
+                <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
+                  <p className="text-xs text-red-700 font-medium">{errors.businessName}</p>
+                </div>
+              ) : (
+                <p className="text-xs text-gray-600 mt-1">
+                  {(settings.businessName || '').length}/25 characters
+                </p>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-bold text-black mb-2">Business Phone</label>
-                <input
-                  type="tel"
-                  value={settings.businessPhone || ""}
-                  onChange={(e) => updateSetting("businessPhone", e.target.value || null)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium"
-                  placeholder="+1234567890"
-                  minLength={8}
-                  maxLength={15}
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-bold text-black mb-2">Business Phone</label>
+              <input
+                type="tel"
+                value={settings.businessPhone || ""}
+                onChange={(e) => {
+                  const val = e.target.value || null;
+                  updateSetting("businessPhone", val);
+                  if (val) {
+                    validateBusinessPhone(val);
+                  } else {
+                    setErrors((prev) => ({ ...prev, businessPhone: "" }));
+                  }
+                }}
+                onBlur={(e) => {
+                  if (e.target.value) {
+                    validateBusinessPhone(e.target.value);
+                  }
+                }}
+                className={`w-full px-3 sm:px-4 py-2 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium text-sm sm:text-base ${
+                  errors.businessPhone ? 'border-red-500' : 'border-gray-300'
+                }`}
+                minLength={8}
+                maxLength={15}
+              />
+              {errors.businessPhone && (
+                <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
+                  <p className="text-xs text-red-700 font-medium">{errors.businessPhone}</p>
+                </div>
+              )}
+            </div>
 
-              <div>
-                <label className="block text-sm font-bold text-black mb-2">Business Email</label>
-                <input
-                  type="email"
-                  value={settings.businessEmail || ""}
-                  onChange={(e) => updateSetting("businessEmail", e.target.value || null)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium"
-                  placeholder="contact@business.com"
-                  minLength={3}
-                  maxLength={254}
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-bold text-black mb-2">Business Email</label>
+              <input
+                type="email"
+                value={settings.businessEmail || ""}
+                onChange={(e) => {
+                  const val = e.target.value || null;
+                  updateSetting("businessEmail", val);
+                  if (val) {
+                    validateBusinessEmail(val);
+                  } else {
+                    setErrors((prev) => ({ ...prev, businessEmail: "" }));
+                  }
+                }}
+                onBlur={(e) => {
+                  if (e.target.value) {
+                    validateBusinessEmail(e.target.value);
+                  }
+                }}
+                className={`w-full px-3 sm:px-4 py-2 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium text-sm sm:text-base ${
+                  errors.businessEmail ? 'border-red-500' : 'border-gray-300'
+                }`}
+                minLength={3}
+                maxLength={254}
+              />
+              {errors.businessEmail && (
+                <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
+                  <p className="text-xs text-red-700 font-medium">{errors.businessEmail}</p>
+                </div>
+              )}
             </div>
 
             <div>
@@ -377,9 +556,8 @@ export default function SettingsPage() {
               <textarea
                 value={settings.businessAddress || ""}
                 onChange={(e) => updateSetting("businessAddress", e.target.value || null)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium resize-none"
+                className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium resize-none text-sm sm:text-base"
                 rows={2}
-                placeholder="123 Main Street, City, State, ZIP"
                 maxLength={100}
               />
               <p className="text-xs text-gray-500 mt-1">{(settings.businessAddress || "").length}/100 characters</p>
@@ -387,194 +565,73 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Currency & Financial */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 border border-gray-200">
-          <div className="flex items-center gap-2 mb-4">
-            <DollarSign className="w-6 h-6 text-green-600" />
-            <h2 className="text-xl font-bold text-black">Currency & Financial</h2>
+        {/* Currency */}
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-200">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+            <h2 className="text-lg sm:text-xl font-bold text-black">Currency</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-black mb-2">
-                Currency <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={settings.currency}
-                onChange={(e) => updateCurrency(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-bold"
-              >
-                {CURRENCY_OPTIONS.map((currency) => (
-                  <option key={currency.code} value={currency.code}>
-                    {currency.symbol} - {currency.name} ({currency.code})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-black mb-2">
-                Tax Rate (%)
-              </label>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                step="0.01"
-                value={settings.taxRate || ""}
-                onChange={(e) =>
-                  updateSetting("taxRate", e.target.value ? parseFloat(e.target.value) : null)
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium"
-                placeholder="10.00"
-              />
-              <p className="text-xs text-gray-500 mt-1 font-medium">Leave empty if not applicable</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Inventory & Booking */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 border border-gray-200">
-          <div className="flex items-center gap-2 mb-4">
-            <AlertTriangle className="w-6 h-6 text-orange-600" />
-            <h2 className="text-xl font-bold text-black">Inventory & Booking Settings</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-black mb-2">
-                Low Stock Threshold <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                min="0"
-                max="100000"
-                value={settings.lowStockThreshold}
-                onChange={(e) => updateSetting("lowStockThreshold", parseInt(e.target.value) || 0)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium"
-              />
-              <p className="text-xs text-gray-500 mt-1 font-medium">
-                Show warning when stock is below this number
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-black mb-2">
-                Default Booking Duration (days) <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="365"
-                value={settings.defaultBookingDays}
-                onChange={(e) => updateSetting("defaultBookingDays", parseInt(e.target.value) || 1)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium"
-              />
-              <p className="text-xs text-gray-500 mt-1 font-medium">
-                Default booking period when creating new bookings
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Regional & Display */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 border border-gray-200">
-          <div className="flex items-center gap-2 mb-4">
-            <Globe className="w-6 h-6 text-purple-600" />
-            <h2 className="text-xl font-bold text-black">Regional & Display</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-black mb-2">
-                Date Format <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={settings.dateFormat}
-                onChange={(e) => updateSetting("dateFormat", e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-bold"
-              >
-                {DATE_FORMAT_OPTIONS.map((format) => (
-                  <option key={format.value} value={format.value}>
-                    {format.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-black mb-2">
-                Timezone <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={settings.timezone}
-                onChange={(e) => updateSetting("timezone", e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-bold"
-              >
-                {TIMEZONE_OPTIONS.map((tz) => (
-                  <option key={tz.value} value={tz.value}>
-                    {tz.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Danger Zone - Account Deletion */}
-        <div className="bg-red-50 rounded-2xl shadow-xl p-6 mb-6 border-2 border-red-300">
-          <div className="flex items-center gap-2 mb-4">
-            <AlertTriangle className="w-6 h-6 text-red-600" />
-            <h2 className="text-xl font-bold text-red-900">Danger Zone</h2>
-          </div>
-
-          <div className="bg-white rounded-lg p-4 border-2 border-red-200">
-            <h3 className="text-lg font-bold text-red-900 mb-2">Delete Account</h3>
-            <p className="text-sm text-gray-700 mb-4">
-              Once you delete your account, there is no going back. This will permanently delete:
-            </p>
-            <ul className="list-disc list-inside text-sm text-gray-700 mb-4 space-y-1">
-              <li>Your account and profile</li>
-              <li>All your items, customers, and bookings</li>
-              <li>All your settings and data</li>
-              <li>All payment records</li>
-            </ul>
-            <p className="text-sm font-bold text-red-900 mb-4">
-              This action is permanent and cannot be undone!
-            </p>
-
-            <div className="mb-4">
-              <label className="block text-sm font-bold text-black mb-2">
-                Type &quot;delete account&quot; to confirm:
-              </label>
-              <input
-                type="text"
-                value={deleteConfirmText}
-                onChange={(e) => setDeleteConfirmText(e.target.value)}
-                placeholder="delete account"
-                className="w-full px-4 py-2 border-2 border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-black font-medium"
-              />
-            </div>
-
-            <button
-              onClick={handleDeleteAccount}
-              disabled={isDeleting || deleteConfirmText !== "delete account"}
-              className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          <div>
+            <label className="block text-sm font-bold text-black mb-2">
+              Currency <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={settings.currency}
+              onChange={(e) => updateCurrency(e.target.value)}
+              className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-bold text-sm sm:text-base"
             >
-              <AlertTriangle className="w-5 h-5" />
-              {isDeleting ? "Deleting Account..." : "Delete My Account Permanently"}
+              {CURRENCY_OPTIONS.map((currency) => (
+                <option key={currency.code} value={currency.code}>
+                  {currency.symbol} - {currency.name} ({currency.code})
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Timezone */}
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-200">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <Globe className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+            <h2 className="text-lg sm:text-xl font-bold text-black">Timezone</h2>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-black mb-2">
+              Timezone <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={settings.timezone}
+              onChange={(e) => updateSetting("timezone", e.target.value)}
+              className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-bold text-sm sm:text-base mb-2"
+            >
+              {TIMEZONE_OPTIONS.map((tz) => (
+                <option key={tz.value} value={tz.value}>
+                  {tz.label}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={requestLocationForTimezone}
+              className="w-full px-3 sm:px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-md text-sm sm:text-base"
+            >
+              📍 Use My Location to Set Timezone
             </button>
+            <p className="text-xs text-gray-500 mt-2 font-medium">
+              Click the button above to automatically detect your timezone using your device location
+            </p>
           </div>
         </div>
 
         {/* Save Button */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-200">
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border border-gray-200">
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-lg sm:rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
           >
-            <Save className="w-5 h-5" />
+            <Save className="w-4 h-4 sm:w-5 sm:h-5" />
             {saving ? "Saving..." : "Save Settings"}
           </button>
         </div>
