@@ -48,7 +48,7 @@ interface UserProfile {
 }
 
 interface Settings {
-  businessName: string;
+  businessName: string | null;
 }
 
 export default function Home() {

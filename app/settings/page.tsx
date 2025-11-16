@@ -7,7 +7,7 @@ import { sanitizeInput, phoneRegex, emailRegex } from "@/app/lib/clientValidatio
 
 interface Settings {
   id: string;
-  businessName: string;
+  businessName: string | null;
   currency: string;
   currencySymbol: string;
   businessPhone: string | null;
@@ -462,7 +462,7 @@ export default function SettingsPage() {
               </label>
               <input
                 type="text"
-                value={settings.businessName}
+                value={settings.businessName || ''}
                 onChange={(e) => {
                   updateSetting("businessName", e.target.value);
                   // Clear error when user starts typing
@@ -482,7 +482,7 @@ export default function SettingsPage() {
                 </div>
               ) : (
                 <p className="text-xs text-gray-600 mt-1">
-                  {settings.businessName.length}/25 characters
+                  {(settings.businessName || '').length}/25 characters
                 </p>
               )}
             </div>
