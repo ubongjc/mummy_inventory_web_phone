@@ -130,6 +130,33 @@ export default function AnalyticsPage() {
     );
   }
 
+  if (!analytics) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
+          <Shield className="w-16 h-16 text-red-600 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-black mb-2">Unable to Load Analytics</h1>
+          <p className="text-gray-600 mb-6">The analytics data could not be loaded. Please try again.</p>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => fetchAnalytics()}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all"
+            >
+              Try Again
+            </button>
+            <Link
+              href="/admin"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gray-200 text-gray-800 font-bold rounded-lg hover:bg-gray-300 transition-all"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Admin Dashboard
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       {/* Header */}
@@ -195,7 +222,7 @@ export default function AnalyticsPage() {
               </h3>
             </div>
             <p className="text-base md:text-2xl font-bold text-black">
-              {analytics?.bookings.inPeriod || 0}
+              {analytics?.bookings?.inPeriod || 0}
             </p>
           </div>
 
