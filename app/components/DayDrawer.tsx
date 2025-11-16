@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Edit2, ChevronDown, ChevronUp } from "lucide-react";
+import { X, Edit2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import EditBookingModal from "./EditBookingModal";
@@ -78,7 +78,6 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
   const [loading, setLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [expandedBookings, setExpandedBookings] = useState<Set<string>>(new Set());
   const { formatCurrency } = useSettings();
 
   // Format date without timezone conversion
@@ -89,16 +88,6 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const formatted = `${monthNames[date.getUTCMonth()]} ${date.getUTCDate()}`;
     return includeYear ? `${formatted}, ${date.getUTCFullYear()}` : formatted;
-  };
-
-  const toggleBooking = (id: string) => {
-    const newExpanded = new Set(expandedBookings);
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id);
-    } else {
-      newExpanded.add(id);
-    }
-    setExpandedBookings(newExpanded);
   };
 
   useEffect(() => {
@@ -277,161 +266,107 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
                   </p>
                 ) : (
                   <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
-                    {bookings.map((booking) => {
-                      const isExpanded = expandedBookings.has(booking.id);
-                      return (
-                        <div
-                          key={booking.id}
-                          className="border border-gray-300 rounded-lg p-2.5 hover:shadow-md hover:border-blue-400 transition-all bg-white relative overflow-hidden"
-                        >
-                          {/* Color indicator stripe */}
-                          {booking.color && (
-                            <div
-                              className="absolute top-0 left-0 w-1 h-full"
-                              style={{ backgroundColor: booking.color }}
-                            />
-                          )}
+                    {bookings.map((booking) => (
+                      <div
+                        key={booking.id}
+                        className="border border-gray-300 rounded-lg p-2.5 hover:shadow-md hover:border-blue-400 transition-all bg-white relative overflow-hidden"
+                      >
+                        {/* Color indicator stripe */}
+                        {booking.color && (
+                          <div
+                            className="absolute top-0 left-0 w-1 h-full"
+                            style={{ backgroundColor: booking.color }}
+                          />
+                        )}
 
-                          <div className="flex items-start justify-between mb-1.5 pl-2">
-                            <div className="flex-1 cursor-pointer" onClick={() => toggleBooking(booking.id)}>
-                              <div className="flex items-center gap-2 mb-0.5">
-                                <h4 className="font-bold text-black text-sm">
-                                  {booking.customer.firstName || booking.customer.name} {booking.customer.lastName || ""}
-                                </h4>
-                                {isExpanded ? (
-                                  <ChevronUp className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                                ) : (
-                                  <ChevronDown className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                                )}
+                        <div className="flex items-start justify-between mb-1.5 pl-2">
+                          <div className="flex-1">
+                            <h4 className="font-bold text-black text-sm mb-0.5">
+                              {booking.customer.firstName || booking.customer.name} {booking.customer.lastName || ""}
+                            </h4>
+                            <div className="flex items-center gap-2 text-xs text-black font-medium">
+                              <span>
+                                {formatDate(booking.startDate)} - {formatDate(booking.endDate)}
+                              </span>
+                              {booking.customer.phone && (
+                                <span className="text-gray-600">• {booking.customer.phone}</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            <input
+                              type="color"
+                              value={booking.color || "#3b82f6"}
+                              onChange={(e) => handleUpdateBookingColor(booking.id, e.target.value)}
+                              className="w-7 h-7 border border-gray-300 rounded cursor-pointer hover:border-blue-500 transition-colors"
+                              title="Change booking color"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                            <button
+                              onClick={() => handleEditBooking(booking)}
+                              className="px-2 py-1 text-xs font-bold text-blue-600 hover:text-white hover:bg-blue-600 border border-blue-600 rounded transition-colors"
+                            >
+                              EDIT
+                            </button>
+                            <select
+                              value={booking.status}
+                              onChange={(e) => handleUpdateBookingStatus(booking.id, e.target.value)}
+                              className={`px-2 py-1 rounded text-xs font-bold border cursor-pointer min-w-[100px] ${getStatusColor(
+                                booking.status
+                              )}`}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {STATUS_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="bg-gray-50 rounded p-1.5 pl-3.5 text-xs">
+                          {booking.items.map((item, idx) => (
+                            <div
+                              key={idx}
+                              className="text-black font-semibold flex justify-between py-0.5"
+                            >
+                              <span>{item.item.name}</span>
+                              <span className="font-medium text-gray-700">
+                                ×{item.quantity} {item.item.unit}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Payment Information */}
+                        {booking.totalPrice && (
+                          <div className="mt-2 bg-purple-50 border border-purple-200 rounded p-1.5 pl-3.5 text-xs">
+                            <div className="space-y-0.5">
+                              <div className="flex justify-between text-black font-bold">
+                                <span>Total Amount:</span>
+                                <span className="text-purple-900">{formatCurrency(booking.totalPrice)}</span>
                               </div>
-                              <div className="flex items-center gap-2 text-xs text-black font-medium">
-                                <span>
-                                  {formatDate(booking.startDate)} - {formatDate(booking.endDate)}
+                              <div className="flex justify-between text-black font-bold">
+                                <span>Amount Due:</span>
+                                <span className="text-red-700">
+                                  {formatCurrency(
+                                    Number(booking.totalPrice) -
+                                    (booking.advancePayment ? Number(booking.advancePayment) : 0) -
+                                    (booking.payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0)
+                                  )}
                                 </span>
                               </div>
-                            </div>
-                            <div className="flex items-center gap-1.5 flex-shrink-0">
-                              <input
-                                type="color"
-                                value={booking.color || "#3b82f6"}
-                                onChange={(e) => handleUpdateBookingColor(booking.id, e.target.value)}
-                                className="w-7 h-7 border border-gray-300 rounded cursor-pointer hover:border-blue-500 transition-colors"
-                                title="Change booking color"
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                              <button
-                                onClick={() => handleEditBooking(booking)}
-                                className="px-2 py-1 text-xs font-bold text-blue-600 hover:text-white hover:bg-blue-600 border border-blue-600 rounded transition-colors"
-                              >
-                                EDIT
-                              </button>
-                              <select
-                                value={booking.status}
-                                onChange={(e) => handleUpdateBookingStatus(booking.id, e.target.value)}
-                                className={`px-2 py-1 rounded text-xs font-bold border cursor-pointer min-w-[100px] ${getStatusColor(
-                                  booking.status
-                                )}`}
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                {STATUS_OPTIONS.map((option) => (
-                                  <option key={option.value} value={option.value}>
-                                    {option.label}
-                                  </option>
-                                ))}
-                              </select>
+                              {booking.paymentDueDate && (
+                                <div className="text-gray-600 text-[10px] pt-0.5">
+                                  Due: {formatDate(booking.paymentDueDate, true)}
+                                </div>
+                              )}
                             </div>
                           </div>
-
-                          {/* Item summary - always visible */}
-                          <div className="mt-1 ml-2 text-[10px] text-gray-700 font-medium break-words">
-                            {booking.items.map((item, idx) => (
-                              <span key={item.id} className="inline-block">
-                                <span className="break-all">{item.item.name}</span> ×{item.quantity}
-                                {idx < booking.items.length - 1 && ", "}
-                              </span>
-                            ))}
-                          </div>
-
-                          {/* Expanded Content */}
-                          {isExpanded && (
-                            <div className="mt-2 space-y-2 border-t border-gray-200 pt-2">
-                              {/* Customer Details */}
-                              {(booking.customer.phone || booking.customer.email) && (
-                                <div className="bg-blue-50 rounded p-2 border border-blue-200">
-                                  <div className="text-[9px] text-gray-600 font-bold mb-1">CUSTOMER</div>
-                                  {booking.customer.phone && (
-                                    <div className="text-[10px] text-black font-medium">
-                                      📞 {booking.customer.phone}
-                                    </div>
-                                  )}
-                                  {booking.customer.email && (
-                                    <div className="text-[10px] text-black font-medium">
-                                      ✉️ {booking.customer.email}
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-
-                              {/* Items */}
-                              <div>
-                                <div className="text-[9px] text-gray-600 font-bold mb-1">ITEMS</div>
-                                <div className="space-y-1">
-                                  {booking.items.map((item) => (
-                                    <div
-                                      key={item.id}
-                                      className="bg-gray-50 rounded p-1.5 border border-gray-200 flex items-center justify-between gap-2"
-                                    >
-                                      <span className="font-bold text-black text-[10px] break-words flex-1 min-w-0">
-                                        {item.item.name}
-                                      </span>
-                                      <span className="text-[10px] font-bold text-purple-600 whitespace-nowrap flex-shrink-0">
-                                        {item.quantity} {item.item.unit}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-
-                              {/* Payment Information */}
-                              {booking.totalPrice && (
-                                <div className="bg-purple-50 border border-purple-200 rounded p-2">
-                                  <div className="text-[9px] font-bold text-gray-700 mb-1">PRICING</div>
-                                  <div className="space-y-0.5">
-                                    <div className="flex justify-between text-[10px] text-black font-bold">
-                                      <span>Total Amount:</span>
-                                      <span className="text-purple-900">{formatCurrency(booking.totalPrice)}</span>
-                                    </div>
-                                    <div className="flex justify-between text-[10px] text-black font-bold">
-                                      <span>Amount Due:</span>
-                                      <span className="text-red-700">
-                                        {formatCurrency(
-                                          Number(booking.totalPrice) -
-                                          (booking.advancePayment ? Number(booking.advancePayment) : 0) -
-                                          (booking.payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0)
-                                        )}
-                                      </span>
-                                    </div>
-                                    {booking.paymentDueDate && (
-                                      <div className="text-gray-600 text-[8px] pt-0.5">
-                                        Due: {formatDate(booking.paymentDueDate, true)}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Notes */}
-                              {booking.notes && (
-                                <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
-                                  <div className="text-[9px] text-gray-600 font-bold mb-1">NOTES</div>
-                                  <div className="text-[10px] text-black font-medium">{booking.notes}</div>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
