@@ -35,13 +35,18 @@ export async function PATCH(
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
-    // Update user plan
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: { plan },
+    // Update or create subscription with new plan
+    const subscription = await prisma.subscription.upsert({
+      where: { userId },
+      update: { plan },
+      create: {
+        userId,
+        plan,
+        status: "active",
+      },
     });
 
-    return NextResponse.json({ success: true, user: updatedUser });
+    return NextResponse.json({ success: true, subscription });
   } catch (error) {
     console.error("Error updating user plan:", error);
     return NextResponse.json(
