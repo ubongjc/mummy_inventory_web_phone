@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Edit2 } from "lucide-react";
+import { X, ChevronDown, ChevronUp } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import EditBookingModal from "./EditBookingModal";
-import NotesDisplay from "./NotesDisplay";
-import NotesModal from "./NotesModal";
 import { useSettings } from "@/app/hooks/useSettings";
 
 interface DayDrawerProps {
@@ -80,8 +78,7 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
   const [loading, setLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [bookingNotesModalOpen, setBookingNotesModalOpen] = useState(false);
-  const [currentBookingNotes, setCurrentBookingNotes] = useState<{ id: string; notes: string } | null>(null);
+  const [expandedBookings, setExpandedBookings] = useState<Set<string>>(new Set());
   const { formatCurrency } = useSettings();
 
   // Format date without timezone conversion
@@ -103,11 +100,6 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
   // Add escape key handler to close drawer
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      // Don't close drawer if notes modal is open
-      if (bookingNotesModalOpen) {
-        return;
-      }
-
       if (e.key === 'Escape' && isOpen) {
         e.preventDefault();
         e.stopPropagation();
@@ -119,7 +111,7 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
       document.addEventListener('keydown', handleEscape);
       return () => document.removeEventListener('keydown', handleEscape);
     }
-  }, [isOpen, onClose, bookingNotesModalOpen]);
+  }, [isOpen, onClose]);
 
   const fetchDayData = async () => {
     if (!date) {
@@ -166,37 +158,16 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
     fetchDayData(); // Refresh the data
   };
 
-  // Notes handlers
-  const handleOpenBookingNotes = (booking: Booking) => {
-    // Defer opening to next frame to avoid race with click handlers
-    requestAnimationFrame(() => {
-      setCurrentBookingNotes({ id: booking.id, notes: booking.notes || "" });
-      setBookingNotesModalOpen(true);
+  const toggleBookingExpanded = (bookingId: string) => {
+    setExpandedBookings((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(bookingId)) {
+        newSet.delete(bookingId);
+      } else {
+        newSet.add(bookingId);
+      }
+      return newSet;
     });
-  };
-
-  const handleSaveBookingNotes = async (notes: string) => {
-    if (!currentBookingNotes) {
-      throw new Error("No booking selected");
-    }
-
-    const response = await fetch(`/api/bookings/${currentBookingNotes.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ notes }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to update booking notes");
-    }
-
-    await fetchDayData();
-
-    // Modal will close itself and trigger onClose which resets state
-
-    if (onDataChange) {
-      onDataChange();
-    }
   };
 
   const handleUpdateBookingStatus = async (bookingId: string, newStatus: string) => {
@@ -266,12 +237,7 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
     }
   };
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    // Don't close drawer if notes modal is open
-    if (bookingNotesModalOpen) {
-      e.stopPropagation();
-      return;
-    }
+  const handleBackdropClick = () => {
     onClose();
   };
 
@@ -317,116 +283,143 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
                   </p>
                 ) : (
                   <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
-                    {bookings.map((booking) => (
-                      <div
-                        key={booking.id}
-                        className="border border-gray-300 rounded-lg p-2.5 hover:shadow-md hover:border-blue-400 transition-all bg-white relative overflow-hidden"
-                      >
-                        {/* Color indicator stripe */}
-                        {booking.color && (
-                          <div
-                            className="absolute top-0 left-0 w-1 h-full"
-                            style={{ backgroundColor: booking.color }}
-                          />
-                        )}
+                    {bookings.map((booking) => {
+                      const isExpanded = expandedBookings.has(booking.id);
 
-                        <div className="flex items-start justify-between mb-1.5 pl-2">
-                          <div className="flex-1">
-                            <h4 className="font-bold text-black text-sm mb-0.5">
-                              {booking.customer.firstName || booking.customer.name} {booking.customer.lastName || ""}
-                            </h4>
-                            <div className="flex items-center gap-2 text-xs text-black font-medium">
-                              <span>
+                      return (
+                        <div
+                          key={booking.id}
+                          className="border border-gray-300 rounded-lg p-2.5 hover:shadow-md hover:border-blue-400 transition-all bg-white relative overflow-hidden"
+                        >
+                          {/* Color indicator stripe */}
+                          {booking.color && (
+                            <div
+                              className="absolute top-0 left-0 w-1 h-full"
+                              style={{ backgroundColor: booking.color }}
+                            />
+                          )}
+
+                          {/* First Line - Always Visible */}
+                          <div className="flex items-center justify-between pl-2">
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              {/* Expand/Collapse Button */}
+                              <button
+                                onClick={() => toggleBookingExpanded(booking.id)}
+                                className="flex-shrink-0 p-1 hover:bg-gray-100 rounded transition-colors"
+                                title={isExpanded ? "Collapse" : "Expand"}
+                              >
+                                {isExpanded ? (
+                                  <ChevronUp className="w-4 h-4 text-gray-600" />
+                                ) : (
+                                  <ChevronDown className="w-4 h-4 text-gray-600" />
+                                )}
+                              </button>
+
+                              {/* Customer Name */}
+                              <h4 className="font-bold text-black text-sm truncate">
+                                {booking.customer.firstName || booking.customer.name} {booking.customer.lastName || ""}
+                              </h4>
+
+                              {/* Date Range */}
+                              <span className="text-xs text-gray-600 font-medium whitespace-nowrap">
                                 {formatDate(booking.startDate)} - {formatDate(booking.endDate)}
                               </span>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                              {/* Color Picker */}
+                              <input
+                                type="color"
+                                value={booking.color || "#3b82f6"}
+                                onChange={(e) => handleUpdateBookingColor(booking.id, e.target.value)}
+                                className="w-7 h-7 border border-gray-300 rounded cursor-pointer hover:border-blue-500 transition-colors"
+                                title="Change booking color"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+
+                              {/* Edit Button */}
+                              <button
+                                onClick={() => handleEditBooking(booking)}
+                                className="px-2 py-1 text-xs font-bold text-blue-600 hover:text-white hover:bg-blue-600 border border-blue-600 rounded transition-colors"
+                              >
+                                EDIT
+                              </button>
+
+                              {/* Status Dropdown */}
+                              <select
+                                value={booking.status}
+                                onChange={(e) => handleUpdateBookingStatus(booking.id, e.target.value)}
+                                className={`px-2 py-1 rounded text-xs font-bold border cursor-pointer min-w-[100px] ${getStatusColor(
+                                  booking.status
+                                )}`}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {STATUS_OPTIONS.map((option) => (
+                                  <option key={option.value} value={option.value}>
+                                    {option.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* Expanded Details */}
+                          {isExpanded && (
+                            <div className="mt-2 pl-2 space-y-2">
+                              {/* Phone Number */}
                               {booking.customer.phone && (
-                                <span className="text-gray-600">• {booking.customer.phone}</span>
+                                <div className="text-xs text-gray-700 font-medium">
+                                  <span className="text-gray-500">Phone:</span> {booking.customer.phone}
+                                </div>
                               )}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1.5 flex-shrink-0">
-                            <input
-                              type="color"
-                              value={booking.color || "#3b82f6"}
-                              onChange={(e) => handleUpdateBookingColor(booking.id, e.target.value)}
-                              className="w-7 h-7 border border-gray-300 rounded cursor-pointer hover:border-blue-500 transition-colors"
-                              title="Change booking color"
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                            <button
-                              onClick={() => handleEditBooking(booking)}
-                              className="px-2 py-1 text-xs font-bold text-blue-600 hover:text-white hover:bg-blue-600 border border-blue-600 rounded transition-colors"
-                            >
-                              EDIT
-                            </button>
-                            <select
-                              value={booking.status}
-                              onChange={(e) => handleUpdateBookingStatus(booking.id, e.target.value)}
-                              className={`px-2 py-1 rounded text-xs font-bold border cursor-pointer min-w-[100px] ${getStatusColor(
-                                booking.status
-                              )}`}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {STATUS_OPTIONS.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                  {option.label}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
 
-                        <div className="bg-gray-50 rounded p-1.5 pl-3.5 text-xs">
-                          {booking.items.map((item, idx) => (
-                            <div
-                              key={idx}
-                              className="text-black font-semibold flex justify-between py-0.5"
-                            >
-                              <span>{item.item.name}</span>
-                              <span className="font-medium text-gray-700">
-                                ×{item.quantity} {item.item.unit}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
+                              {/* Items List */}
+                              <div className="bg-gray-50 rounded p-1.5 pl-3.5 text-xs">
+                                {booking.items.map((item, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="text-black font-semibold flex justify-between py-0.5"
+                                  >
+                                    <span>{item.item.name}</span>
+                                    <span className="font-medium text-gray-700">
+                                      ×{item.quantity} {item.item.unit}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
 
-                        {/* Payment Information */}
-                        {booking.totalPrice && (
-                          <div className="mt-2 bg-purple-50 border border-purple-200 rounded p-1.5 pl-3.5 text-xs">
-                            <div className="space-y-0.5">
-                              <div className="flex justify-between text-black font-bold">
-                                <span>Total Amount:</span>
-                                <span className="text-purple-900">{formatCurrency(booking.totalPrice)}</span>
-                              </div>
-                              <div className="flex justify-between text-black font-bold">
-                                <span>Amount Due:</span>
-                                <span className="text-red-700">
-                                  {formatCurrency(
-                                    Number(booking.totalPrice) -
-                                    (booking.advancePayment ? Number(booking.advancePayment) : 0) -
-                                    (booking.payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0)
-                                  )}
-                                </span>
-                              </div>
-                              {booking.paymentDueDate && (
-                                <div className="text-gray-600 text-[10px] pt-0.5">
-                                  Due: {formatDate(booking.paymentDueDate, true)}
+                              {/* Payment Information */}
+                              {booking.totalPrice && (
+                                <div className="bg-purple-50 border border-purple-200 rounded p-1.5 pl-3.5 text-xs">
+                                  <div className="space-y-0.5">
+                                    <div className="flex justify-between text-black font-bold">
+                                      <span>Total Amount:</span>
+                                      <span className="text-purple-900">{formatCurrency(booking.totalPrice)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-black font-bold">
+                                      <span>Amount Due:</span>
+                                      <span className="text-red-700">
+                                        {formatCurrency(
+                                          Number(booking.totalPrice) -
+                                          (booking.advancePayment ? Number(booking.advancePayment) : 0) -
+                                          (booking.payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0)
+                                        )}
+                                      </span>
+                                    </div>
+                                    {booking.paymentDueDate && (
+                                      <div className="text-gray-600 text-[10px] pt-0.5">
+                                        Due: {formatDate(booking.paymentDueDate, true)}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               )}
                             </div>
-                          </div>
-                        )}
-
-                        {/* Notes */}
-                        <div className="mt-2 bg-yellow-50 border border-yellow-200 rounded p-1.5 pl-3.5 text-xs">
-                          <div className="text-[10px] font-bold text-gray-700 mb-1">NOTES</div>
-                          <NotesDisplay
-                            notes={booking.notes || ""}
-                            onClick={() => handleOpenBookingNotes(booking)}
-                          />
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -495,18 +488,6 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
         onClose={() => setIsEditModalOpen(false)}
         onSuccess={handleEditSuccess}
         booking={selectedBooking}
-      />
-
-      {/* Booking Notes Modal */}
-      <NotesModal
-        isOpen={bookingNotesModalOpen}
-        onClose={() => {
-          setBookingNotesModalOpen(false);
-          setCurrentBookingNotes(null);
-        }}
-        initialNotes={currentBookingNotes?.notes || ""}
-        onSave={handleSaveBookingNotes}
-        title="Booking Notes"
       />
     </>
   );
