@@ -447,6 +447,7 @@ export default function AddBookingModal({
   }, [bookingItems, items, manualTotalPrice]);
 
   // Auto-set payment due date to end date if not manually selected
+  // This ensures the payment due date is always valid (on or after rental end)
   useEffect(() => {
     if (endDate && !paymentDueDate) {
       setPaymentDueDate(endDate);
