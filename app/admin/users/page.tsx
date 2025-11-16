@@ -14,6 +14,10 @@ import {
   Star,
   User,
   Filter,
+  Trash2,
+  Edit2,
+  Save,
+  X,
 } from "lucide-react";
 
 interface UserData {
@@ -37,6 +41,10 @@ export default function AdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPlan, setFilterPlan] = useState<string>("all");
   const [filterRole, setFilterRole] = useState<string>("all");
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [editPlan, setEditPlan] = useState<string>("");
+  const [editStatus, setEditStatus] = useState<string>("");
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -68,6 +76,77 @@ export default function AdminUsersPage() {
       setError(err.message || "Failed to load users");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEditUser = (user: UserData) => {
+    setEditingUserId(user.id);
+    setEditPlan(user.plan);
+    setEditStatus("active"); // Default status
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUserId(null);
+    setEditPlan("");
+    setEditStatus("");
+  };
+
+  const handleSaveUser = async (userId: string) => {
+    try {
+      setActionLoading(userId);
+      const response = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          plan: editPlan,
+          status: editStatus,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to update user");
+      }
+
+      // Refresh users list
+      await fetchUsers();
+      handleCancelEdit();
+      alert("User updated successfully!");
+    } catch (err: any) {
+      alert(err.message || "Failed to update user");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDeleteUser = async (userId: string, userEmail: string) => {
+    if (
+      !confirm(
+        `Are you sure you want to delete ${userEmail}?\n\nThis will permanently delete:\n- User account\n- All items\n- All customers\n- All bookings\n- All data\n\nThis action CANNOT be undone!`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setActionLoading(userId);
+      const response = await fetch(`/api/admin/users?userId=${userId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to delete user");
+      }
+
+      // Refresh users list
+      await fetchUsers();
+      alert(`User ${userEmail} deleted successfully!`);
+    } catch (err: any) {
+      alert(err.message || "Failed to delete user");
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -261,38 +340,119 @@ export default function AdminUsersPage() {
                         </p>
                       </div>
 
-                      {/* Badges */}
-                      <div className="flex gap-2">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-bold border ${getPlanBadgeColor(
-                            user.plan
-                          )}`}
-                        >
-                          {user.plan.toUpperCase()}
-                        </span>
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-bold border ${getRoleBadgeColor(
-                            user.role
-                          )}`}
-                        >
-                          {user.role.toUpperCase()}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* User Details */}
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        Joined {new Date(user.createdAt).toLocaleDateString()}
-                      </span>
-                      {user.firstName && user.lastName && (
-                        <span className="flex items-center gap-1">
-                          <User className="w-4 h-4" />
-                          {user.firstName} {user.lastName}
-                        </span>
+                      {/* Badges or Edit Controls */}
+                      {editingUserId === user.id ? (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleSaveUser(user.id)}
+                            disabled={actionLoading === user.id}
+                            className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold disabled:opacity-50"
+                          >
+                            <Save className="w-3 h-3" />
+                            Save
+                          </button>
+                          <button
+                            onClick={handleCancelEdit}
+                            disabled={actionLoading === user.id}
+                            className="flex items-center gap-1 px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-semibold disabled:opacity-50"
+                          >
+                            <X className="w-3 h-3" />
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-bold border ${getPlanBadgeColor(
+                              user.plan
+                            )}`}
+                          >
+                            {user.plan.toUpperCase()}
+                          </span>
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-bold border ${getRoleBadgeColor(
+                              user.role
+                            )}`}
+                          >
+                            {user.role.toUpperCase()}
+                          </span>
+                        </div>
                       )}
                     </div>
+
+                    {/* User Details or Edit Form */}
+                    {editingUserId === user.id ? (
+                      <div className="space-y-3 mt-3">
+                        <div className="grid md:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">
+                              Subscription Plan
+                            </label>
+                            <select
+                              value={editPlan}
+                              onChange={(e) => setEditPlan(e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm text-black font-semibold"
+                            >
+                              <option value="free">Free</option>
+                              <option value="pro">Pro</option>
+                              <option value="business">Business</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">
+                              Subscription Status
+                            </label>
+                            <select
+                              value={editStatus}
+                              onChange={(e) => setEditStatus(e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm text-black font-semibold"
+                            >
+                              <option value="active">Active</option>
+                              <option value="trialing">Trialing</option>
+                              <option value="past_due">Past Due</option>
+                              <option value="canceled">Canceled</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4" />
+                            Joined {new Date(user.createdAt).toLocaleDateString()}
+                          </span>
+                          {user.firstName && user.lastName && (
+                            <span className="flex items-center gap-1">
+                              <User className="w-4 h-4" />
+                              {user.firstName} {user.lastName}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Action Buttons */}
+                        {session?.user?.id !== user.id && (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleEditUser(user)}
+                              disabled={actionLoading === user.id}
+                              className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold disabled:opacity-50 transition-colors"
+                            >
+                              <Edit2 className="w-3 h-3" />
+                              Edit Plan
+                            </button>
+                            <button
+                              onClick={() => handleDeleteUser(user.id, user.email)}
+                              disabled={actionLoading === user.id}
+                              className="flex items-center gap-1 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold disabled:opacity-50 transition-colors"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
