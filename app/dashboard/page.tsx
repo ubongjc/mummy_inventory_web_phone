@@ -109,10 +109,14 @@ export default function Home() {
 
   const fetchUserProfile = async () => {
     try {
-      // Try to get cached business name from localStorage first
+      // Try to get cached data from localStorage first for instant display
       const cachedBusinessName = localStorage.getItem('businessName');
-      if (cachedBusinessName && !userProfile) {
-        setUserProfile({ businessName: cachedBusinessName } as UserProfile);
+      const cachedRole = localStorage.getItem('userRole');
+      if ((cachedBusinessName || cachedRole) && !userProfile) {
+        setUserProfile({
+          businessName: cachedBusinessName || undefined,
+          role: cachedRole || 'user'
+        } as UserProfile);
       }
 
       const response = await fetch('/api/user/profile', {
@@ -122,9 +126,12 @@ export default function Home() {
         const data = await response.json();
         setUserProfile(data);
 
-        // Cache business name in localStorage
+        // Cache business name and role in localStorage
         if (data.businessName) {
           localStorage.setItem('businessName', data.businessName);
+        }
+        if (data.role) {
+          localStorage.setItem('userRole', data.role);
         }
 
         console.log('User profile loaded:', data.businessName || 'No business name set');

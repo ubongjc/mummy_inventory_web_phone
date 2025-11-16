@@ -13,6 +13,8 @@ import {
   Calendar,
   BarChart3,
   Lock,
+  Calculator,
+  MessageSquare,
 } from 'lucide-react';
 
 export default function PremiumPage() {
@@ -57,6 +59,18 @@ export default function PremiumPage() {
       title: 'Priority Support',
       description: 'Get faster response times and dedicated support for your rental business',
       color: 'from-violet-500 to-purple-600',
+    },
+    {
+      icon: <Calculator className="w-5 h-5 md:w-8 md:h-8" />,
+      title: 'Tax Calculator',
+      description: 'Calculate taxes automatically with helpful links to pay taxes or get professional tax assistance',
+      color: 'from-teal-500 to-cyan-600',
+    },
+    {
+      icon: <MessageSquare className="w-5 h-5 md:w-8 md:h-8" />,
+      title: 'Customer Reminders',
+      description: 'Automatic reminders sent one day before rental due, on the rental day, and one day after if late',
+      color: 'from-rose-500 to-pink-600',
     },
   ];
 

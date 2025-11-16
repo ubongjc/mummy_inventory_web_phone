@@ -21,6 +21,8 @@ import {
   Bell,
   CreditCard,
   Headphones,
+  Calculator,
+  MessageSquare,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -336,6 +338,32 @@ export default function HomePage() {
                 <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Priority Support</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
                   Get faster response times and dedicated support for your rental business
+                </p>
+              </div>
+            </div>
+
+            {/* Premium Feature 7 - Tax Calculator */}
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-teal-50 to-teal-100 rounded-lg md:rounded-2xl border border-teal-200 md:border-2">
+              <div className="p-1.5 md:p-3 bg-teal-600 rounded-lg md:rounded-xl flex-shrink-0">
+                <Calculator className="w-3 h-3 md:w-6 md:h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Tax Calculator</h4>
+                <p className="text-[10px] md:text-base text-gray-600">
+                  Calculate taxes automatically with helpful links to pay taxes or get professional tax assistance
+                </p>
+              </div>
+            </div>
+
+            {/* Premium Feature 8 - Customer Reminders */}
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-rose-50 to-rose-100 rounded-lg md:rounded-2xl border border-rose-200 md:border-2">
+              <div className="p-1.5 md:p-3 bg-rose-600 rounded-lg md:rounded-xl flex-shrink-0">
+                <MessageSquare className="w-3 h-3 md:w-6 md:h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Customer Reminders</h4>
+                <p className="text-[10px] md:text-base text-gray-600">
+                  Automatic reminders sent one day before rental due, on the rental day, and one day after if late
                 </p>
               </div>
             </div>
