@@ -545,7 +545,7 @@ export default function SettingsPage() {
 
             <div className="mb-4">
               <label className="block text-sm font-bold text-black mb-2">
-                Type "delete account" to confirm:
+                Type &quot;delete account&quot; to confirm:
               </label>
               <input
                 type="text"
