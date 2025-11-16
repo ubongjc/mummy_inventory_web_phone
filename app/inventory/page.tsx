@@ -255,27 +255,21 @@ export default function InventoryPage() {
 
   const handleSaveItemNotes = async (notes: string) => {
     if (!currentItemNotes) {
-      return;
+      throw new Error("No item selected");
     }
 
-    try {
-      const response = await fetch(`/api/items/${currentItemNotes.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notes }),
-      });
+    const response = await fetch(`/api/items/${currentItemNotes.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notes }),
+    });
 
-      if (!response.ok) {
-        throw new Error("Failed to update item notes");
-      }
-
-      await fetchItems();
-      setItemNotesModalOpen(false);
-      setCurrentItemNotes(null);
-    } catch (error) {
-      console.error("Error updating item notes:", error);
-      alert("Failed to update item notes");
+    if (!response.ok) {
+      throw new Error("Failed to update item notes");
     }
+
+    await fetchItems();
+    // Modal will close itself and trigger onClose which resets state
   };
 
   const handleOpenCustomerNotes = (customer: Customer) => {
@@ -285,27 +279,21 @@ export default function InventoryPage() {
 
   const handleSaveCustomerNotes = async (notes: string) => {
     if (!currentCustomerNotes) {
-      return;
+      throw new Error("No customer selected");
     }
 
-    try {
-      const response = await fetch(`/api/customers/${currentCustomerNotes.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notes }),
-      });
+    const response = await fetch(`/api/customers/${currentCustomerNotes.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notes }),
+    });
 
-      if (!response.ok) {
-        throw new Error("Failed to update customer notes");
-      }
-
-      await fetchCustomers();
-      setCustomerNotesModalOpen(false);
-      setCurrentCustomerNotes(null);
-    } catch (error) {
-      console.error("Error updating customer notes:", error);
-      alert("Failed to update customer notes");
+    if (!response.ok) {
+      throw new Error("Failed to update customer notes");
     }
+
+    await fetchCustomers();
+    // Modal will close itself and trigger onClose which resets state
   };
 
   // Filter and sort functions

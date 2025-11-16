@@ -184,9 +184,7 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
 
     await fetchDayData();
 
-    // Close modal and reset state after successful save
-    setBookingNotesModalOpen(false);
-    setCurrentBookingNotes(null);
+    // Modal will close itself and trigger onClose which resets state
 
     if (onDataChange) {
       onDataChange();

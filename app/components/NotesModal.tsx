@@ -36,7 +36,9 @@ export default function NotesModal({
     try {
       setSaving(true);
       await onSave(notes);
-      // Modal will be closed by parent component after successful save
+      // Close modal after successful save
+      setSaving(false);
+      onClose();
     } catch (error) {
       console.error('Error saving notes:', error);
       setSaving(false);

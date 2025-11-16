@@ -427,27 +427,21 @@ export default function BookingsPage() {
 
   const handleSaveBookingNotes = async (notes: string) => {
     if (!currentBookingNotes) {
-      return;
+      throw new Error("No booking selected");
     }
 
-    try {
-      const response = await fetch(`/api/bookings/${currentBookingNotes.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notes }),
-      });
+    const response = await fetch(`/api/bookings/${currentBookingNotes.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notes }),
+    });
 
-      if (!response.ok) {
-        throw new Error("Failed to update booking notes");
-      }
-
-      await fetchBookings();
-      setBookingNotesModalOpen(false);
-      setCurrentBookingNotes(null);
-    } catch (error) {
-      console.error("Error updating booking notes:", error);
-      alert("Failed to update booking notes");
+    if (!response.ok) {
+      throw new Error("Failed to update booking notes");
     }
+
+    await fetchBookings();
+    // Modal will close itself and trigger onClose which resets state
   };
 
   const handleUpdateBookingColor = async (bookingId: string, color: string) => {
