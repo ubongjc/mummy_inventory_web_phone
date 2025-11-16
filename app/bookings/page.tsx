@@ -1390,7 +1390,7 @@ export default function BookingsPage() {
         onConfirm={handleDeleteAllBookings}
         title="Delete All Bookings"
         message="This will permanently delete all your bookings. This action cannot be undone!"
-        count={bookings.length}
+        itemCount={bookings.length}
       />
     </div>
   );
