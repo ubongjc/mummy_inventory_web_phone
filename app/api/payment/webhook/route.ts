@@ -83,21 +83,21 @@ async function handleSuccessfulPayment(data: any) {
         where: { userId: metadata.userId },
         create: {
           userId: metadata.userId,
-          plan: 'pro',
+          plan: 'premium',
           status: 'active',
           currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         update: {
-          plan: 'pro',
+          plan: 'premium',
           status: 'active',
           currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
           updatedAt: new Date(),
         },
       });
 
-      console.log('User upgraded to pro plan:', metadata.userId);
+      console.log('User upgraded to premium plan:', metadata.userId);
     }
 
     // TODO: Send confirmation email

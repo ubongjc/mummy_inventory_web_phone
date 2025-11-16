@@ -5,6 +5,9 @@ import Link from "next/link";
 import { ArrowLeft, Calendar, Search, ChevronDown, ChevronUp, Trash2, Edit2, User, Package, Maximize2, Minimize2, ChevronLeft, ChevronRight, Plus, X, CheckSquare, Square, Filter, Menu, Settings } from "lucide-react";
 import EditBookingModal from "../components/EditBookingModal";
 import DatePicker from "../components/DatePicker";
+import NotesDisplay from "../components/NotesDisplay";
+import NotesModal from "../components/NotesModal";
+import DeleteConfirmModal from "../components/DeleteConfirmModal";
 import { useSettings } from "@/app/hooks/useSettings";
 import { toZonedTime } from "date-fns-tz";
 
@@ -93,6 +96,13 @@ export default function BookingsPage() {
   const [tempDateRangeFilter, setTempDateRangeFilter] = useState<DateRangeFilter>(dateRangeFilter);
   const [tempSortBy, setTempSortBy] = useState<SortOption>(sortBy);
   const [tempStatusFilter, setTempStatusFilter] = useState<StatusFilter>(statusFilter);
+
+  // Notes modal state
+  const [bookingNotesModalOpen, setBookingNotesModalOpen] = useState(false);
+
+  // Delete all modal state
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [currentBookingNotes, setCurrentBookingNotes] = useState<{ id: string; notes: string } | null>(null);
 
   // Load default filters from localStorage on mount
   useEffect(() => {
@@ -411,6 +421,49 @@ export default function BookingsPage() {
 
   const handleEditSuccess = () => {
     fetchBookings(); // Refresh the bookings list
+  };
+
+  const handleDeleteAllBookings = async () => {
+    try {
+      const response = await fetch("/api/bookings/bulk", {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete bookings");
+      }
+
+      await fetchBookings();
+      setIsDeleteModalOpen(false);
+    } catch (error) {
+      console.error("Error deleting all bookings:", error);
+      alert("Failed to delete all bookings. Please try again.");
+    }
+  };
+
+  // Notes handlers
+  const handleOpenBookingNotes = (booking: Booking) => {
+    setCurrentBookingNotes({ id: booking.id, notes: booking.notes || "" });
+    setBookingNotesModalOpen(true);
+  };
+
+  const handleSaveBookingNotes = async (notes: string) => {
+    if (!currentBookingNotes) {
+      throw new Error("No booking selected");
+    }
+
+    const response = await fetch(`/api/bookings/${currentBookingNotes.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notes }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to update booking notes");
+    }
+
+    await fetchBookings();
+    // Modal will close itself and trigger onClose which resets state
   };
 
   const handleUpdateBookingColor = async (bookingId: string, color: string) => {
@@ -758,18 +811,29 @@ export default function BookingsPage() {
               </div>
             </div>
 
-            {/* Default Filters Button */}
-            <div className="relative">
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => setIsDefaultFiltersOpen(!isDefaultFiltersOpen)}
-                className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-semibold transition-all shadow-md text-[10px]"
+                onClick={() => setIsDeleteModalOpen(true)}
+                disabled={bookings.length === 0}
+                className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white rounded-lg font-semibold transition-all shadow-md text-[10px] disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Delete all bookings"
               >
-                <Settings className="w-3 h-3" />
-                <span className="flex flex-col items-center leading-tight">
-                  <span>DEFAULT</span>
-                  <span>FILTERS</span>
-                </span>
+                <Trash2 className="w-3 h-3" />
+                <span className="hidden sm:inline">Delete All</span>
               </button>
+
+              <div className="relative">
+                <button
+                  onClick={() => setIsDefaultFiltersOpen(!isDefaultFiltersOpen)}
+                  className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-semibold transition-all shadow-md text-[10px]"
+                >
+                  <Settings className="w-3 h-3" />
+                  <span className="flex flex-col items-center leading-tight">
+                    <span>DEFAULT</span>
+                    <span>FILTERS</span>
+                  </span>
+                </button>
 
               {/* Dropdown Menu */}
               {isDefaultFiltersOpen && (
@@ -863,6 +927,7 @@ export default function BookingsPage() {
                   </div>
                 </>
               )}
+              </div>
             </div>
           </div>
         </div>
@@ -1269,12 +1334,13 @@ export default function BookingsPage() {
                         )}
 
                         {/* Notes */}
-                        {booking.notes && (
-                          <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
-                            <div className="text-[9px] font-bold text-gray-700 mb-1">NOTES</div>
-                            <p className="text-[10px] text-black font-medium">{booking.notes}</p>
-                          </div>
-                        )}
+                        <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
+                          <div className="text-[9px] font-bold text-gray-700 mb-1">NOTES</div>
+                          <NotesDisplay
+                            notes={booking.notes || ""}
+                            onClick={() => handleOpenBookingNotes(booking)}
+                          />
+                        </div>
 
                         {/* Actions */}
                         <div className="flex gap-1">
@@ -1350,6 +1416,28 @@ export default function BookingsPage() {
         onClose={() => setIsEditModalOpen(false)}
         onSuccess={handleEditSuccess}
         booking={selectedBooking}
+      />
+
+      {/* Booking Notes Modal */}
+      <NotesModal
+        isOpen={bookingNotesModalOpen}
+        onClose={() => {
+          setBookingNotesModalOpen(false);
+          setCurrentBookingNotes(null);
+        }}
+        initialNotes={currentBookingNotes?.notes || ""}
+        onSave={handleSaveBookingNotes}
+        title="Booking Notes"
+      />
+
+      {/* Delete All Bookings Modal */}
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteAllBookings}
+        title="Delete All Bookings"
+        message={`Are you sure you want to delete all ${bookings.length} booking${bookings.length !== 1 ? 's' : ''}? This action cannot be undone.`}
+        itemCount={bookings.length}
       />
     </div>
   );

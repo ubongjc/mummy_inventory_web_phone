@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ArrowLeft, Edit, Trash2, Package, Users, AlertTriangle, Search, Menu, X, ChevronDown, ChevronRight } from "lucide-react";
 import DeleteConfirmModal from "../components/DeleteConfirmModal";
 import InventorySummary from "../components/InventorySummary";
+import NotesDisplay from "../components/NotesDisplay";
+import NotesModal from "../components/NotesModal";
 import { useSettings } from "@/app/hooks/useSettings";
 import { toTitleCase } from "@/app/lib/validation";
 
@@ -46,6 +48,12 @@ export default function InventoryPage() {
 
   // Expanded customer rows
   const [expandedCustomerIds, setExpandedCustomerIds] = useState<Set<string>>(new Set());
+
+  // Notes modal states
+  const [itemNotesModalOpen, setItemNotesModalOpen] = useState(false);
+  const [currentItemNotes, setCurrentItemNotes] = useState<{ id: string; notes: string } | null>(null);
+  const [customerNotesModalOpen, setCustomerNotesModalOpen] = useState(false);
+  const [currentCustomerNotes, setCurrentCustomerNotes] = useState<{ id: string; notes: string } | null>(null);
 
   const toggleCustomerExpand = (id: string) => {
     const newExpanded = new Set(expandedCustomerIds);
@@ -237,6 +245,55 @@ export default function InventoryPage() {
       console.error("Error deleting customer:", error);
       alert(`Failed to delete customer: ${error.message}`);
     }
+  };
+
+  // Notes handlers
+  const handleOpenItemNotes = (item: Item) => {
+    setCurrentItemNotes({ id: item.id, notes: item.notes || "" });
+    setItemNotesModalOpen(true);
+  };
+
+  const handleSaveItemNotes = async (notes: string) => {
+    if (!currentItemNotes) {
+      throw new Error("No item selected");
+    }
+
+    const response = await fetch(`/api/items/${currentItemNotes.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notes }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to update item notes");
+    }
+
+    await fetchItems();
+    // Modal will close itself and trigger onClose which resets state
+  };
+
+  const handleOpenCustomerNotes = (customer: Customer) => {
+    setCurrentCustomerNotes({ id: customer.id, notes: customer.notes || "" });
+    setCustomerNotesModalOpen(true);
+  };
+
+  const handleSaveCustomerNotes = async (notes: string) => {
+    if (!currentCustomerNotes) {
+      throw new Error("No customer selected");
+    }
+
+    const response = await fetch(`/api/customers/${currentCustomerNotes.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notes }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to update customer notes");
+    }
+
+    await fetchCustomers();
+    // Modal will close itself and trigger onClose which resets state
   };
 
   // Filter and sort functions
@@ -609,7 +666,10 @@ export default function InventoryPage() {
                           {item.price ? formatCurrency(item.price) : "-"}
                         </td>
                         <td className="px-2 py-1 text-black text-[9px] font-medium max-w-[120px]">
-                          <div className="truncate" title={item.notes || ""}>{item.notes || "-"}</div>
+                          <NotesDisplay
+                            notes={item.notes || ""}
+                            onClick={() => handleOpenItemNotes(item)}
+                          />
                         </td>
                         <td className="px-2 py-1 text-right space-x-1">
                           <button
@@ -884,14 +944,13 @@ export default function InventoryPage() {
                                 )}
 
                                 {/* Notes */}
-                                {customer.notes && (
-                                  <div className="bg-purple-50 rounded p-2 border border-purple-200">
-                                    <div className="text-[9px] text-gray-600 font-bold mb-1">NOTES</div>
-                                    <div className="text-[10px] text-black font-medium">
-                                      📝 {customer.notes}
-                                    </div>
-                                  </div>
-                                )}
+                                <div className="bg-purple-50 rounded p-2 border border-purple-200">
+                                  <div className="text-[9px] text-gray-600 font-bold mb-1">NOTES</div>
+                                  <NotesDisplay
+                                    notes={customer.notes || ""}
+                                    onClick={() => handleOpenCustomerNotes(customer)}
+                                  />
+                                </div>
 
                                 {!customer.phone && !customer.email && !customer.address && !customer.notes && (
                                   <div className="text-gray-500 italic text-xs text-center py-2">No additional details</div>
@@ -926,6 +985,30 @@ export default function InventoryPage() {
         title={deleteModal.title}
         message={deleteModal.message}
         itemCount={deleteModal.count}
+      />
+
+      {/* Item Notes Modal */}
+      <NotesModal
+        isOpen={itemNotesModalOpen}
+        onClose={() => {
+          setItemNotesModalOpen(false);
+          setCurrentItemNotes(null);
+        }}
+        initialNotes={currentItemNotes?.notes || ""}
+        onSave={handleSaveItemNotes}
+        title="Item Notes"
+      />
+
+      {/* Customer Notes Modal */}
+      <NotesModal
+        isOpen={customerNotesModalOpen}
+        onClose={() => {
+          setCustomerNotesModalOpen(false);
+          setCurrentCustomerNotes(null);
+        }}
+        initialNotes={currentCustomerNotes?.notes || ""}
+        onSave={handleSaveCustomerNotes}
+        title="Customer Notes"
       />
     </div>
   );
