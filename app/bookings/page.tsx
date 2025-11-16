@@ -426,7 +426,9 @@ export default function BookingsPage() {
   };
 
   const handleSaveBookingNotes = async (notes: string) => {
-    if (!currentBookingNotes) return;
+    if (!currentBookingNotes) {
+      return;
+    }
 
     try {
       const response = await fetch(`/api/bookings/${currentBookingNotes.id}`, {

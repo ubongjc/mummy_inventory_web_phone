@@ -254,7 +254,9 @@ export default function InventoryPage() {
   };
 
   const handleSaveItemNotes = async (notes: string) => {
-    if (!currentItemNotes) return;
+    if (!currentItemNotes) {
+      return;
+    }
 
     try {
       const response = await fetch(`/api/items/${currentItemNotes.id}`, {
@@ -282,7 +284,9 @@ export default function InventoryPage() {
   };
 
   const handleSaveCustomerNotes = async (notes: string) => {
-    if (!currentCustomerNotes) return;
+    if (!currentCustomerNotes) {
+      return;
+    }
 
     try {
       const response = await fetch(`/api/customers/${currentCustomerNotes.id}`, {

@@ -168,7 +168,9 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
   };
 
   const handleSaveBookingNotes = async (notes: string) => {
-    if (!currentBookingNotes) return;
+    if (!currentBookingNotes) {
+      return;
+    }
 
     try {
       const response = await fetch(`/api/bookings/${currentBookingNotes.id}`, {
