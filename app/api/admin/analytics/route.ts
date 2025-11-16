@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Aggregate by day
-    const dailyUserGrowth = userGrowth.reduce((acc: any, curr) => {
+    const dailyUserGrowth = userGrowth.reduce((acc: any, curr: { createdAt: Date; _count: number }) => {
       const date = new Date(curr.createdAt).toISOString().split("T")[0];
       if (!acc[date]) {
         acc[date] = 0;
@@ -82,13 +82,13 @@ export async function GET(request: NextRequest) {
     });
 
     // Calculate daily revenue
-    const dailyRevenue = bookingsWithRevenue.reduce((acc: any, booking) => {
+    const dailyRevenue = bookingsWithRevenue.reduce((acc: any, booking: any) => {
       const date = new Date(booking.createdAt).toISOString().split("T")[0];
       if (!acc[date]) {
         acc[date] = 0;
       }
       // Calculate booking revenue
-      const revenue = booking.bookingItems.reduce((sum, bi) => {
+      const revenue = booking.bookingItems.reduce((sum: number, bi: any) => {
         return sum + (bi.item?.price || 0);
       }, 0);
       acc[date] += revenue;
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Get item names
-    const itemIds = itemsUsage.map((iu) => iu.itemId);
+    const itemIds = itemsUsage.map((iu: any) => iu.itemId);
     const items = await prisma.item.findMany({
       where: {
         id: {
@@ -121,8 +121,8 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const itemsWithNames = itemsUsage.map((iu) => {
-      const item = items.find((i) => i.id === iu.itemId);
+    const itemsWithNames = itemsUsage.map((iu: any) => {
+      const item = items.find((i: any) => i.id === iu.itemId);
       return {
         name: item?.name || "Unknown",
         bookings: iu._count,
@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const dailyInquiries = inquiriesByDay.reduce((acc: any, curr) => {
+    const dailyInquiries = inquiriesByDay.reduce((acc: any, curr: { createdAt: Date; _count: number }) => {
       const date = new Date(curr.createdAt).toISOString().split("T")[0];
       if (!acc[date]) {
         acc[date] = 0;
@@ -174,7 +174,7 @@ export async function GET(request: NextRequest) {
       bookings: {
         total: totalBookings,
         inPeriod: bookingsInPeriod,
-        byStatus: bookingsByStatus.map((b) => ({
+        byStatus: bookingsByStatus.map((b: any) => ({
           status: b.status,
           count: b._count,
         })),
@@ -188,7 +188,7 @@ export async function GET(request: NextRequest) {
         date,
         count,
       })),
-      subscriptions: subscriptions.map((s) => ({
+      subscriptions: subscriptions.map((s: any) => ({
         plan: s.plan,
         date: new Date(s.createdAt).toISOString().split("T")[0],
         count: s._count,
