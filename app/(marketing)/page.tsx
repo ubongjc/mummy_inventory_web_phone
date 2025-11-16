@@ -21,6 +21,10 @@ import {
   Bell,
   CreditCard,
   Headphones,
+  Calculator,
+  BellRing,
+  Truck,
+  FileDown,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -261,21 +265,21 @@ export default function HomePage() {
         </div>
 
         <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl p-3 md:p-12">
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-6">
-            {/* Premium Feature 1 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-6">
+            {/* Premium Feature 1 - Tax Calculator */}
             <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg md:rounded-2xl border border-blue-200 md:border-2">
               <div className="p-1.5 md:p-3 bg-blue-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <Globe className="w-3 h-3 md:w-6 md:h-6 text-white" />
+                <Calculator className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Public Booking Page</h4>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Tax Calculator</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
-                  Share a custom link so customers can check availability and inquire about rentals directly on your branded page
+                  Automatically calculate taxes on rentals based on your location and apply them to invoices and receipts
                 </p>
               </div>
             </div>
 
-            {/* Premium Feature 2 */}
+            {/* Premium Feature 2 - Events Near You */}
             <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg md:rounded-2xl border border-purple-200 md:border-2">
               <div className="p-1.5 md:p-3 bg-purple-600 rounded-lg md:rounded-xl flex-shrink-0">
                 <MapPin className="w-3 h-3 md:w-6 md:h-6 text-white" />
@@ -288,22 +292,9 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Premium Feature 3 */}
+            {/* Premium Feature 3 - Custom Analytics */}
             <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-lg md:rounded-2xl border border-green-200 md:border-2">
               <div className="p-1.5 md:p-3 bg-green-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <Bell className="w-3 h-3 md:w-6 md:h-6 text-white" />
-              </div>
-              <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Smart Notifications</h4>
-                <p className="text-[10px] md:text-base text-gray-600">
-                  Email and SMS alerts for new inquiries, overdue payments, low stock, and upcoming events
-                </p>
-              </div>
-            </div>
-
-            {/* Premium Feature 4 */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg md:rounded-2xl border border-orange-200 md:border-2">
-              <div className="p-1.5 md:p-3 bg-orange-600 rounded-lg md:rounded-xl flex-shrink-0">
                 <BarChart3 className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
               <div>
@@ -314,9 +305,9 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Premium Feature 5 */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg md:rounded-2xl border border-pink-200 md:border-2">
-              <div className="p-1.5 md:p-3 bg-pink-600 rounded-lg md:rounded-xl flex-shrink-0">
+            {/* Premium Feature 4 - Online Payments */}
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg md:rounded-2xl border border-orange-200 md:border-2">
+              <div className="p-1.5 md:p-3 bg-orange-600 rounded-lg md:rounded-xl flex-shrink-0">
                 <CreditCard className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
               <div>
@@ -327,15 +318,80 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Premium Feature 6 */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg md:rounded-2xl border border-indigo-200 md:border-2">
-              <div className="p-1.5 md:p-3 bg-indigo-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <Headphones className="w-3 h-3 md:w-6 md:h-6 text-white" />
+            {/* Premium Feature 5 - Customer Reminders */}
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg md:rounded-2xl border border-pink-200 md:border-2">
+              <div className="p-1.5 md:p-3 bg-pink-600 rounded-lg md:rounded-xl flex-shrink-0">
+                <BellRing className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Priority Support</h4>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Customer Reminders</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
-                  Get faster response times and dedicated support for your rental business
+                  Send automated reminders to customers for upcoming rentals, returns, and outstanding payments
+                </p>
+              </div>
+            </div>
+
+            {/* Premium Feature 6 - Automated Notifications */}
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg md:rounded-2xl border border-indigo-200 md:border-2">
+              <div className="p-1.5 md:p-3 bg-indigo-600 rounded-lg md:rounded-xl flex-shrink-0">
+                <Bell className="w-3 h-3 md:w-6 md:h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Automated Notifications</h4>
+                <p className="text-[10px] md:text-base text-gray-600">
+                  Email and SMS alerts for new inquiries, overdue payments, low stock, and upcoming bookings
+                </p>
+              </div>
+            </div>
+
+            {/* Premium Feature 7 - Public Booking Page */}
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-lg md:rounded-2xl border border-cyan-200 md:border-2">
+              <div className="p-1.5 md:p-3 bg-cyan-600 rounded-lg md:rounded-xl flex-shrink-0">
+                <Globe className="w-3 h-3 md:w-6 md:h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Public Booking Page</h4>
+                <p className="text-[10px] md:text-base text-gray-600">
+                  Share a custom link so customers can check availability and inquire about rentals directly on your branded page
+                </p>
+              </div>
+            </div>
+
+            {/* Premium Feature 8 - Team Collaboration */}
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-rose-50 to-rose-100 rounded-lg md:rounded-2xl border border-rose-200 md:border-2">
+              <div className="p-1.5 md:p-3 bg-rose-600 rounded-lg md:rounded-xl flex-shrink-0">
+                <Users className="w-3 h-3 md:w-6 md:h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Team Collaboration</h4>
+                <p className="text-[10px] md:text-base text-gray-600">
+                  Add team members with custom roles and permissions to manage your rental business together
+                </p>
+              </div>
+            </div>
+
+            {/* Premium Feature 9 - Wholesale Supplier Connection */}
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg md:rounded-2xl border border-amber-200 md:border-2">
+              <div className="p-1.5 md:p-3 bg-amber-600 rounded-lg md:rounded-xl flex-shrink-0">
+                <Truck className="w-3 h-3 md:w-6 md:h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Wholesale Supplier Connection</h4>
+                <p className="text-[10px] md:text-base text-gray-600">
+                  Connect with wholesale suppliers to easily restock inventory and manage purchase orders
+                </p>
+              </div>
+            </div>
+
+            {/* Premium Feature 10 - Data Export & Reports */}
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg md:rounded-2xl border border-emerald-200 md:border-2">
+              <div className="p-1.5 md:p-3 bg-emerald-600 rounded-lg md:rounded-xl flex-shrink-0">
+                <FileDown className="w-3 h-3 md:w-6 md:h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Data Export & Reports</h4>
+                <p className="text-[10px] md:text-base text-gray-600">
+                  Export your data in multiple formats (CSV, Excel, PDF) and generate detailed business reports
                 </p>
               </div>
             </div>
@@ -348,54 +404,6 @@ export default function HomePage() {
             <p className="text-[10px] md:text-base text-gray-600">
               Sign up for a free account now and we'll let you know as soon as these features become available.
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* About Section */}
-      <section className="max-w-7xl mx-auto px-4 py-4 md:py-16 mb-4 md:mb-16">
-        <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl p-4 md:p-12">
-          <div className="grid md:grid-cols-2 gap-4 md:gap-12 items-center">
-            <div>
-              <h3 className="text-lg md:text-4xl font-bold text-gray-900 mb-2 md:mb-6">
-                About Very Simple Inventory
-              </h3>
-              <p className="text-xs md:text-lg text-gray-600 mb-2 md:mb-4">
-                We built Very Simple Inventory because rental businesses deserve better tools.
-                Managing inventory, bookings, and customers shouldn't be complicated or expensive.
-              </p>
-              <p className="text-xs md:text-lg text-gray-600 hidden md:block mb-4">
-                Our mission is to help rental businesses of all sizes streamline their operations,
-                reduce manual work, and focus on what matters most: growing their business and
-                serving their customers.
-              </p>
-              <p className="text-xs md:text-lg text-gray-600 hidden md:block">
-                Whether you're renting equipment, party supplies, or anything in between, Very
-                Simple Inventory gives you the tools you need to succeed.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-2 md:gap-4">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 md:p-6 rounded-lg md:rounded-2xl border md:border-2 border-blue-200">
-                <TrendingUp className="w-4 h-4 md:w-8 md:h-8 text-blue-600 mb-1 md:mb-2" />
-                <div className="text-base md:text-3xl font-bold text-gray-900">1000+</div>
-                <div className="text-[10px] md:text-base text-gray-600">Active Users</div>
-              </div>
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-3 md:p-6 rounded-lg md:rounded-2xl border md:border-2 border-purple-200">
-                <Package className="w-4 h-4 md:w-8 md:h-8 text-purple-600 mb-1 md:mb-2" />
-                <div className="text-base md:text-3xl font-bold text-gray-900">50k+</div>
-                <div className="text-[10px] md:text-base text-gray-600">Items Managed</div>
-              </div>
-              <div className="bg-gradient-to-br from-green-50 to-green-100 p-3 md:p-6 rounded-lg md:rounded-2xl border md:border-2 border-green-200">
-                <CalendarDays className="w-4 h-4 md:w-8 md:h-8 text-green-600 mb-1 md:mb-2" />
-                <div className="text-base md:text-3xl font-bold text-gray-900">100k+</div>
-                <div className="text-[10px] md:text-base text-gray-600">Bookings Created</div>
-              </div>
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-3 md:p-6 rounded-lg md:rounded-2xl border md:border-2 border-orange-200">
-                <Star className="w-4 h-4 md:w-8 md:h-8 text-orange-600 mb-1 md:mb-2" />
-                <div className="text-base md:text-3xl font-bold text-gray-900">4.9</div>
-                <div className="text-[10px] md:text-base text-gray-600">Average Rating</div>
-              </div>
-            </div>
           </div>
         </div>
       </section>

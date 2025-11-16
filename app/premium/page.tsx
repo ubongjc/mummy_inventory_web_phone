@@ -13,50 +13,80 @@ import {
   Calendar,
   BarChart3,
   Lock,
+  Calculator,
+  BellRing,
+  Truck,
+  FileDown,
+  MapPin,
 } from 'lucide-react';
 
 export default function PremiumPage() {
   const features = [
     {
-      icon: <Globe className="w-5 h-5 md:w-8 md:h-8" />,
-      title: 'Public Booking Page',
+      icon: <Calculator className="w-5 h-5 md:w-8 md:h-8" />,
+      title: 'Tax Calculator',
       description:
-        'Share a custom link so customers can check availability and inquire about rentals directly on your branded page',
+        'Automatically calculate taxes on rentals based on your location and apply them to invoices and receipts',
       color: 'from-blue-500 to-indigo-600',
     },
     {
-      icon: <Calendar className="w-5 h-5 md:w-8 md:h-8" />,
+      icon: <MapPin className="w-5 h-5 md:w-8 md:h-8" />,
       title: 'Events Near You',
       description:
         'Get notified about local events like weddings, festivals, and conferences that could need your rentals',
       color: 'from-purple-500 to-pink-600',
     },
     {
-      icon: <Bell className="w-5 h-5 md:w-8 md:h-8" />,
-      title: 'Smart Notifications',
-      description:
-        'Email and SMS alerts for new inquiries, overdue payments, low stock, and upcoming events',
-      color: 'from-green-500 to-emerald-600',
-    },
-    {
       icon: <BarChart3 className="w-5 h-5 md:w-8 md:h-8" />,
       title: 'Custom Analytics',
       description:
         'Track utilization rates, revenue trends, conversion rates, and identify your most profitable items',
-      color: 'from-orange-500 to-red-600',
+      color: 'from-green-500 to-emerald-600',
     },
     {
       icon: <CreditCard className="w-5 h-5 md:w-8 md:h-8" />,
       title: 'Online Payments',
       description:
         'Let customers pay securely through the app with Stripe. Automatic payment tracking and receipts',
+      color: 'from-orange-500 to-red-600',
+    },
+    {
+      icon: <BellRing className="w-5 h-5 md:w-8 md:h-8" />,
+      title: 'Customer Reminders',
+      description:
+        'Send automated reminders to customers for upcoming rentals, returns, and outstanding payments',
       color: 'from-cyan-500 to-blue-600',
     },
     {
-      icon: <Users className="w-5 h-5 md:w-8 md:h-8" />,
-      title: 'Priority Support',
-      description: 'Get faster response times and dedicated support for your rental business',
+      icon: <Bell className="w-5 h-5 md:w-8 md:h-8" />,
+      title: 'Automated Notifications',
+      description: 'Email and SMS alerts for new inquiries, overdue payments, low stock, and upcoming bookings',
       color: 'from-violet-500 to-purple-600',
+    },
+    {
+      icon: <Globe className="w-5 h-5 md:w-8 md:h-8" />,
+      title: 'Public Booking Page',
+      description:
+        'Share a custom link so customers can check availability and inquire about rentals directly on your branded page',
+      color: 'from-pink-500 to-rose-600',
+    },
+    {
+      icon: <Users className="w-5 h-5 md:w-8 md:h-8" />,
+      title: 'Team Collaboration',
+      description: 'Add team members with custom roles and permissions to manage your rental business together',
+      color: 'from-indigo-500 to-blue-600',
+    },
+    {
+      icon: <Truck className="w-5 h-5 md:w-8 md:h-8" />,
+      title: 'Wholesale Supplier Connection',
+      description: 'Connect with wholesale suppliers to easily restock inventory and manage purchase orders',
+      color: 'from-amber-500 to-orange-600',
+    },
+    {
+      icon: <FileDown className="w-5 h-5 md:w-8 md:h-8" />,
+      title: 'Data Export & Reports',
+      description: 'Export your data in multiple formats (CSV, Excel, PDF) and generate detailed business reports',
+      color: 'from-emerald-500 to-green-600',
     },
   ];
 
@@ -149,7 +179,7 @@ export default function PremiumPage() {
         </div>
 
         {/* Features Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-6">
           {features.map((feature, index) => (
             <div
               key={index}
