@@ -21,13 +21,27 @@ export default function NotesModal({
   maxLength = 50,
 }: NotesModalProps) {
   const [notes, setNotes] = useState(initialNotes);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setNotes(initialNotes);
+    setSaving(false);
   }, [initialNotes, isOpen]);
 
   const handleSave = async () => {
-    await onSave(notes);
+    if (saving) {
+      return;
+    }
+
+    try {
+      setSaving(true);
+      await onSave(notes);
+      // Modal will be closed by parent component after successful save
+    } catch (error) {
+      console.error('Error saving notes:', error);
+      setSaving(false);
+      // Don't close modal on error - let user try again
+    }
   };
 
   if (!isOpen) {
@@ -74,15 +88,17 @@ export default function NotesModal({
         <div className="flex gap-3 p-6 border-t border-gray-200 bg-gray-50">
           <button
             onClick={onClose}
-            className="flex-1 px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-semibold transition-colors"
+            disabled={saving}
+            className="flex-1 px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 font-semibold transition-all shadow-lg"
+            disabled={saving}
+            className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 font-semibold transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Save Notes
+            {saving ? 'Saving...' : 'Save Notes'}
           </button>
         </div>
       </div>

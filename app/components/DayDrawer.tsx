@@ -169,29 +169,27 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
 
   const handleSaveBookingNotes = async (notes: string) => {
     if (!currentBookingNotes) {
-      return;
+      throw new Error("No booking selected");
     }
 
-    try {
-      const response = await fetch(`/api/bookings/${currentBookingNotes.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notes }),
-      });
+    const response = await fetch(`/api/bookings/${currentBookingNotes.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notes }),
+    });
 
-      if (!response.ok) {
-        throw new Error("Failed to update booking notes");
-      }
+    if (!response.ok) {
+      throw new Error("Failed to update booking notes");
+    }
 
-      await fetchDayData();
-      setBookingNotesModalOpen(false);
-      setCurrentBookingNotes(null);
-      if (onDataChange) {
-        onDataChange();
-      }
-    } catch (error) {
-      console.error("Error updating booking notes:", error);
-      alert("Failed to update booking notes");
+    await fetchDayData();
+
+    // Close modal and reset state after successful save
+    setBookingNotesModalOpen(false);
+    setCurrentBookingNotes(null);
+
+    if (onDataChange) {
+      onDataChange();
     }
   };
 
