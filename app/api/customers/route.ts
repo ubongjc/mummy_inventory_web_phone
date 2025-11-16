@@ -4,6 +4,7 @@ import { authOptions } from "@/app/lib/auth.config";
 import { prisma } from "@/app/lib/prisma";
 import { createCustomerSchema } from "@/app/lib/validation";
 import { secureLog } from "@/app/lib/security";
+import { checkCustomerLimit } from "@/app/lib/limits";
 
 export async function GET(request: NextRequest) {
   try {
@@ -48,6 +49,21 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const validated = createCustomerSchema.parse(body);
+
+    // Check if user has reached their customer limit
+    const limitCheck = await checkCustomerLimit(session.user.id);
+    if (!limitCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: "Customer limit reached",
+          details: limitCheck.message,
+          current: limitCheck.current,
+          limit: limitCheck.limit,
+          planType: limitCheck.planType,
+        },
+        { status: 403 }
+      );
+    }
 
     // Create full name for backward compatibility
     const fullName = `${validated.firstName}${validated.lastName ? ' ' + validated.lastName : ''}`.trim();

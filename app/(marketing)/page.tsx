@@ -246,137 +246,241 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Premium Features - Coming Soon */}
+      {/* Free vs Premium Comparison */}
       <section className="max-w-7xl mx-auto px-4 py-4 md:py-16 mb-4 md:mb-16">
         <div className="text-center mb-4 md:mb-12">
           <div className="inline-flex items-center gap-1 md:gap-2 bg-purple-100 text-purple-700 px-2 py-1 md:px-4 md:py-2 rounded-full font-semibold text-xs md:text-sm mb-2 md:mb-4">
-            <Clock className="w-3 h-3 md:w-4 md:h-4" />
-            Coming Soon
+            <Star className="w-3 h-3 md:w-4 md:h-4" />
+            Free vs Premium
           </div>
           <h3 className="text-lg md:text-4xl font-bold text-gray-900 mb-2 md:mb-4">
-            Premium Features on the Way
+            Choose the Plan That's Right for You
           </h3>
           <p className="text-sm md:text-lg text-gray-600 max-w-3xl mx-auto">
-            We're working hard to bring you advanced features to take your rental business to the next level.
-            These features are currently in development and will be available soon.
+            Start with our generous free plan and upgrade to Premium when your business grows.
+            No credit card required to get started.
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl p-3 md:p-12">
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-6">
-            {/* Premium Feature 1 */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg md:rounded-2xl border border-blue-200 md:border-2">
-              <div className="p-1.5 md:p-3 bg-blue-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <Globe className="w-3 h-3 md:w-6 md:h-6 text-white" />
-              </div>
-              <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Public Booking Page</h4>
-                <p className="text-[10px] md:text-base text-gray-600">
-                  Share a custom link so customers can check availability and inquire about rentals directly on your branded page
-                </p>
-              </div>
+        {/* Comparison Table */}
+        <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl overflow-hidden">
+          {/* Header Row */}
+          <div className="grid grid-cols-3 gap-0 bg-gradient-to-r from-blue-50 to-purple-50 border-b-2 border-gray-200">
+            <div className="p-2 md:p-6">
+              <h4 className="text-xs md:text-xl font-bold text-gray-900">Feature</h4>
             </div>
-
-            {/* Premium Feature 2 */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg md:rounded-2xl border border-purple-200 md:border-2">
-              <div className="p-1.5 md:p-3 bg-purple-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <MapPin className="w-3 h-3 md:w-6 md:h-6 text-white" />
-              </div>
-              <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Events Near You</h4>
-                <p className="text-[10px] md:text-base text-gray-600">
-                  Get notified about local events like weddings, festivals, and conferences that could need your rentals
-                </p>
-              </div>
+            <div className="p-2 md:p-6 text-center border-l border-gray-200">
+              <h4 className="text-xs md:text-xl font-bold text-gray-900">Free</h4>
+              <p className="text-[10px] md:text-sm text-gray-600 mt-1">Perfect to start</p>
             </div>
-
-            {/* Premium Feature 3 */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-lg md:rounded-2xl border border-green-200 md:border-2">
-              <div className="p-1.5 md:p-3 bg-green-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <Bell className="w-3 h-3 md:w-6 md:h-6 text-white" />
-              </div>
-              <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Smart Notifications</h4>
-                <p className="text-[10px] md:text-base text-gray-600">
-                  Email and SMS alerts for new inquiries, overdue payments, low stock, and upcoming events
-                </p>
-              </div>
+            <div className="p-2 md:p-6 text-center border-l border-gray-200 bg-gradient-to-br from-purple-100 to-blue-100">
+              <h4 className="text-xs md:text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Premium</h4>
+              <p className="text-[10px] md:text-sm text-purple-700 mt-1 font-semibold">Coming Soon</p>
             </div>
+          </div>
 
-            {/* Premium Feature 4 */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg md:rounded-2xl border border-orange-200 md:border-2">
-              <div className="p-1.5 md:p-3 bg-orange-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <BarChart3 className="w-3 h-3 md:w-6 md:h-6 text-white" />
+          {/* Inventory Limits */}
+          <div className="border-b border-gray-200">
+            <div className="grid grid-cols-3 gap-0">
+              <div className="p-2 md:p-4">
+                <h5 className="text-[10px] md:text-base font-semibold text-gray-900">Items</h5>
               </div>
-              <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Custom Analytics</h4>
-                <p className="text-[10px] md:text-base text-gray-600">
-                  Track utilization rates, revenue trends, conversion rates, and identify your most profitable items
-                </p>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200">
+                <p className="text-[10px] md:text-base font-bold text-gray-900">15 items</p>
               </div>
-            </div>
-
-            {/* Premium Feature 5 */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg md:rounded-2xl border border-pink-200 md:border-2">
-              <div className="p-1.5 md:p-3 bg-pink-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <CreditCard className="w-3 h-3 md:w-6 md:h-6 text-white" />
-              </div>
-              <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Online Payments</h4>
-                <p className="text-[10px] md:text-base text-gray-600">
-                  Let customers pay securely through the app with Stripe. Automatic payment tracking and receipts
-                </p>
-              </div>
-            </div>
-
-            {/* Premium Feature 6 */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg md:rounded-2xl border border-indigo-200 md:border-2">
-              <div className="p-1.5 md:p-3 bg-indigo-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <Headphones className="w-3 h-3 md:w-6 md:h-6 text-white" />
-              </div>
-              <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Priority Support</h4>
-                <p className="text-[10px] md:text-base text-gray-600">
-                  Get faster response times and dedicated support for your rental business
-                </p>
-              </div>
-            </div>
-
-            {/* Premium Feature 7 - Tax Calculator */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-teal-50 to-teal-100 rounded-lg md:rounded-2xl border border-teal-200 md:border-2">
-              <div className="p-1.5 md:p-3 bg-teal-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <Calculator className="w-3 h-3 md:w-6 md:h-6 text-white" />
-              </div>
-              <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Tax Calculator</h4>
-                <p className="text-[10px] md:text-base text-gray-600">
-                  Calculate taxes automatically with helpful links to pay taxes or get professional tax assistance
-                </p>
-              </div>
-            </div>
-
-            {/* Premium Feature 8 - Customer Reminders */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-rose-50 to-rose-100 rounded-lg md:rounded-2xl border border-rose-200 md:border-2">
-              <div className="p-1.5 md:p-3 bg-rose-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <MessageSquare className="w-3 h-3 md:w-6 md:h-6 text-white" />
-              </div>
-              <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Customer Reminders</h4>
-                <p className="text-[10px] md:text-base text-gray-600">
-                  Automatic reminders sent one day before rental due, on the rental day, and one day after if late
-                </p>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200 bg-purple-50/50">
+                <p className="text-[10px] md:text-base font-bold text-purple-700">Unlimited</p>
               </div>
             </div>
           </div>
 
-          <div className="col-span-2 mt-2 md:mt-8 p-3 md:p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg md:rounded-2xl border md:border-2 border-blue-200 text-center">
-            <p className="text-xs md:text-base text-gray-700 font-semibold mb-1 md:mb-2">
-              Want to be notified when premium features launch?
-            </p>
-            <p className="text-[10px] md:text-base text-gray-600">
-              Sign up for a free account now and we'll let you know as soon as these features become available.
-            </p>
+          <div className="border-b border-gray-200">
+            <div className="grid grid-cols-3 gap-0">
+              <div className="p-2 md:p-4">
+                <h5 className="text-[10px] md:text-base font-semibold text-gray-900">Customers</h5>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200">
+                <p className="text-[10px] md:text-base font-bold text-gray-900">50 customers</p>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200 bg-purple-50/50">
+                <p className="text-[10px] md:text-base font-bold text-purple-700">Unlimited</p>
+              </div>
+            </div>
           </div>
+
+          <div className="border-b border-gray-200">
+            <div className="grid grid-cols-3 gap-0">
+              <div className="p-2 md:p-4">
+                <h5 className="text-[10px] md:text-base font-semibold text-gray-900">Active Bookings</h5>
+                <p className="text-[8px] md:text-xs text-gray-500">CONFIRMED + OUT</p>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200">
+                <p className="text-[10px] md:text-base font-bold text-gray-900">15 concurrent</p>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200 bg-purple-50/50">
+                <p className="text-[10px] md:text-base font-bold text-purple-700">Unlimited</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-b-2 border-gray-300">
+            <div className="grid grid-cols-3 gap-0">
+              <div className="p-2 md:p-4">
+                <h5 className="text-[10px] md:text-base font-semibold text-gray-900">Bookings Per Month</h5>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200">
+                <p className="text-[10px] md:text-base font-bold text-gray-900">25/month</p>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200 bg-purple-50/50">
+                <p className="text-[10px] md:text-base font-bold text-purple-700">Unlimited</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Time-Based Limits */}
+          <div className="border-b border-gray-200">
+            <div className="grid grid-cols-3 gap-0">
+              <div className="p-2 md:p-4">
+                <h5 className="text-[10px] md:text-base font-semibold text-gray-900">Booking History</h5>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200">
+                <p className="text-[10px] md:text-base font-bold text-gray-900">Last 3 months</p>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200 bg-purple-50/50">
+                <p className="text-[10px] md:text-base font-bold text-purple-700">Unlimited</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-b-2 border-gray-300">
+            <div className="grid grid-cols-3 gap-0">
+              <div className="p-2 md:p-4">
+                <h5 className="text-[10px] md:text-base font-semibold text-gray-900">Data Export</h5>
+                <p className="text-[8px] md:text-xs text-gray-500">Excel/CSV</p>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200">
+                <p className="text-[10px] md:text-base font-bold text-gray-500">Not available</p>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200 bg-purple-50/50">
+                <p className="text-[10px] md:text-base font-bold text-purple-700"><CheckCircle className="w-3 h-3 md:w-5 md:h-5 inline" /></p>
+              </div>
+            </div>
+          </div>
+
+          {/* Feature Limits */}
+          <div className="border-b border-gray-200">
+            <div className="grid grid-cols-3 gap-0">
+              <div className="p-2 md:p-4">
+                <h5 className="text-[10px] md:text-base font-semibold text-gray-900">Photos Per Item</h5>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200">
+                <p className="text-[10px] md:text-base font-bold text-gray-500">0 photos</p>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200 bg-purple-50/50">
+                <p className="text-[10px] md:text-base font-bold text-purple-700">5 photos</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-b border-gray-200">
+            <div className="grid grid-cols-3 gap-0">
+              <div className="p-2 md:p-4">
+                <h5 className="text-[10px] md:text-base font-semibold text-gray-900">Notifications</h5>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200">
+                <p className="text-[10px] md:text-base font-bold text-gray-500">Manual only</p>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200 bg-purple-50/50">
+                <p className="text-[10px] md:text-base font-bold text-purple-700">Automated</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-b border-gray-200">
+            <div className="grid grid-cols-3 gap-0">
+              <div className="p-2 md:p-4">
+                <h5 className="text-[10px] md:text-base font-semibold text-gray-900">Public Booking Page</h5>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200">
+                <p className="text-[10px] md:text-base font-bold text-gray-500">Not available</p>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200 bg-purple-50/50">
+                <p className="text-[10px] md:text-base font-bold text-purple-700"><CheckCircle className="w-3 h-3 md:w-5 md:h-5 inline" /></p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-b border-gray-200">
+            <div className="grid grid-cols-3 gap-0">
+              <div className="p-2 md:p-4">
+                <h5 className="text-[10px] md:text-base font-semibold text-gray-900">Team Members</h5>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200">
+                <p className="text-[10px] md:text-base font-bold text-gray-900">1 user</p>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200 bg-purple-50/50">
+                <p className="text-[10px] md:text-base font-bold text-purple-700">Up to 5 users</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-b-2 border-gray-300">
+            <div className="grid grid-cols-3 gap-0">
+              <div className="p-2 md:p-4">
+                <h5 className="text-[10px] md:text-base font-semibold text-gray-900">Wholesale Supplier Connection</h5>
+                <p className="text-[8px] md:text-xs text-gray-500">Connect with suppliers for cheaper rental materials</p>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200">
+                <p className="text-[10px] md:text-base font-bold text-gray-500">Not available</p>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200 bg-purple-50/50">
+                <p className="text-[10px] md:text-base font-bold text-purple-700"><CheckCircle className="w-3 h-3 md:w-5 md:h-5 inline" /></p>
+              </div>
+            </div>
+          </div>
+
+          {/* Support */}
+          <div className="border-b border-gray-200">
+            <div className="grid grid-cols-3 gap-0">
+              <div className="p-2 md:p-4">
+                <h5 className="text-[10px] md:text-base font-semibold text-gray-900">Support</h5>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200">
+                <p className="text-[10px] md:text-base font-bold text-gray-900">Email only</p>
+              </div>
+              <div className="p-2 md:p-4 text-center border-l border-gray-200 bg-purple-50/50">
+                <p className="text-[10px] md:text-base font-bold text-purple-700">Priority + WhatsApp</p>
+              </div>
+            </div>
+          </div>
+
+          {/* CTA Row */}
+          <div className="grid grid-cols-3 gap-0 bg-gradient-to-r from-gray-50 to-purple-50">
+            <div className="p-2 md:p-6"></div>
+            <div className="p-2 md:p-6 text-center border-l border-gray-200">
+              <Link
+                href="/auth/sign-up"
+                className="w-full inline-block px-2 py-1 md:px-6 md:py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md text-[10px] md:text-base"
+              >
+                Start Free
+              </Link>
+            </div>
+            <div className="p-2 md:p-6 text-center border-l border-gray-200">
+              <div className="px-2 py-1 md:px-6 md:py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold rounded-lg shadow-md text-[10px] md:text-base opacity-60 cursor-not-allowed">
+                Coming Soon
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Additional Info */}
+        <div className="mt-4 md:mt-8 p-3 md:p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg md:rounded-2xl border md:border-2 border-blue-200 text-center">
+          <p className="text-xs md:text-base text-gray-700 font-semibold mb-1 md:mb-2">
+            15 items is enough for micro-businesses to test the system. Most growing rental businesses will need Premium.
+          </p>
+          <p className="text-[10px] md:text-base text-gray-600">
+            Start with our free plan today and upgrade when you're ready to scale.
+          </p>
         </div>
       </section>
 

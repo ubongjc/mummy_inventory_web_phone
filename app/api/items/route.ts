@@ -4,6 +4,7 @@ import { authOptions } from "@/app/lib/auth.config";
 import { prisma } from "@/app/lib/prisma";
 import { createItemSchema } from "@/app/lib/validation";
 import { secureLog } from "@/app/lib/security";
+import { checkItemLimit } from "@/app/lib/limits";
 
 export async function GET(request: NextRequest) {
   try {
@@ -46,6 +47,21 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const validated = createItemSchema.parse(body);
+
+    // Check if user has reached their item limit
+    const limitCheck = await checkItemLimit(session.user.id);
+    if (!limitCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: "Item limit reached",
+          details: limitCheck.message,
+          current: limitCheck.current,
+          limit: limitCheck.limit,
+          planType: limitCheck.planType,
+        },
+        { status: 403 }
+      );
+    }
 
     // Check for duplicate item name for this user (case-insensitive)
     // The database will also enforce this via unique index, but we provide a better error message here
