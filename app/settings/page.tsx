@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Settings as SettingsIcon, Save, Building2, DollarSign, Globe, Calendar, AlertTriangle, ArrowLeft, Home, Package, CalendarDays, Image as ImageIcon, User } from "lucide-react";
+import { sanitizeInput, phoneRegex, emailRegex } from "@/app/lib/clientValidation";
 
 interface Settings {
   id: string;
@@ -93,6 +94,10 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [errors, setErrors] = useState({
+    businessPhone: "",
+    businessEmail: "",
+  });
 
   useEffect(() => {
     fetchSettings();
@@ -129,6 +134,14 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     if (!settings) {
+      return;
+    }
+
+    if (errors.businessPhone || errors.businessEmail) {
+      setMessage({
+        type: "error",
+        text: "Please fix all validation errors before saving",
+      });
       return;
     }
 
@@ -171,6 +184,50 @@ export default function SettingsPage() {
       return;
     }
     setSettings({ ...settings, [key]: value });
+  };
+
+  const validateBusinessPhone = (value: string) => {
+    if (!value) {
+      setErrors((prev) => ({ ...prev, businessPhone: "" }));
+      return true;
+    }
+    const sanitized = sanitizeInput(value);
+    if (sanitized.length < 8) {
+      setErrors((prev) => ({ ...prev, businessPhone: "Phone number must be at least 8 digits" }));
+      return false;
+    }
+    if (sanitized.length > 15) {
+      setErrors((prev) => ({ ...prev, businessPhone: "Phone number must be less than 15 digits" }));
+      return false;
+    }
+    if (!phoneRegex.test(sanitized)) {
+      setErrors((prev) => ({ ...prev, businessPhone: "Please enter a valid phone number (e.g., +2341234567890 or +11234567890)" }));
+      return false;
+    }
+    setErrors((prev) => ({ ...prev, businessPhone: "" }));
+    return true;
+  };
+
+  const validateBusinessEmail = (value: string) => {
+    if (!value) {
+      setErrors((prev) => ({ ...prev, businessEmail: "" }));
+      return true;
+    }
+    const sanitized = sanitizeInput(value);
+    if (sanitized.length < 3) {
+      setErrors((prev) => ({ ...prev, businessEmail: "Email must be at least 3 characters" }));
+      return false;
+    }
+    if (sanitized.length > 254) {
+      setErrors((prev) => ({ ...prev, businessEmail: "Email must be less than 254 characters" }));
+      return false;
+    }
+    if (!emailRegex.test(sanitized)) {
+      setErrors((prev) => ({ ...prev, businessEmail: "Please enter a valid email address (e.g., business@example.com)" }));
+      return false;
+    }
+    setErrors((prev) => ({ ...prev, businessEmail: "" }));
+    return true;
   };
 
   const updateCurrency = (code: string) => {
@@ -376,12 +433,27 @@ export default function SettingsPage() {
               <input
                 type="tel"
                 value={settings.businessPhone || ""}
-                onChange={(e) => updateSetting("businessPhone", e.target.value || null)}
-                className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium text-sm sm:text-base"
-                placeholder="+1234567890"
+                onChange={(e) => {
+                  const val = e.target.value || null;
+                  updateSetting("businessPhone", val);
+                  if (val) validateBusinessPhone(val);
+                  else setErrors((prev) => ({ ...prev, businessPhone: "" }));
+                }}
+                onBlur={(e) => {
+                  if (e.target.value) validateBusinessPhone(e.target.value);
+                }}
+                className={`w-full px-3 sm:px-4 py-2 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium text-sm sm:text-base ${
+                  errors.businessPhone ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="+1234567890 or +2341234567890"
                 minLength={8}
                 maxLength={15}
               />
+              {errors.businessPhone && (
+                <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
+                  <p className="text-xs text-red-700 font-medium">{errors.businessPhone}</p>
+                </div>
+              )}
             </div>
 
             <div>
@@ -389,12 +461,27 @@ export default function SettingsPage() {
               <input
                 type="email"
                 value={settings.businessEmail || ""}
-                onChange={(e) => updateSetting("businessEmail", e.target.value || null)}
-                className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium text-sm sm:text-base"
+                onChange={(e) => {
+                  const val = e.target.value || null;
+                  updateSetting("businessEmail", val);
+                  if (val) validateBusinessEmail(val);
+                  else setErrors((prev) => ({ ...prev, businessEmail: "" }));
+                }}
+                onBlur={(e) => {
+                  if (e.target.value) validateBusinessEmail(e.target.value);
+                }}
+                className={`w-full px-3 sm:px-4 py-2 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium text-sm sm:text-base ${
+                  errors.businessEmail ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="contact@business.com"
                 minLength={3}
                 maxLength={254}
               />
+              {errors.businessEmail && (
+                <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
+                  <p className="text-xs text-red-700 font-medium">{errors.businessEmail}</p>
+                </div>
+              )}
             </div>
 
             <div>

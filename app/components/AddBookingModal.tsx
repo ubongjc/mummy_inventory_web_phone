@@ -7,6 +7,7 @@ import { useSettings } from "@/app/hooks/useSettings";
 import DatePicker from "./DatePicker";
 import NotesModal from "./NotesModal";
 import NotesDisplay from "./NotesDisplay";
+import { sanitizeInput, nameRegex, phoneRegex, emailRegex } from "@/app/lib/clientValidation";
 
 interface AddBookingModalProps {
   isOpen: boolean;
@@ -86,6 +87,17 @@ export default function AddBookingModal({
   const itemSelectRefs = useRef<{ [key: number]: HTMLSelectElement | null }>({});
   const previousItemsLength = useRef(bookingItems.length);
 
+  // Validation error states for new customer form
+  const [errors, setErrors] = useState({
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+    address: "",
+    totalPrice: "",
+    advancePayment: "",
+  });
+
   // Calculate max date (1 year from today)
   const today = new Date();
   const maxDate = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
@@ -131,6 +143,15 @@ export default function AddBookingModal({
         itemStatuses: [],
       });
       setDateError("");
+      setErrors({
+        firstName: "",
+        lastName: "",
+        phone: "",
+        email: "",
+        address: "",
+        totalPrice: "",
+        advancePayment: "",
+      });
 
       fetchCustomers();
       fetchItems();
@@ -487,6 +508,110 @@ export default function AddBookingModal({
     setInitialPayments(initialPayments.filter((_, i) => i !== index));
   };
 
+  // Validation functions
+  const validateFirstName = (value: string): string => {
+    const sanitized = sanitizeInput(value);
+    if (sanitized.length > 0 && sanitized.length < 2) {
+      return "First name must be at least 2 characters";
+    }
+    if (sanitized.length > 50) {
+      return "First name must be less than 50 characters";
+    }
+    if (sanitized.length > 0 && !nameRegex.test(sanitized)) {
+      return "First name can only contain letters, spaces, hyphens, and apostrophes";
+    }
+    return "";
+  };
+
+  const validateLastName = (value: string): string => {
+    const sanitized = sanitizeInput(value);
+    if (sanitized.length > 50) {
+      return "Last name must be less than 50 characters";
+    }
+    if (sanitized.length > 0 && !nameRegex.test(sanitized)) {
+      return "Last name can only contain letters, spaces, hyphens, and apostrophes";
+    }
+    return "";
+  };
+
+  const validatePhone = (value: string): string => {
+    const sanitized = sanitizeInput(value);
+    if (sanitized.length === 0) {
+      return ""; // Phone is optional
+    }
+    if (sanitized.length < 8) {
+      return "Phone number must be at least 8 digits";
+    }
+    if (sanitized.length > 15) {
+      return "Phone number must be less than 15 digits";
+    }
+    if (!phoneRegex.test(sanitized)) {
+      return "Please enter a valid phone number (e.g., +1234567890)";
+    }
+    return "";
+  };
+
+  const validateEmail = (value: string): string => {
+    const sanitized = sanitizeInput(value);
+    if (sanitized.length === 0) {
+      return ""; // Email is optional
+    }
+    if (sanitized.length < 3) {
+      return "Email must be at least 3 characters";
+    }
+    if (sanitized.length > 254) {
+      return "Email must be less than 254 characters";
+    }
+    if (!emailRegex.test(sanitized)) {
+      return "Please enter a valid email address";
+    }
+    return "";
+  };
+
+  const validateAddress = (value: string): string => {
+    const sanitized = sanitizeInput(value);
+    if (sanitized.length > 200) {
+      return "Address must be less than 200 characters";
+    }
+    return "";
+  };
+
+  const validateTotalPrice = (value: string): string => {
+    if (value === "") {
+      return "";
+    }
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) {
+      return "Please enter a valid number";
+    }
+    if (numValue < 0) {
+      return "Total price cannot be negative";
+    }
+    if (numValue > 100000000) {
+      return "Total price cannot exceed 100,000,000 Naira";
+    }
+    return "";
+  };
+
+  const validateAdvancePayment = (value: string, total: string): string => {
+    if (value === "") {
+      return "";
+    }
+    const advanceValue = parseFloat(value);
+    const totalValue = parseFloat(total);
+
+    if (isNaN(advanceValue)) {
+      return "Please enter a valid number";
+    }
+    if (advanceValue < 0) {
+      return "Advance payment cannot be negative";
+    }
+    if (totalValue > 0 && advanceValue > totalValue) {
+      return "Advance payment cannot exceed total price";
+    }
+    return "";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('[FORM] Submit handler called');
@@ -503,6 +628,17 @@ export default function AddBookingModal({
     setCustomerError("");
     setItemsError("");
     console.log('[FORM] Starting submission...');
+
+    // Check for validation errors in new customer form
+    if (showNewCustomer) {
+      const hasErrors = Object.values(errors).some((error) => error !== "");
+      if (hasErrors) {
+        setError("Please fix all validation errors before submitting");
+        setLoading(false);
+        isSubmitting.current = false;
+        return;
+      }
+    }
 
     // Validate customer selection
     if (!showNewCustomer && !selectedCustomerId) {
@@ -545,11 +681,11 @@ export default function AddBookingModal({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            firstName: toTitleCase(newCustomerFirstName),
-            lastName: newCustomerLastName ? toTitleCase(newCustomerLastName) : undefined,
-            phone: newCustomerPhone,
-            email: newCustomerEmail,
-            address: newCustomerAddress ? toTitleCase(newCustomerAddress) : "",
+            firstName: toTitleCase(sanitizeInput(newCustomerFirstName)),
+            lastName: newCustomerLastName ? toTitleCase(sanitizeInput(newCustomerLastName)) : undefined,
+            phone: sanitizeInput(newCustomerPhone),
+            email: sanitizeInput(newCustomerEmail),
+            address: newCustomerAddress ? toTitleCase(sanitizeInput(newCustomerAddress)) : "",
           }),
         });
 
@@ -652,6 +788,15 @@ export default function AddBookingModal({
       setNewPaymentNotes("");
       setShowNewCustomer(false);
       setManualTotalPrice(false);
+      setErrors({
+        firstName: "",
+        lastName: "",
+        phone: "",
+        email: "",
+        address: "",
+        totalPrice: "",
+        advancePayment: "",
+      });
 
       onSuccess();
       onClose();
@@ -909,48 +1054,119 @@ export default function AddBookingModal({
               ) : (
                 <div className="space-y-1.5 p-2 border rounded bg-gray-50">
                   <div className="grid grid-cols-2 gap-1.5">
-                    <input
-                      type="text"
-                      value={newCustomerFirstName}
-                      onChange={(e) => {
-                        setNewCustomerFirstName(e.target.value);
-                        setCustomerError("");
-                      }}
-                      placeholder="First Name *"
-                      className={`w-full px-2 py-1.5 border-2 ${
-                        customerError ? "border-red-500 ring-2 ring-red-500/40 focus:ring-red-500" : "border-gray-400 focus:ring-2 focus:ring-blue-500"
-                      } rounded outline-none text-black font-semibold text-sm transition`}
-                      required
-                    />
-                    <input
-                      type="text"
-                      value={newCustomerLastName}
-                      onChange={(e) => setNewCustomerLastName(e.target.value)}
-                      placeholder="Last Name"
-                      className="w-full px-2 py-1.5 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm"
-                    />
+                    <div>
+                      <input
+                        type="text"
+                        value={newCustomerFirstName}
+                        onChange={(e) => {
+                          const sanitized = sanitizeInput(e.target.value);
+                          setNewCustomerFirstName(sanitized);
+                          setCustomerError("");
+                          const error = validateFirstName(sanitized);
+                          setErrors((prev) => ({ ...prev, firstName: error }));
+                        }}
+                        placeholder="First Name *"
+                        className={`w-full px-2 py-1.5 border-2 ${
+                          errors.firstName ? "border-red-500" : customerError ? "border-red-500 ring-2 ring-red-500/40 focus:ring-red-500" : "border-gray-400 focus:ring-2 focus:ring-blue-500"
+                        } rounded outline-none text-black font-semibold text-sm transition`}
+                        required
+                      />
+                      {errors.firstName && (
+                        <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
+                          <p className="text-xs text-red-700 font-medium">{errors.firstName}</p>
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        value={newCustomerLastName}
+                        onChange={(e) => {
+                          const sanitized = sanitizeInput(e.target.value);
+                          setNewCustomerLastName(sanitized);
+                          const error = validateLastName(sanitized);
+                          setErrors((prev) => ({ ...prev, lastName: error }));
+                        }}
+                        placeholder="Last Name"
+                        className={`w-full px-2 py-1.5 border-2 ${
+                          errors.lastName ? "border-red-500" : "border-gray-400"
+                        } rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm`}
+                      />
+                      {errors.lastName && (
+                        <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
+                          <p className="text-xs text-red-700 font-medium">{errors.lastName}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <input
-                    type="tel"
-                    value={newCustomerPhone}
-                    onChange={(e) => setNewCustomerPhone(e.target.value)}
-                    placeholder="Phone"
-                    className="w-full px-2 py-1.5 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm"
-                  />
-                  <input
-                    type="email"
-                    value={newCustomerEmail}
-                    onChange={(e) => setNewCustomerEmail(e.target.value)}
-                    placeholder="Email"
-                    className="w-full px-2 py-1.5 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm"
-                  />
-                  <input
-                    type="text"
-                    value={newCustomerAddress}
-                    onChange={(e) => setNewCustomerAddress(e.target.value)}
-                    placeholder="Address"
-                    className="w-full px-2 py-1.5 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm"
-                  />
+                  <div>
+                    <input
+                      type="tel"
+                      value={newCustomerPhone}
+                      onChange={(e) => {
+                        const sanitized = sanitizeInput(e.target.value);
+                        setNewCustomerPhone(sanitized);
+                        const error = validatePhone(sanitized);
+                        setErrors((prev) => ({ ...prev, phone: error }));
+                      }}
+                      placeholder="Phone"
+                      className={`w-full px-2 py-1.5 border-2 ${
+                        errors.phone ? "border-red-500" : "border-gray-400"
+                      } rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm`}
+                    />
+                    {errors.phone && (
+                      <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
+                        <p className="text-xs text-red-700 font-medium">{errors.phone}</p>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      type="email"
+                      value={newCustomerEmail}
+                      onChange={(e) => {
+                        const sanitized = sanitizeInput(e.target.value);
+                        setNewCustomerEmail(sanitized);
+                        const error = validateEmail(sanitized);
+                        setErrors((prev) => ({ ...prev, email: error }));
+                      }}
+                      placeholder="Email"
+                      className={`w-full px-2 py-1.5 border-2 ${
+                        errors.email ? "border-red-500" : "border-gray-400"
+                      } rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm`}
+                    />
+                    {errors.email && (
+                      <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
+                        <p className="text-xs text-red-700 font-medium">{errors.email}</p>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      value={newCustomerAddress}
+                      onChange={(e) => {
+                        const sanitized = sanitizeInput(e.target.value);
+                        setNewCustomerAddress(sanitized);
+                        const error = validateAddress(sanitized);
+                        setErrors((prev) => ({ ...prev, address: error }));
+                      }}
+                      placeholder="Address"
+                      className={`w-full px-2 py-1.5 border-2 ${
+                        errors.address ? "border-red-500" : "border-gray-400"
+                      } rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm`}
+                    />
+                    <div className="flex justify-between items-center mt-0.5">
+                      {errors.address && (
+                        <div className="bg-red-50 border border-red-200 rounded p-1 flex-1 mr-2">
+                          <p className="text-xs text-red-700 font-medium">{errors.address}</p>
+                        </div>
+                      )}
+                      <p className={`text-xs ${newCustomerAddress.length > 200 ? "text-red-600 font-bold" : "text-gray-500"} ${errors.address ? "" : "ml-auto"}`}>
+                        {newCustomerAddress.length}/200
+                      </p>
+                    </div>
+                  </div>
                   <button
                     type="button"
                     onClick={() => setShowNewCustomer(false)}
@@ -987,14 +1203,28 @@ export default function AddBookingModal({
                         onChange={(e) => {
                           setTotalPrice(e.target.value);
                           setManualTotalPrice(true);
+                          const error = validateTotalPrice(e.target.value);
+                          setErrors((prev) => ({ ...prev, totalPrice: error }));
+                          // Also revalidate advance payment when total changes
+                          if (advancePayment) {
+                            const advanceError = validateAdvancePayment(advancePayment, e.target.value);
+                            setErrors((prev) => ({ ...prev, advancePayment: advanceError }));
+                          }
                         }}
                         onFocus={() => setManualTotalPrice(true)}
                         placeholder="0"
                         step="0.01"
                         min="0"
-                        className="flex-1 min-w-0 h-10 px-2 py-1.5 border-2 border-gray-400 rounded-r focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm"
+                        className={`flex-1 min-w-0 h-10 px-2 py-1.5 border-2 ${
+                          errors.totalPrice ? "border-red-500" : "border-gray-400"
+                        } rounded-r focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm`}
                       />
                     </div>
+                    {errors.totalPrice && (
+                      <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
+                        <p className="text-xs text-red-700 font-medium">{errors.totalPrice}</p>
+                      </div>
+                    )}
                   </div>
                   <div className="flex flex-col min-w-0">
                     <label className="block text-xs font-bold mb-1 text-green-800">
@@ -1009,13 +1239,24 @@ export default function AddBookingModal({
                       <input
                         type="number"
                         value={advancePayment}
-                        onChange={(e) => setAdvancePayment(e.target.value)}
+                        onChange={(e) => {
+                          setAdvancePayment(e.target.value);
+                          const error = validateAdvancePayment(e.target.value, totalPrice);
+                          setErrors((prev) => ({ ...prev, advancePayment: error }));
+                        }}
                         placeholder="0"
                         step="0.01"
                         min="0"
-                        className="flex-1 min-w-0 h-10 px-2 py-1.5 border-2 border-gray-400 rounded-r focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm"
+                        className={`flex-1 min-w-0 h-10 px-2 py-1.5 border-2 ${
+                          errors.advancePayment ? "border-red-500" : "border-gray-400"
+                        } rounded-r focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm`}
                       />
                     </div>
+                    {errors.advancePayment && (
+                      <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
+                        <p className="text-xs text-red-700 font-medium">{errors.advancePayment}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
                 {/* Due Date Row */}
