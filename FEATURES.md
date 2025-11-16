@@ -1,4 +1,4 @@
-# Rental Inventory Management System - Features Documentation
+# Very Simple Inventory - Features Documentation
 
 **Version**: 2.0.0
 **Last Updated**: 2024
@@ -551,5 +551,7 @@ Proprietary - All rights reserved
 ---
 
 **Last Updated**: 2024
+**Last Updated**: November 2024
 **Version**: 2.0.0
-**Status**: Production Ready
+**Status**: Production Ready with Password Reset
+**Brand**: Very Simple Inventory (VSI) 📦

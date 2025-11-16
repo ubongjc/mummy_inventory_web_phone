@@ -268,10 +268,17 @@ export default function Home() {
 
               <button
                 onClick={() => {
-                  setIsAddBookingModalOpen(true);
-                  setIsMenuOpen(false);
+                  if (items.length > 0) {
+                    setIsAddBookingModalOpen(true);
+                    setIsMenuOpen(false);
+                  }
                 }}
-                className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 font-semibold shadow-lg transition-all"
+                disabled={items.length === 0}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold shadow-lg transition-all ${
+                  items.length === 0
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700'
+                }`}
               >
                 <Plus className="w-5 h-5" />
                 New Booking
@@ -552,7 +559,12 @@ export default function Home() {
           <div className="mt-2">
             <button
               onClick={() => setIsCheckAvailabilityOpen(true)}
-              className="w-full px-3 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded hover:from-blue-700 hover:to-purple-700 font-semibold shadow-md transition-all flex items-center justify-center gap-2 text-sm"
+              disabled={items.length === 0}
+              className={`w-full px-3 py-1.5 rounded font-semibold shadow-md transition-all flex items-center justify-center gap-2 text-sm ${
+                items.length === 0
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
+              }`}
             >
               <Search className="w-4 h-4 flex-shrink-0" />
               <span className="truncate">⚡ CHECK ITEM AVAILABILITY</span>
@@ -564,6 +576,15 @@ export default function Home() {
       {/* Main Content - Full height calendar */}
       <main className="flex-1 w-full mx-auto px-4 py-4">
         <div className="h-full max-w-7xl mx-auto">
+          {/* Empty State Message */}
+          {items.length === 0 && (
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-lg p-4 mb-4 text-center">
+              <p className="text-lg font-bold text-gray-800">
+                📦 Welcome! Add an item to begin. Click the menu icon (☰) and Add Item
+              </p>
+            </div>
+          )}
+
           {/* Calendar - Full Width */}
           <Calendar
             key={refreshKey}

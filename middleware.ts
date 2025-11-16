@@ -45,12 +45,13 @@ export const config = {
      * - api/payment/webhook (Paystack webhooks - need to be public)
      * - auth/sign-in (login page)
      * - auth/sign-up (registration page)
-     * - auth/forgot-password (password reset page)
+     * - auth/forgot-password (password reset request page)
+     * - auth/reset-password (password reset page with token)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico, manifest.json, icons (PWA files)
      * - public/* (public assets)
      */
-    '/((?!$|contact|privacy|terms|api/auth|api/contact|api/payment/webhook|auth/sign-in|auth/sign-up|auth/forgot-password|_next/static|_next/image|favicon.ico|manifest.json|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.gif$|.*\\.svg$).*)',
+    '/((?!$|contact|privacy|terms|api/auth|api/contact|api/payment/webhook|auth/sign-in|auth/sign-up|auth/forgot-password|auth/reset-password|_next/static|_next/image|favicon.ico|manifest.json|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.gif$|.*\\.svg$).*)',
   ],
 };

@@ -1,4 +1,4 @@
-# VSI Rental Inventory Management System - User Guide
+# VSI Very Simple Inventory - User Guide
 
 ## Table of Contents
 1. [Getting Started](#getting-started)
@@ -619,7 +619,7 @@ For additional assistance:
 
 ---
 
-**VSI Rental Inventory Management System**
-Version 1.0
-Last Updated: November 2025
 
+**Very Simple Inventory (VSI)** 📦
+Version 2.0.0
+Last Updated: November 2024

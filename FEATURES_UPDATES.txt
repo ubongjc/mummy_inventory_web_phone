@@ -1,0 +1,17 @@
+# Key Updates for FEATURES.md:
+
+1. Header: Change "Rental Inventory Management System" to "Very Simple Inventory"
+2. Add Password Reset features in Authentication section
+3. Add Email System in Technical Features
+4. Add PWA info in Platform-Specific Features
+5. Update branding throughout
+
+# Key Updates for EMAIL_SETUP.md:
+
+Replace SMTP/Gmail setup with Resend setup
+
+# Key Updates for HOW_TO_USE_VSI.md:
+
+1. Add Password Reset section
+2. Update branding to Very Simple Inventory
+3. Add spam folder warning
