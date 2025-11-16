@@ -26,13 +26,14 @@ export async function GET(request: NextRequest) {
     startDate.setDate(startDate.getDate() - days);
 
     // Get user growth over time
-    const userGrowth = await prisma.user.groupBy({
-      by: ["createdAt"],
-      _count: true,
+    const users = await prisma.user.findMany({
       where: {
         createdAt: {
           gte: startDate,
         },
+      },
+      select: {
+        createdAt: true,
       },
       orderBy: {
         createdAt: "asc",
@@ -40,12 +41,12 @@ export async function GET(request: NextRequest) {
     });
 
     // Aggregate by day
-    const dailyUserGrowth = userGrowth.reduce((acc: any, curr: { createdAt: Date; _count: number }) => {
-      const date = new Date(curr.createdAt).toISOString().split("T")[0];
+    const dailyUserGrowth = users.reduce((acc: any, user) => {
+      const date = new Date(user.createdAt).toISOString().split("T")[0];
       if (!acc[date]) {
         acc[date] = 0;
       }
-      acc[date] += curr._count;
+      acc[date] += 1;
       return acc;
     }, {});
 
@@ -130,41 +131,55 @@ export async function GET(request: NextRequest) {
     });
 
     // Get public page views (inquiries as proxy)
-    const inquiriesByDay = await prisma.publicInquiry.groupBy({
-      by: ["createdAt"],
-      _count: true,
+    const inquiries = await prisma.publicInquiry.findMany({
       where: {
         createdAt: {
           gte: startDate,
         },
+      },
+      select: {
+        createdAt: true,
       },
       orderBy: {
         createdAt: "asc",
       },
     });
 
-    const dailyInquiries = inquiriesByDay.reduce((acc: any, curr: { createdAt: Date; _count: number }) => {
-      const date = new Date(curr.createdAt).toISOString().split("T")[0];
+    const dailyInquiries = inquiries.reduce((acc: any, inquiry) => {
+      const date = new Date(inquiry.createdAt).toISOString().split("T")[0];
       if (!acc[date]) {
         acc[date] = 0;
       }
-      acc[date] += curr._count;
+      acc[date] += 1;
       return acc;
     }, {});
 
     // Get subscription stats over time
-    const subscriptions = await prisma.subscription.groupBy({
-      by: ["plan", "createdAt"],
-      _count: true,
+    const allSubscriptions = await prisma.subscription.findMany({
       where: {
         createdAt: {
           gte: startDate,
         },
       },
+      select: {
+        plan: true,
+        createdAt: true,
+      },
       orderBy: {
         createdAt: "asc",
       },
     });
+
+    // Group by plan and date
+    const subscriptionsByPlanAndDate = allSubscriptions.reduce((acc: any, sub) => {
+      const date = new Date(sub.createdAt).toISOString().split("T")[0];
+      const key = `${sub.plan}-${date}`;
+      if (!acc[key]) {
+        acc[key] = { plan: sub.plan, date, count: 0 };
+      }
+      acc[key].count += 1;
+      return acc;
+    }, {});
 
     return NextResponse.json({
       userGrowth: Object.entries(dailyUserGrowth).map(([date, count]) => ({
@@ -188,11 +203,7 @@ export async function GET(request: NextRequest) {
         date,
         count,
       })),
-      subscriptions: subscriptions.map((s: any) => ({
-        plan: s.plan,
-        date: new Date(s.createdAt).toISOString().split("T")[0],
-        count: s._count,
-      })),
+      subscriptions: Object.values(subscriptionsByPlanAndDate),
     });
   } catch (error: any) {
     console.error("[ERROR] Failed to fetch analytics", error);
