@@ -446,7 +446,6 @@ export default function HomePage() {
               Sign up for a free account now and we'll let you know as soon as these features become available.
             </p>
           </div>
-        </div>
           </div>
         </div>
       </section>
