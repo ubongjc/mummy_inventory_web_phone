@@ -480,6 +480,28 @@ table {
   overflow: visible !important;
 }
 
+/* Style the "+X more" link to fit in calendar day cells */
+.fc .fc-daygrid-more-link,
+.fc .fc-more-link {
+  font-size: 0.65rem !important;
+  font-weight: 600 !important;
+  padding: 2px 4px !important;
+  margin-top: 2px !important;
+  white-space: nowrap !important;
+  color: #2563eb !important;
+  text-decoration: none !important;
+  display: inline-block !important;
+  border-radius: 4px !important;
+  transition: all 0.2s ease !important;
+}
+
+.fc .fc-daygrid-more-link:hover,
+.fc .fc-more-link:hover {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
+  text-decoration: underline !important;
+}
+
 /* Mobile-optimized List View */
 .fc-list {
   border-radius: 0.5rem !important;

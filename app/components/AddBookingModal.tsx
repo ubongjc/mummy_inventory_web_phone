@@ -446,6 +446,17 @@ export default function AddBookingModal({
     }
   }, [bookingItems, items, manualTotalPrice]);
 
+  // Auto-set payment due date to end date if not manually selected
+  useEffect(() => {
+    if (endDate && !paymentDueDate) {
+      setPaymentDueDate(endDate);
+    }
+    // If payment due date is before end date, update it to end date
+    if (endDate && paymentDueDate && paymentDueDate < endDate) {
+      setPaymentDueDate(endDate);
+    }
+  }, [endDate]);
+
   const addInitialPayment = () => {
     if (!newPaymentAmount || !newPaymentDate) {
       setError("Please enter payment amount and date");
@@ -1021,7 +1032,11 @@ export default function AddBookingModal({
                     value={paymentDueDate}
                     onChange={(date) => setPaymentDueDate(date)}
                     label="Due Date"
+                    minDate={endDate || undefined}
                   />
+                  <p className="text-[10px] text-gray-600 mt-0.5">
+                    Must be on or after the return date of the booking
+                  </p>
                 </div>
               </div>
             </div>

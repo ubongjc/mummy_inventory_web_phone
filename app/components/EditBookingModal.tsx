@@ -197,6 +197,17 @@ export default function EditBookingModal({
     previousItemsLength.current = bookingItems.length;
   }, [bookingItems.length]);
 
+  // Auto-set payment due date to end date if not manually selected
+  useEffect(() => {
+    if (endDate && !paymentDueDate) {
+      setPaymentDueDate(endDate);
+    }
+    // If payment due date is before end date, update it to end date
+    if (endDate && paymentDueDate && paymentDueDate < endDate) {
+      setPaymentDueDate(endDate);
+    }
+  }, [endDate]);
+
   const fetchCustomers = async () => {
     try {
       const response = await fetch("/api/customers");
@@ -601,8 +612,12 @@ export default function EditBookingModal({
                     value={paymentDueDate}
                     onChange={(date) => setPaymentDueDate(date)}
                     label="Payment Due Date:"
+                    minDate={endDate || undefined}
                     className="text-xs"
                   />
+                  <p className="text-[10px] text-gray-600 mt-0.5">
+                    Must be on or after the return date of the booking
+                  </p>
                 </div>
               </div>
             </div>
