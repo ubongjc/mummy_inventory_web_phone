@@ -225,15 +225,15 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
   const getStatusColor = (status: string) => {
     switch (status) {
       case "CONFIRMED":
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-50 text-blue-800 border-blue-200";
       case "OUT":
-        return "bg-red-100 text-red-800";
+        return "bg-yellow-50 text-yellow-800 border-yellow-200";
       case "RETURNED":
-        return "bg-green-100 text-green-800";
+        return "bg-green-50 text-green-800 border-green-200";
       case "CANCELLED":
-        return "bg-gray-100 text-gray-800";
+        return "bg-red-50 text-red-800 border-red-200";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-50 text-gray-800 border-gray-200";
     }
   };
 
@@ -289,9 +289,9 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
                       return (
                         <div
                           key={booking.id}
-                          className="border border-gray-300 rounded-lg p-2.5 hover:shadow-md hover:border-blue-400 transition-all bg-white relative overflow-hidden"
+                          className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md hover:border-blue-300 transition-all duration-200 relative"
                         >
-                          {/* Color indicator stripe */}
+                          {/* Color stripe */}
                           {booking.color && (
                             <div
                               className="absolute top-0 left-0 w-1 h-full"
@@ -299,123 +299,194 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
                             />
                           )}
 
-                          {/* First Line - Always Visible */}
-                          <div className="flex flex-col gap-1.5 pl-2">
-                            {/* Top Row: Name and Date */}
-                            <div className="flex items-center gap-2 min-w-0">
-                              {/* Expand/Collapse Button */}
-                              <button
-                                onClick={() => toggleBookingExpanded(booking.id)}
-                                className="flex-shrink-0 p-1 hover:bg-gray-100 rounded transition-colors"
-                                title={isExpanded ? "Collapse" : "Expand"}
-                              >
+                          {/* Collapsed Header - Always Visible */}
+                          <div className="p-2 pl-3">
+                            <div
+                              onClick={() => toggleBookingExpanded(booking.id)}
+                              className="flex items-center justify-between cursor-pointer"
+                            >
+                              <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                 {isExpanded ? (
-                                  <ChevronUp className="w-4 h-4 text-gray-600" />
+                                  <ChevronDown className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
                                 ) : (
-                                  <ChevronDown className="w-4 h-4 text-gray-600" />
+                                  <ChevronUp className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
                                 )}
-                              </button>
-
-                              {/* Customer Name */}
-                              <h4 className="font-bold text-black text-sm truncate">
-                                {booking.customer.firstName || booking.customer.name} {booking.customer.lastName || ""}
-                              </h4>
-
-                              {/* Date Range */}
-                              <span className="text-xs text-gray-600 font-medium">
-                                {formatDate(booking.startDate)} - {formatDate(booking.endDate)}
-                              </span>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <h3 className="font-bold text-black text-xs leading-tight truncate">
+                                      {booking.customer.firstName || booking.customer.name} {booking.customer.lastName || ""}
+                                    </h3>
+                                  </div>
+                                  <div className="text-[10px] text-gray-600 font-medium">
+                                    {formatDate(booking.startDate)} → {formatDate(booking.endDate)}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1.5 flex-shrink-0">
+                                <input
+                                  type="color"
+                                  value={booking.color || "#3b82f6"}
+                                  onChange={(e) => {
+                                    e.stopPropagation();
+                                    handleUpdateBookingColor(booking.id, e.target.value);
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="w-6 h-6 border border-gray-300 rounded cursor-pointer"
+                                  title="Choose booking color"
+                                />
+                                <select
+                                  value={booking.status}
+                                  onChange={(e) => {
+                                    e.stopPropagation();
+                                    handleUpdateBookingStatus(booking.id, e.target.value);
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className={`px-1.5 py-0.5 rounded text-[9px] font-bold border-0 cursor-pointer ${getStatusColor(
+                                    booking.status
+                                  )}`}
+                                >
+                                  {STATUS_OPTIONS.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                      {option.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
                             </div>
-
-                            {/* Bottom Row: Actions */}
-                            <div className="flex items-center gap-1.5 pl-7">
-                              {/* Color Picker */}
-                              <input
-                                type="color"
-                                value={booking.color || "#3b82f6"}
-                                onChange={(e) => handleUpdateBookingColor(booking.id, e.target.value)}
-                                className="w-6 h-6 border border-gray-300 rounded cursor-pointer hover:border-blue-500 transition-colors"
-                                title="Change booking color"
-                                onClick={(e) => e.stopPropagation()}
-                              />
-
-                              {/* Edit Button */}
-                              <button
-                                onClick={() => handleEditBooking(booking)}
-                                className="px-2 py-0.5 text-xs font-bold text-blue-600 hover:text-white hover:bg-blue-600 border border-blue-600 rounded transition-colors"
-                              >
-                                EDIT
-                              </button>
-
-                              {/* Status Dropdown */}
-                              <select
-                                value={booking.status}
-                                onChange={(e) => handleUpdateBookingStatus(booking.id, e.target.value)}
-                                className={`px-2 py-0.5 rounded text-xs font-bold border cursor-pointer ${getStatusColor(
-                                  booking.status
-                                )}`}
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                {STATUS_OPTIONS.map((option) => (
-                                  <option key={option.value} value={option.value}>
-                                    {option.label}
-                                  </option>
-                                ))}
-                              </select>
+                            {/* Item summary - always visible */}
+                            <div className="mt-1 ml-5 text-[10px] text-gray-700 font-medium break-words">
+                              {booking.items.map((item, idx) => (
+                                <span key={item.id} className="inline-block">
+                                  <span className="break-all">{item.item.name}</span> ×{item.quantity}
+                                  {idx < booking.items.length - 1 && ", "}
+                                </span>
+                              ))}
                             </div>
                           </div>
 
-                          {/* Expanded Details */}
+                          {/* Expanded Content */}
                           {isExpanded && (
-                            <div className="mt-2 pl-2 space-y-2">
-                              {/* Phone Number */}
-                              {booking.customer.phone && (
-                                <div className="text-xs text-gray-700 font-medium">
-                                  <span className="text-gray-500">Phone:</span> {booking.customer.phone}
+                            <div className="px-2 pb-2 space-y-2 border-t border-gray-200">
+                              {/* Customer Details */}
+                              {(booking.customer.phone || booking.customer.email) && (
+                                <div className="bg-blue-50 rounded p-2 border border-blue-200">
+                                  <div className="text-[9px] text-gray-600 font-bold mb-1">CUSTOMER</div>
+                                  {booking.customer.phone && (
+                                    <div className="text-[10px] text-black font-medium">
+                                      📞 {booking.customer.phone}
+                                    </div>
+                                  )}
+                                  {booking.customer.email && (
+                                    <div className="text-[10px] text-black font-medium">
+                                      ✉️ {booking.customer.email}
+                                    </div>
+                                  )}
                                 </div>
                               )}
 
-                              {/* Items List */}
-                              <div className="bg-gray-50 rounded p-1.5 pl-3.5 text-xs">
-                                {booking.items.map((item, idx) => (
-                                  <div
-                                    key={idx}
-                                    className="text-black font-semibold flex justify-between py-0.5"
-                                  >
-                                    <span>{item.item.name}</span>
-                                    <span className="font-medium text-gray-700">
-                                      ×{item.quantity} {item.item.unit}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-
-                              {/* Payment Information */}
-                              {booking.totalPrice && (
-                                <div className="bg-purple-50 border border-purple-200 rounded p-1.5 pl-3.5 text-xs">
-                                  <div className="space-y-0.5">
-                                    <div className="flex justify-between text-black font-bold">
-                                      <span>Total Amount:</span>
-                                      <span className="text-purple-900">{formatCurrency(booking.totalPrice)}</span>
-                                    </div>
-                                    <div className="flex justify-between text-black font-bold">
-                                      <span>Amount Due:</span>
-                                      <span className="text-red-700">
-                                        {formatCurrency(
-                                          Number(booking.totalPrice) -
-                                          (booking.advancePayment ? Number(booking.advancePayment) : 0) -
-                                          (booking.payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0)
-                                        )}
+                              {/* Items */}
+                              <div>
+                                <div className="text-[9px] text-gray-600 font-bold mb-1">ITEMS</div>
+                                <div className="space-y-1">
+                                  {booking.items.map((item) => (
+                                    <div
+                                      key={item.id}
+                                      className="bg-gray-50 rounded p-1.5 border border-gray-200 flex items-center justify-between gap-2"
+                                    >
+                                      <span className="font-bold text-black text-[10px] break-words flex-1 min-w-0">
+                                        {item.item.name}
+                                      </span>
+                                      <span className="text-[10px] font-bold text-purple-600 whitespace-nowrap flex-shrink-0">
+                                        {item.quantity} {item.item.unit}
                                       </span>
                                     </div>
-                                    {booking.paymentDueDate && (
-                                      <div className="text-gray-600 text-[10px] pt-0.5">
-                                        Due: {formatDate(booking.paymentDueDate, true)}
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Pricing Information */}
+                              {(booking.totalPrice || booking.advancePayment || booking.paymentDueDate) && (
+                                <div className="bg-purple-50 border border-purple-200 rounded p-2">
+                                  <div className="text-[9px] font-bold text-gray-700 mb-1">PRICING</div>
+                                  {booking.totalPrice && (
+                                    <div className="text-[10px] text-black font-medium">
+                                      Total Price: {formatCurrency(booking.totalPrice)}
+                                    </div>
+                                  )}
+
+                                  {/* Payment History */}
+                                  {((booking.advancePayment && booking.advancePayment > 0) || (booking.payments && booking.payments.length > 0)) && (
+                                    <div className="pt-1 border-t border-purple-200 mt-1">
+                                      <div className="text-[8px] font-bold text-purple-700 mb-0.5">PAYMENT HISTORY</div>
+                                      <div className="space-y-0.5">
+                                        {booking.advancePayment && booking.advancePayment > 0 && (
+                                          <div className="flex justify-between text-[9px] bg-green-50 px-1 py-0.5 rounded">
+                                            <span className="text-gray-700">Advance Payment</span>
+                                            <span className="font-bold text-green-700">{formatCurrency(booking.advancePayment)}</span>
+                                          </div>
+                                        )}
+                                        {booking.payments && booking.payments.map((payment) => (
+                                          <div key={payment.id} className="flex justify-between text-[9px] bg-green-50 px-1 py-0.5 rounded">
+                                            <div className="flex flex-col">
+                                              <span className="text-gray-700">
+                                                {new Date(payment.paymentDate).toLocaleDateString()}
+                                              </span>
+                                              {payment.notes && (
+                                                <span className="text-gray-500 text-[8px]">{payment.notes}</span>
+                                              )}
+                                            </div>
+                                            <span className="font-bold text-green-700">{formatCurrency(payment.amount)}</span>
+                                          </div>
+                                        ))}
                                       </div>
-                                    )}
-                                  </div>
+                                    </div>
+                                  )}
+
+                                  {/* Summary */}
+                                  {booking.totalPrice && (
+                                    <div className="pt-1 border-t border-purple-200 mt-1 space-y-0.5">
+                                      <div className="flex justify-between text-[10px] font-bold text-black">
+                                        <span>Total Paid:</span>
+                                        <span className="text-green-700">
+                                          {formatCurrency(
+                                            (booking.advancePayment || 0) +
+                                            (booking.payments?.reduce((sum, p) => sum + p.amount, 0) || 0)
+                                          )}
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between text-[10px] font-bold">
+                                        <span className="text-purple-900">Balance Remaining:</span>
+                                        <span className="text-red-700">
+                                          {formatCurrency(
+                                            booking.totalPrice -
+                                            (booking.advancePayment || 0) -
+                                            (booking.payments?.reduce((sum, p) => sum + p.amount, 0) || 0)
+                                          )}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {booking.paymentDueDate && (
+                                    <div className="text-[10px] text-gray-600 font-medium mt-1">
+                                      Due: {new Date(booking.paymentDueDate).toLocaleDateString()}
+                                    </div>
+                                  )}
                                 </div>
                               )}
+
+                              {/* Actions */}
+                              <div className="flex gap-1">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditBooking(booking);
+                                  }}
+                                  className="flex-1 flex items-center justify-center px-2 py-1.5 border rounded-lg text-xs font-bold transition-colors text-blue-600 hover:text-white hover:bg-blue-600 border-blue-600"
+                                >
+                                  EDIT
+                                </button>
+                              </div>
                             </div>
                           )}
                         </div>
