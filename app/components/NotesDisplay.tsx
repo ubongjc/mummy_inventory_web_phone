@@ -17,9 +17,9 @@ export default function NotesDisplay({
     return (
       <button
         onClick={onClick}
-        className="text-sm text-gray-400 hover:text-blue-600 transition-colors flex items-center gap-1"
+        className="text-[10px] text-gray-400 hover:text-blue-600 transition-colors flex items-center gap-1"
       >
-        <FileText className="w-4 h-4" />
+        <FileText className="w-3 h-3" />
         Add notes
       </button>
     );
@@ -31,13 +31,10 @@ export default function NotesDisplay({
   return (
     <button
       onClick={onClick}
-      className="text-sm text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1 group"
+      className="text-[10px] text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1 group max-w-full"
     >
-      <FileText className="w-4 h-4 flex-shrink-0" />
-      <span className="truncate group-hover:underline">{displayText}</span>
-      {truncated && (
-        <span className="text-xs text-blue-600 ml-1">(click to view all)</span>
-      )}
+      <FileText className="w-3 h-3 flex-shrink-0" />
+      <span className="truncate group-hover:underline font-normal">{displayText}</span>
     </button>
   );
 }

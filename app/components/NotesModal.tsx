@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 interface NotesModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (notes: string) => void;
+  onSave: (notes: string) => void | Promise<void>;
   initialNotes: string;
   title?: string;
   maxLength?: number;
@@ -26,9 +26,8 @@ export default function NotesModal({
     setNotes(initialNotes);
   }, [initialNotes, isOpen]);
 
-  const handleSave = () => {
-    onSave(notes);
-    onClose();
+  const handleSave = async () => {
+    await onSave(notes);
   };
 
   if (!isOpen) {
