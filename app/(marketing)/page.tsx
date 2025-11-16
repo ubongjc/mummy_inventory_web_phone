@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   CalendarDays,
   Package,
@@ -25,11 +25,14 @@ import {
   BellRing,
   Truck,
   FileDown,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 
 export default function HomePage() {
   const { data: _session, status } = useSession();
   const router = useRouter();
+  const [isPremiumOpen, setIsPremiumOpen] = useState(false);
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -250,21 +253,55 @@ export default function HomePage() {
 
       {/* Premium Features - Coming Soon */}
       <section className="max-w-7xl mx-auto px-4 py-4 md:py-16 mb-4 md:mb-16">
-        <div className="text-center mb-4 md:mb-12">
-          <div className="inline-flex items-center gap-1 md:gap-2 bg-purple-100 text-purple-700 px-2 py-1 md:px-4 md:py-2 rounded-full font-semibold text-xs md:text-sm mb-2 md:mb-4">
-            <Clock className="w-3 h-3 md:w-4 md:h-4" />
-            Coming Soon
+        {/* Collapsible Header */}
+        <button
+          onClick={() => setIsPremiumOpen(!isPremiumOpen)}
+          className="w-full bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-500 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-600 rounded-2xl md:rounded-3xl shadow-2xl p-4 md:p-8 mb-4 transition-all duration-300 hover:shadow-yellow-500/50 border-4 border-yellow-300"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 md:gap-4">
+              <div className="p-2 md:p-3 bg-white/20 backdrop-blur-sm rounded-xl md:rounded-2xl">
+                <Star className="w-6 h-6 md:w-10 md:h-10 text-white fill-white animate-pulse" />
+              </div>
+              <div className="text-left">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-lg md:text-4xl font-bold text-white drop-shadow-lg">
+                    ⭐ Premium Features
+                  </h3>
+                </div>
+                <div className="inline-flex items-center gap-1 md:gap-2 bg-white/30 backdrop-blur-sm text-white px-2 py-0.5 md:px-3 md:py-1 rounded-full font-semibold text-xs md:text-sm">
+                  <Clock className="w-3 h-3 md:w-4 md:h-4" />
+                  Coming Soon
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="hidden md:block text-white font-bold text-lg">
+                {isPremiumOpen ? 'Hide' : 'Show'} Details
+              </span>
+              {isPremiumOpen ? (
+                <ChevronUp className="w-6 h-6 md:w-8 md:h-8 text-white animate-bounce" />
+              ) : (
+                <ChevronDown className="w-6 h-6 md:w-8 md:h-8 text-white animate-bounce" />
+              )}
+            </div>
           </div>
-          <h3 className="text-lg md:text-4xl font-bold text-gray-900 mb-2 md:mb-4">
-            Premium Features on the Way
-          </h3>
-          <p className="text-sm md:text-lg text-gray-600 max-w-3xl mx-auto">
-            We're working hard to bring you advanced features to take your rental business to the next level.
-            These features are currently in development and will be available soon.
-          </p>
-        </div>
+        </button>
 
-        <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl p-3 md:p-12">
+        {/* Collapsible Content */}
+        <div
+          className={`overflow-hidden transition-all duration-500 ease-in-out ${
+            isPremiumOpen ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className="text-center mb-4 md:mb-8">
+            <p className="text-sm md:text-lg text-gray-600 max-w-3xl mx-auto">
+              We're working hard to bring you advanced features to take your rental business to the next level.
+              These features are currently in development and will be available soon.
+            </p>
+          </div>
+
+          <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl p-3 md:p-12 border-4 border-yellow-200">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-6">
             {/* Premium Feature 1 - Tax Calculator */}
             <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg md:rounded-2xl border border-blue-200 md:border-2">
@@ -397,13 +434,19 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="col-span-2 mt-2 md:mt-8 p-3 md:p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg md:rounded-2xl border md:border-2 border-blue-200 text-center">
-            <p className="text-xs md:text-base text-gray-700 font-semibold mb-1 md:mb-2">
-              Want to be notified when premium features launch?
-            </p>
+          <div className="col-span-2 mt-2 md:mt-8 p-3 md:p-6 bg-gradient-to-r from-yellow-50 via-amber-50 to-yellow-50 rounded-lg md:rounded-2xl border md:border-2 border-yellow-300 text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Star className="w-4 h-4 md:w-6 md:h-6 text-yellow-500 fill-yellow-500" />
+              <p className="text-xs md:text-base text-gray-700 font-semibold">
+                Want to be notified when premium features launch?
+              </p>
+              <Star className="w-4 h-4 md:w-6 md:h-6 text-yellow-500 fill-yellow-500" />
+            </div>
             <p className="text-[10px] md:text-base text-gray-600">
               Sign up for a free account now and we'll let you know as soon as these features become available.
             </p>
+          </div>
+        </div>
           </div>
         </div>
       </section>
