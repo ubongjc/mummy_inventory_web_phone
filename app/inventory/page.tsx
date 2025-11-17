@@ -434,7 +434,8 @@ export default function InventoryPage() {
             </div>
             <button
               onClick={() => handleOpenDeleteModal("all")}
-              className="flex items-center gap-1 px-2 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition-colors text-xs"
+              disabled={items.length === 0 && customers.length === 0}
+              className="flex items-center gap-1 px-2 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs"
             >
               <AlertTriangle className="w-3 h-3" />
               Clear Everything
