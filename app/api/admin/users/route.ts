@@ -44,12 +44,17 @@ export async function GET() {
       },
     });
 
-    // Transform the data to flatten the subscription plan
-    const transformedUsers = users.map((user: typeof users[number]) => ({
-      ...user,
-      plan: user.subscription?.plan || "free",
-      subscription: undefined, // Remove the nested subscription object
-    }));
+    // Transform the data to flatten the subscription plan (derived from status)
+    const transformedUsers = users.map((user: typeof users[number]) => {
+      const isPremium = user.subscription?.status
+        ? ["active", "trialing"].includes(user.subscription.status)
+        : false;
+      return {
+        ...user,
+        plan: isPremium ? "premium" : "free",
+        subscription: undefined, // Remove the nested subscription object
+      };
+    });
 
     return NextResponse.json(transformedUsers);
   } catch (error) {
