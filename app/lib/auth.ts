@@ -54,8 +54,8 @@ export async function hasFeature(
     return false;
   }
 
-  // Pro and Business plans get all features (for now)
-  return ["pro", "business"].includes(subscription.plan);
+  // Premium plan gets all features
+  return subscription.plan === "premium";
 }
 
 /**

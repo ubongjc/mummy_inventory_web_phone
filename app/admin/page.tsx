@@ -20,8 +20,7 @@ interface AdminStats {
   users: {
     total: number;
     free: number;
-    pro: number;
-    business: number;
+    premium: number;
     newThisMonth: number;
   };
   publicPages: {
@@ -101,7 +100,7 @@ export default function AdminDashboard() {
     );
   }
 
-  const totalPremiumUsers = (stats?.users.pro || 0) + (stats?.users.business || 0);
+  const totalPremiumUsers = stats?.users.premium || 0;
   const premiumPercentage = stats
     ? ((totalPremiumUsers / stats.users.total) * 100).toFixed(1)
     : "0";
@@ -194,94 +193,44 @@ export default function AdminDashboard() {
         </div>
 
         {/* Subscription Breakdown */}
-        <div className="grid md:grid-cols-2 gap-2 md:gap-6 mb-2 md:mb-8">
+        <div className="bg-white rounded-lg md:rounded-2xl shadow-lg p-2 md:p-6 border border-gray-200 mb-2 md:mb-8">
           {/* Plan Distribution */}
-          <div className="bg-white rounded-lg md:rounded-2xl shadow-lg p-2 md:p-6 border border-gray-200">
-            <h3 className="text-sm md:text-xl font-bold text-black mb-2 md:mb-6 flex items-center gap-1 md:gap-2">
-              <BarChart3 className="w-4 h-4 md:w-6 md:h-6 text-blue-600" />
-              Plan Distribution
-            </h3>
-            <div className="space-y-2 md:space-y-4">
-              <div>
-                <div className="flex justify-between items-center mb-1 md:mb-2">
-                  <span className="text-[10px] md:text-sm font-semibold text-gray-700">Free Plan</span>
-                  <span className="text-[10px] md:text-sm font-bold text-black">{stats?.users.free || 0}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 md:h-3">
-                  <div
-                    className="bg-gradient-to-r from-gray-400 to-gray-600 h-2 md:h-3 rounded-full"
-                    style={{
-                      width: `${
-                        stats ? (stats.users.free / stats.users.total) * 100 : 0
-                      }%`,
-                    }}
-                  ></div>
-                </div>
+          <h3 className="text-sm md:text-xl font-bold text-black mb-2 md:mb-6 flex items-center gap-1 md:gap-2">
+            <BarChart3 className="w-4 h-4 md:w-6 md:h-6 text-blue-600" />
+            Plan Distribution
+          </h3>
+          <div className="space-y-2 md:space-y-4">
+            <div>
+              <div className="flex justify-between items-center mb-1 md:mb-2">
+                <span className="text-[10px] md:text-sm font-semibold text-gray-700">Free Plan</span>
+                <span className="text-[10px] md:text-sm font-bold text-black">{stats?.users.free || 0}</span>
               </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-1 md:mb-2">
-                  <span className="text-[10px] md:text-sm font-semibold text-gray-700">Pro Plan</span>
-                  <span className="text-[10px] md:text-sm font-bold text-black">{stats?.users.pro || 0}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 md:h-3">
-                  <div
-                    className="bg-gradient-to-r from-yellow-500 to-amber-600 h-2 md:h-3 rounded-full"
-                    style={{
-                      width: `${
-                        stats ? (stats.users.pro / stats.users.total) * 100 : 0
-                      }%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-1 md:mb-2">
-                  <span className="text-[10px] md:text-sm font-semibold text-gray-700">Business Plan</span>
-                  <span className="text-[10px] md:text-sm font-bold text-black">{stats?.users.business || 0}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 md:h-3">
-                  <div
-                    className="bg-gradient-to-r from-purple-500 to-pink-600 h-2 md:h-3 rounded-full"
-                    style={{
-                      width: `${
-                        stats ? (stats.users.business / stats.users.total) * 100 : 0
-                      }%`,
-                    }}
-                  ></div>
-                </div>
+              <div className="w-full bg-gray-200 rounded-full h-2 md:h-3">
+                <div
+                  className="bg-gradient-to-r from-gray-400 to-gray-600 h-2 md:h-3 rounded-full"
+                  style={{
+                    width: `${
+                      stats ? (stats.users.free / stats.users.total) * 100 : 0
+                    }%`,
+                  }}
+                ></div>
               </div>
             </div>
-          </div>
 
-          {/* Revenue Estimate */}
-          <div className="bg-white rounded-lg md:rounded-2xl shadow-lg p-2 md:p-6 border border-gray-200">
-            <h3 className="text-sm md:text-xl font-bold text-black mb-2 md:mb-6 flex items-center gap-1 md:gap-2">
-              <DollarSign className="w-4 h-4 md:w-6 md:h-6 text-green-600" />
-              <span className="hidden md:inline">Monthly Recurring Revenue (MRR)</span>
-              <span className="md:hidden">MRR</span>
-            </h3>
-            <div className="space-y-2 md:space-y-4">
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg md:rounded-xl p-2 md:p-4">
-                <p className="text-[10px] md:text-sm text-gray-600 font-semibold mb-0.5 md:mb-1">Estimated MRR</p>
-                <p className="text-lg md:text-4xl font-bold text-green-700">
-                  ${((stats?.users.pro || 0) * 29 + (stats?.users.business || 0) * 79).toLocaleString()}
-                </p>
+            <div>
+              <div className="flex justify-between items-center mb-1 md:mb-2">
+                <span className="text-[10px] md:text-sm font-semibold text-gray-700">Premium Plan</span>
+                <span className="text-[10px] md:text-sm font-bold text-black">{stats?.users.premium || 0}</span>
               </div>
-              <div className="grid grid-cols-2 gap-2 md:gap-4">
-                <div className="bg-yellow-50 rounded-lg p-2 md:p-4">
-                  <p className="text-[8px] md:text-xs text-gray-600 font-semibold mb-0.5 md:mb-1">Pro Plans</p>
-                  <p className="text-sm md:text-2xl font-bold text-yellow-700">
-                    ${((stats?.users.pro || 0) * 29).toLocaleString()}
-                  </p>
-                </div>
-                <div className="bg-purple-50 rounded-lg p-2 md:p-4">
-                  <p className="text-[8px] md:text-xs text-gray-600 font-semibold mb-0.5 md:mb-1">Business Plans</p>
-                  <p className="text-sm md:text-2xl font-bold text-purple-700">
-                    ${((stats?.users.business || 0) * 79).toLocaleString()}
-                  </p>
-                </div>
+              <div className="w-full bg-gray-200 rounded-full h-2 md:h-3">
+                <div
+                  className="bg-gradient-to-r from-yellow-500 to-amber-600 h-2 md:h-3 rounded-full"
+                  style={{
+                    width: `${
+                      stats ? (stats.users.premium / stats.users.total) * 100 : 0
+                    }%`,
+                  }}
+                ></div>
               </div>
             </div>
           </div>
@@ -305,13 +254,13 @@ export default function AdminDashboard() {
               <DollarSign className="w-4 h-4 md:w-8 md:h-8" />
               <span className="font-semibold text-[10px] md:text-sm">Billing</span>
             </button>
-            <button
-              className="flex flex-col items-center gap-1 md:gap-2 p-2 md:p-4 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg md:rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all opacity-50 cursor-not-allowed"
-              disabled
+            <Link
+              href="/admin/analytics"
+              className="flex flex-col items-center gap-1 md:gap-2 p-2 md:p-4 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg md:rounded-xl hover:from-purple-600 hover:to-pink-700 transition-all"
             >
               <BarChart3 className="w-4 h-4 md:w-8 md:h-8" />
               <span className="font-semibold text-[10px] md:text-sm">Analytics</span>
-            </button>
+            </Link>
             <button
               className="flex flex-col items-center gap-1 md:gap-2 p-2 md:p-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg md:rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all opacity-50 cursor-not-allowed"
               disabled

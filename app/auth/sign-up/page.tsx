@@ -5,37 +5,51 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { UserPlus, Mail, Lock, User, AlertCircle, CheckCircle, Home, Briefcase } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { signUpFormSchema, calculatePasswordStrength } from '@/app/lib/clientValidation';
+import { z } from 'zod';
+
+type SignUpFormData = z.infer<typeof signUpFormSchema>;
 
 export default function SignUpPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    firstName: '',
-    lastName: '',
-    businessName: '',
-  });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState({ score: 0, label: '', color: '' });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<SignUpFormData>({
+    resolver: zodResolver(signUpFormSchema),
+    mode: 'onChange',
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      businessName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
+  });
+
+  const password = watch('password');
+
+  // Update password strength in real-time
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const pwd = e.target.value;
+    if (pwd) {
+      setPasswordStrength(calculatePasswordStrength(pwd));
+    } else {
+      setPasswordStrength({ score: 0, label: '', color: '' });
+    }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: SignUpFormData) => {
     setError('');
-
-    // Validate passwords match
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -44,24 +58,24 @@ export default function SignUpPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          businessName: formData.businessName,
+          email: data.email,
+          password: data.password,
+          firstName: data.firstName,
+          lastName: data.lastName || '',
+          businessName: data.businessName || '',
         }),
       });
 
-      const data = await response.json();
+      const responseData = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create account');
+        throw new Error(responseData.error || 'Failed to create account');
       }
 
       // Auto sign in after successful signup
       const signInResult = await signIn('credentials', {
-        email: formData.email,
-        password: formData.password,
+        email: data.email,
+        password: data.password,
         redirect: false,
       });
 
@@ -72,8 +86,9 @@ export default function SignUpPage() {
         // If auto sign-in fails, redirect to sign-in page
         router.push('/auth/sign-in?message=Account created successfully. Please sign in.');
       }
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred');
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
@@ -102,7 +117,7 @@ export default function SignUpPage() {
 
         {/* Sign Up Form */}
         <div className="bg-white rounded-xl md:rounded-2xl shadow-xl p-4 md:p-8 border border-gray-200">
-          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 md:space-y-5">
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-2 md:p-4 flex items-start gap-2 md:gap-3">
                 <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-red-600 flex-shrink-0 mt-0.5" />
@@ -113,19 +128,24 @@ export default function SignUpPage() {
             <div className="grid grid-cols-2 gap-2 md:gap-4">
               <div>
                 <label className="block text-xs md:text-sm font-bold text-black mb-1 md:mb-2">
-                  First Name
+                  First Name <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <User className="absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
                   <input
                     type="text"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
+                    {...register('firstName')}
                     placeholder="John"
-                    className="w-full pl-8 md:pl-11 pr-2 md:pr-4 py-2 md:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base"
+                    className={`w-full pl-8 md:pl-11 pr-2 md:pr-4 py-2 md:py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base ${
+                      errors.firstName ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
+                    }`}
                   />
                 </div>
+                {errors.firstName && (
+                  <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
+                    <p className="text-[10px] md:text-xs text-red-700 font-medium">{errors.firstName.message}</p>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -134,12 +154,17 @@ export default function SignUpPage() {
                 </label>
                 <input
                   type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
+                  {...register('lastName')}
                   placeholder="Doe"
-                  className="w-full px-2 md:px-4 py-2 md:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base"
+                  className={`w-full px-2 md:px-4 py-2 md:py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base ${
+                    errors.lastName ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
+                  }`}
                 />
+                {errors.lastName && (
+                  <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
+                    <p className="text-[10px] md:text-xs text-red-700 font-medium">{errors.lastName.message}</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -151,74 +176,126 @@ export default function SignUpPage() {
                 <Briefcase className="absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
                 <input
                   type="text"
-                  name="businessName"
-                  value={formData.businessName}
-                  onChange={handleChange}
+                  {...register('businessName')}
                   placeholder="My Rental Business"
                   maxLength={25}
-                  className="w-full pl-8 md:pl-11 pr-2 md:pr-4 py-2 md:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base"
+                  className={`w-full pl-8 md:pl-11 pr-2 md:pr-4 py-2 md:py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base ${
+                    errors.businessName ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
+                  }`}
                 />
               </div>
               <p className="text-[10px] md:text-xs text-gray-500 mt-1">
-                {formData.businessName.length}/25 characters
+                {watch('businessName')?.length || 0}/25 characters
               </p>
+              {errors.businessName && (
+                <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
+                  <p className="text-[10px] md:text-xs text-red-700 font-medium">{errors.businessName.message}</p>
+                </div>
+              )}
             </div>
 
             <div>
               <label className="block text-xs md:text-sm font-bold text-black mb-1 md:mb-2">
-                Email Address
+                Email Address <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <Mail className="absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
                 <input
                   type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
+                  {...register('email')}
                   placeholder="you@example.com"
-                  required
-                  className="w-full pl-8 md:pl-11 pr-2 md:pr-4 py-2 md:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base"
+                  className={`w-full pl-8 md:pl-11 pr-2 md:pr-4 py-2 md:py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base ${
+                    errors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
+                  }`}
                 />
               </div>
+              {errors.email && (
+                <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
+                  <p className="text-[10px] md:text-xs text-red-700 font-medium">{errors.email.message}</p>
+                </div>
+              )}
             </div>
 
             <div>
               <label className="block text-xs md:text-sm font-bold text-black mb-1 md:mb-2">
-                Password
+                Password <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <Lock className="absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
                 <input
                   type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
+                  {...register('password', {
+                    onChange: handlePasswordChange,
+                  })}
                   placeholder="••••••••"
-                  required
-                  className="w-full pl-8 md:pl-11 pr-2 md:pr-4 py-2 md:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base"
+                  className={`w-full pl-8 md:pl-11 pr-2 md:pr-4 py-2 md:py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base ${
+                    errors.password ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
+                  }`}
                 />
               </div>
+
+              {/* Password Strength Indicator */}
+              {password && passwordStrength.label && (
+                <div className="mt-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] md:text-xs text-gray-600 font-medium">Password Strength:</span>
+                    <span
+                      className={`text-[10px] md:text-xs font-bold ${
+                        passwordStrength.color === 'red'
+                          ? 'text-red-600'
+                          : passwordStrength.color === 'yellow'
+                          ? 'text-yellow-600'
+                          : 'text-green-600'
+                      }`}
+                    >
+                      {passwordStrength.label}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        passwordStrength.color === 'red'
+                          ? 'bg-red-500'
+                          : passwordStrength.color === 'yellow'
+                          ? 'bg-yellow-500'
+                          : 'bg-green-500'
+                      }`}
+                      style={{ width: `${(passwordStrength.score / 6) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+
               <p className="text-[10px] md:text-xs text-gray-500 mt-1">
-                At least 8 characters with uppercase, lowercase, and number
+                {errors.password ? "At least 7 characters (letters, numbers, or special characters)" : "At least 7 characters"}
               </p>
+              {errors.password && (
+                <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
+                  <p className="text-[10px] md:text-xs text-red-700 font-medium">{errors.password.message}</p>
+                </div>
+              )}
             </div>
 
             <div>
               <label className="block text-xs md:text-sm font-bold text-black mb-1 md:mb-2">
-                Confirm Password
+                Confirm Password <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <Lock className="absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
                 <input
                   type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
+                  {...register('confirmPassword')}
                   placeholder="••••••••"
-                  required
-                  className="w-full pl-8 md:pl-11 pr-2 md:pr-4 py-2 md:py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base"
+                  className={`w-full pl-8 md:pl-11 pr-2 md:pr-4 py-2 md:py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base ${
+                    errors.confirmPassword ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
+                  }`}
                 />
               </div>
+              {errors.confirmPassword && (
+                <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
+                  <p className="text-[10px] md:text-xs text-red-700 font-medium">{errors.confirmPassword.message}</p>
+                </div>
+              )}
             </div>
 
             <button

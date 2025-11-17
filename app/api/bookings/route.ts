@@ -3,11 +3,11 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth.config";
 import { prisma } from "@/app/lib/prisma";
 import { createBookingSchema } from "@/app/lib/validation";
-import { toUTCMidnight, addOneDay, formatDateISO } from "@/app/lib/dates";
+import { toUTCMidnight } from "@/app/lib/dates";
 import { getRandomBookingColor } from "@/app/lib/colors";
 import { toUtcDateOnly, toYmd, addDays } from "@/app/lib/dateUtils";
 import { secureLog, applyRateLimit, RateLimitPresets } from "@/app/lib/security";
-import dayjs from "dayjs";
+import { checkActiveBookingLimit, checkMonthlyBookingLimit, getBookingHistoryCutoff } from "@/app/lib/limits";
 
 export async function GET(request: NextRequest) {
   // Apply rate limiting for read operations
@@ -52,6 +52,19 @@ export async function GET(request: NextRequest) {
           { status: { in: ["CONFIRMED", "OUT"] } },
         ],
       };
+    } else {
+      // Apply booking history limit for non-admin users when not fetching calendar view
+      if (!isAdmin) {
+        const historyCutoff = await getBookingHistoryCutoff(session.user.id);
+        if (historyCutoff) {
+          whereClause = {
+            AND: [
+              { userId: session.user.id },
+              { createdAt: { gte: historyCutoff } },
+            ],
+          };
+        }
+      }
     }
 
     const bookings = await prisma.booking.findMany({
@@ -147,6 +160,39 @@ export async function POST(request: NextRequest) {
 
     const startDate = toUTCMidnight(validated.startDate);
     const endDate = toUTCMidnight(validated.endDate);
+
+    // Check if user has reached their active booking limit (only for new CONFIRMED/OUT bookings)
+    const bookingStatus = validated.status || "CONFIRMED";
+    if (bookingStatus === "CONFIRMED" || bookingStatus === "OUT") {
+      const activeBookingCheck = await checkActiveBookingLimit(session.user.id);
+      if (!activeBookingCheck.allowed) {
+        return NextResponse.json(
+          {
+            error: "Active booking limit reached",
+            details: activeBookingCheck.message,
+            current: activeBookingCheck.current,
+            limit: activeBookingCheck.limit,
+            planType: activeBookingCheck.planType,
+          },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Check if user has reached their monthly booking limit
+    const monthlyBookingCheck = await checkMonthlyBookingLimit(session.user.id);
+    if (!monthlyBookingCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: "Monthly booking limit reached",
+          details: monthlyBookingCheck.message,
+          current: monthlyBookingCheck.current,
+          limit: monthlyBookingCheck.limit,
+          planType: monthlyBookingCheck.planType,
+        },
+        { status: 403 }
+      );
+    }
 
     // Check availability for each item (must belong to current user)
     for (const bookingItem of validated.items) {

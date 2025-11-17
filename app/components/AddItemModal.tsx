@@ -9,6 +9,8 @@ import { toTitleCase } from "@/app/lib/validation";
 import { useSettings } from "@/app/hooks/useSettings";
 import { AppInput } from "@/app/components/ui/AppInput";
 import { AppTextarea } from "@/app/components/ui/AppTextarea";
+import NotesModal from "./NotesModal";
+import NotesDisplay from "./NotesDisplay";
 
 interface AddItemModalProps {
   isOpen: boolean;
@@ -64,6 +66,7 @@ export default function AddItemModal({
   const { settings } = useSettings();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
 
   const {
     register,
@@ -72,6 +75,7 @@ export default function AddItemModal({
     reset,
     watch,
     setFocus,
+    setValue,
   } = useForm<ItemFormValues>({
     resolver: zodResolver(ItemFormSchema),
     mode: "onSubmit",
@@ -231,15 +235,21 @@ export default function AddItemModal({
               )}
             </div>
 
-            <AppTextarea
-              label="Notes (optional)"
-              {...register("notes")}
-              rows={2}
-              maxLength={NOTES_CHAR_LIMIT}
-              showCharCount
-              currentLength={notesValue.length}
-              error={errors.notes?.message}
-            />
+            <div>
+              <label className="block text-sm font-bold mb-2 text-black">
+                Notes (optional)
+              </label>
+              <div className="px-2 py-1.5 border-2 border-gray-400 rounded bg-gray-50">
+                <NotesDisplay
+                  notes={notesValue}
+                  onClick={() => setIsNotesModalOpen(true)}
+                  maxPreviewLength={30}
+                />
+              </div>
+              {errors.notes && (
+                <p className="mt-1 text-xs text-red-600">{errors.notes.message}</p>
+              )}
+            </div>
 
             <div className="flex gap-2 pt-2">
               <button
@@ -260,6 +270,16 @@ export default function AddItemModal({
           </form>
         </div>
       </div>
+
+      {/* Notes Modal */}
+      <NotesModal
+        isOpen={isNotesModalOpen}
+        onClose={() => setIsNotesModalOpen(false)}
+        onSave={(newNotes) => setValue("notes", newNotes)}
+        initialNotes={notesValue}
+        title="Item Notes"
+        maxLength={50}
+      />
     </>
   );
 }

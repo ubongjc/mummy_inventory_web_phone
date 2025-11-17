@@ -180,7 +180,9 @@ export const updateSettingsSchema = z.object({
     .min(2, "Business name must be at least 2 characters")
     .max(100, "Business name must be 100 characters or less")
     .transform(normalizeText)
-    .optional(),
+    .optional()
+    .nullable()
+    .or(z.literal("").transform(() => null)),
   currency: z.string()
     .length(3, "Currency code must be exactly 3 characters")
     .regex(/^[A-Z]{3}$/, "Currency code must be uppercase (e.g., USD, EUR, NGN)")

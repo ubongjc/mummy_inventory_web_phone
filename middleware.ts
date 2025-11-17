@@ -10,7 +10,15 @@ export default withAuth(
     // Role-based access control for admin routes
     if (path.startsWith('/api/admin') || path.startsWith('/admin')) {
       if (!token || token.role !== 'admin') {
-        return NextResponse.json({ error: 'Forbidden. Admin access required.' }, { status: 403 });
+        // For API routes, return JSON error
+        if (path.startsWith('/api/admin')) {
+          return NextResponse.json({ error: 'Forbidden. Admin access required.' }, { status: 403 });
+        }
+        // For page routes, redirect to dashboard with error
+        const url = req.nextUrl.clone();
+        url.pathname = '/dashboard';
+        url.searchParams.set('error', 'admin-required');
+        return NextResponse.redirect(url);
       }
     }
 

@@ -12,10 +12,49 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({
+    email: "",
+    password: "",
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    // Validate fields
+    const newFieldErrors = {
+      email: "",
+      password: "",
+    };
+    let hasErrors = false;
+
+    if (!email || email.trim().length === 0) {
+      newFieldErrors.email = "Email is required";
+      hasErrors = true;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newFieldErrors.email = "Please enter a valid email address";
+      hasErrors = true;
+    }
+
+    if (!password || password.length === 0) {
+      newFieldErrors.password = "Password is required";
+      hasErrors = true;
+    }
+
+    setFieldErrors(newFieldErrors);
+
+    if (hasErrors) {
+      const errorMessages = [];
+      if (newFieldErrors.email) {
+        errorMessages.push(newFieldErrors.email);
+      }
+      if (newFieldErrors.password) {
+        errorMessages.push(newFieldErrors.password);
+      }
+      setError(errorMessages.join(". "));
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -79,12 +118,23 @@ export default function SignInPage() {
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  required
-                  className="w-full pl-11 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-black font-medium transition-all"
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    // Clear field error when user starts typing
+                    if (fieldErrors.email) {
+                      setFieldErrors((prev) => ({ ...prev, email: "" }));
+                    }
+                  }}
+                  className={`w-full pl-11 pr-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all ${
+                    fieldErrors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
+                  }`}
                 />
               </div>
+              {fieldErrors.email && (
+                <div className="mt-1 bg-red-50 border border-red-200 rounded p-2">
+                  <p className="text-xs text-red-700 font-medium">{fieldErrors.email}</p>
+                </div>
+              )}
             </div>
 
             <div>
@@ -96,12 +146,23 @@ export default function SignInPage() {
                 <input
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  className="w-full pl-11 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-black font-medium transition-all"
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    // Clear field error when user starts typing
+                    if (fieldErrors.password) {
+                      setFieldErrors((prev) => ({ ...prev, password: "" }));
+                    }
+                  }}
+                  className={`w-full pl-11 pr-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all ${
+                    fieldErrors.password ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
+                  }`}
                 />
               </div>
+              {fieldErrors.password && (
+                <div className="mt-1 bg-red-50 border border-red-200 rounded p-2">
+                  <p className="text-xs text-red-700 font-medium">{fieldErrors.password}</p>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-between text-sm">

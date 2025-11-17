@@ -61,11 +61,15 @@ table {
   overflow: hidden !important;
   max-width: 100% !important;
   --fc-small-font-size: 0.85rem;
+  position: relative !important;
+  z-index: 1 !important;
 }
 
 /* Calendar root with normalized button heights */
 .calendar-root {
   --fc-toolbar-btn-h: 24px;
+  position: relative !important;
+  z-index: 1 !important;
 }
 
 /* Add breathing room above toolbar to prevent button clipping */
@@ -298,8 +302,11 @@ table {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
   position: relative !important;
   z-index: 200 !important;
-  height: auto !important;
-  min-height: 0 !important;
+  /* Fixed height to prevent vertical growth */
+  height: 20px !important;
+  max-height: 20px !important;
+  min-height: 20px !important;
+  overflow: hidden !important;
   /* Background color is set dynamically from the API based on rental.color */
 }
 
@@ -307,6 +314,11 @@ table {
 .fc .fc-event-main {
   font-size: 12px !important;
   font-weight: 600 !important;
+  /* Truncate text with ellipsis instead of wrapping */
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
 }
 
 /* Keep bars visible at right edge; no clipping in last column */
@@ -333,11 +345,6 @@ table {
 
 .fc .fc-event:active {
   transform: translateY(-1px) scale(1.02) !important;
-}
-
-.fc-daygrid-event {
-  white-space: normal !important;
-  align-items: normal !important;
 }
 
 /* Multi-week event styling - make continuation clearer */
@@ -478,6 +485,29 @@ table {
 
 .fc .fc-h-event {
   overflow: visible !important;
+}
+
+/* Style the "+X more" link to fit in calendar day cells */
+.fc .fc-daygrid-more-link,
+.fc .fc-more-link {
+  font-size: 0.55rem !important;
+  font-weight: 600 !important;
+  padding: 1px 3px !important;
+  margin-top: 1px !important;
+  white-space: nowrap !important;
+  color: #2563eb !important;
+  text-decoration: none !important;
+  display: inline-block !important;
+  border-radius: 3px !important;
+  transition: all 0.2s ease !important;
+  line-height: 1.2 !important;
+}
+
+.fc .fc-daygrid-more-link:hover,
+.fc .fc-more-link:hover {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
+  text-decoration: underline !important;
 }
 
 /* Mobile-optimized List View */

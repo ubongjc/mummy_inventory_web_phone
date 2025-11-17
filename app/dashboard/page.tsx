@@ -48,7 +48,7 @@ interface UserProfile {
 }
 
 interface Settings {
-  businessName: string;
+  businessName: string | null;
 }
 
 export default function Home() {
@@ -61,6 +61,7 @@ export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isItemFilterOpen, setIsItemFilterOpen] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
+  const [itemsLoading, setItemsLoading] = useState(true);
   const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
   const [itemSearchQuery, setItemSearchQuery] = useState('');
   const [itemSortBy, setItemSortBy] = useState<
@@ -72,12 +73,14 @@ export default function Home() {
   );
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [usageStats, setUsageStats] = useState<any | null>(null);
 
   // Fetch items, user profile, and settings on mount
   useEffect(() => {
     fetchItems();
     fetchUserProfile();
     fetchSettings();
+    fetchUsageStats();
   }, [refreshKey]);
 
   // Refresh user profile and settings when page becomes visible
@@ -97,6 +100,7 @@ export default function Home() {
 
   const fetchItems = async () => {
     try {
+      setItemsLoading(true);
       const response = await fetch('/api/items');
       const data = await response.json();
       setItems(data);
@@ -104,15 +108,21 @@ export default function Home() {
       setSelectedItemIds(data.map((item: Item) => item.id));
     } catch (error) {
       console.error('Error fetching items:', error);
+    } finally {
+      setItemsLoading(false);
     }
   };
 
   const fetchUserProfile = async () => {
     try {
-      // Try to get cached business name from localStorage first
+      // Try to get cached data from localStorage first for instant display
       const cachedBusinessName = localStorage.getItem('businessName');
-      if (cachedBusinessName && !userProfile) {
-        setUserProfile({ businessName: cachedBusinessName } as UserProfile);
+      const cachedRole = localStorage.getItem('userRole');
+      if ((cachedBusinessName || cachedRole) && !userProfile) {
+        setUserProfile({
+          businessName: cachedBusinessName || undefined,
+          role: cachedRole || 'user'
+        } as UserProfile);
       }
 
       const response = await fetch('/api/user/profile', {
@@ -122,9 +132,12 @@ export default function Home() {
         const data = await response.json();
         setUserProfile(data);
 
-        // Cache business name in localStorage
+        // Cache business name and role in localStorage
         if (data.businessName) {
           localStorage.setItem('businessName', data.businessName);
+        }
+        if (data.role) {
+          localStorage.setItem('userRole', data.role);
         }
 
         console.log('User profile loaded:', data.businessName || 'No business name set');
@@ -162,6 +175,22 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
+    }
+  };
+
+  const fetchUsageStats = async () => {
+    try {
+      const response = await fetch('/api/user/usage', {
+        cache: 'no-store',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUsageStats(data);
+      } else {
+        console.error('Failed to fetch usage stats:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching usage stats:', error);
     }
   };
 
@@ -255,34 +284,70 @@ export default function Home() {
           {/* Menu Items */}
           <nav className="flex-1 overflow-y-auto p-4">
             <div className="space-y-2">
-              <button
-                onClick={() => {
-                  setIsAddItemModalOpen(true);
-                  setIsMenuOpen(false);
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 font-semibold shadow-lg transition-all"
-              >
-                <Plus className="w-5 h-5" />
-                Add Item
-              </button>
+              {/* Add Item Button */}
+              <div>
+                <button
+                  onClick={() => {
+                    if (usageStats?.items && usageStats.items.current < usageStats.items.limit) {
+                      setIsAddItemModalOpen(true);
+                      setIsMenuOpen(false);
+                    }
+                  }}
+                  disabled={usageStats?.items && usageStats.items.current >= usageStats.items.limit}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold shadow-lg transition-all ${
+                    usageStats?.items && usageStats.items.current >= usageStats.items.limit
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700'
+                  }`}
+                >
+                  <Plus className="w-5 h-5" />
+                  Add Item
+                </button>
+                {usageStats?.items && usageStats.items.current >= usageStats.items.limit && (
+                  <p className="text-xs text-red-600 font-semibold mt-1 ml-1">
+                    Item limit reached ({usageStats.items.limit} items)
+                  </p>
+                )}
+              </div>
 
-              <button
-                onClick={() => {
-                  if (items.length > 0) {
-                    setIsAddBookingModalOpen(true);
-                    setIsMenuOpen(false);
+              {/* New Booking Button */}
+              <div>
+                <button
+                  onClick={() => {
+                    const canAddBooking = usageStats?.activeBookings && usageStats.activeBookings.current < usageStats.activeBookings.limit &&
+                                          usageStats?.monthlyBookings && usageStats.monthlyBookings.current < usageStats.monthlyBookings.limit;
+                    if (items.length > 0 && canAddBooking) {
+                      setIsAddBookingModalOpen(true);
+                      setIsMenuOpen(false);
+                    }
+                  }}
+                  disabled={
+                    (!itemsLoading && items.length === 0) ||
+                    (usageStats?.activeBookings && usageStats.activeBookings.current >= usageStats.activeBookings.limit) ||
+                    (usageStats?.monthlyBookings && usageStats.monthlyBookings.current >= usageStats.monthlyBookings.limit)
                   }
-                }}
-                disabled={items.length === 0}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold shadow-lg transition-all ${
-                  items.length === 0
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700'
-                }`}
-              >
-                <Plus className="w-5 h-5" />
-                New Booking
-              </button>
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold shadow-lg transition-all ${
+                    (!itemsLoading && items.length === 0) ||
+                    (usageStats?.activeBookings && usageStats.activeBookings.current >= usageStats.activeBookings.limit) ||
+                    (usageStats?.monthlyBookings && usageStats.monthlyBookings.current >= usageStats.monthlyBookings.limit)
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700'
+                  }`}
+                >
+                  <Plus className="w-5 h-5" />
+                  New Booking
+                </button>
+                {usageStats?.activeBookings && usageStats.activeBookings.current >= usageStats.activeBookings.limit && (
+                  <p className="text-xs text-red-600 font-semibold mt-1 ml-1">
+                    Active booking limit reached ({usageStats.activeBookings.limit} active)
+                  </p>
+                )}
+                {usageStats?.monthlyBookings && usageStats.monthlyBookings.current >= usageStats.monthlyBookings.limit && (
+                  <p className="text-xs text-red-600 font-semibold mt-1 ml-1">
+                    Monthly booking limit reached ({usageStats.monthlyBookings.limit}/month)
+                  </p>
+                )}
+              </div>
 
               <Link
                 href="/bookings"
@@ -532,13 +597,19 @@ export default function Home() {
               <div className="pt-0.5 flex-1 overflow-visible">
                 <h2 className="text-lg md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight whitespace-nowrap">
                   Hi,
-                  {(settings?.businessName || userProfile?.businessName) && (
+                  {(settings?.businessName || userProfile?.businessName) ? (
                     <>
                       <br />
                       {settings?.businessName || userProfile?.businessName}!
                     </>
+                  ) : userProfile?.firstName ? (
+                    <>
+                      <br />
+                      {userProfile.firstName}!
+                    </>
+                  ) : (
+                    '!'
                   )}
-                  {!(settings?.businessName || userProfile?.businessName) && '!'}
                 </h2>
                 <p className="text-[11px] md:text-sm text-gray-600 font-medium whitespace-nowrap leading-tight mt-2">
                   Manage your bookings with ease
@@ -559,9 +630,9 @@ export default function Home() {
           <div className="mt-2">
             <button
               onClick={() => setIsCheckAvailabilityOpen(true)}
-              disabled={items.length === 0}
+              disabled={!itemsLoading && items.length === 0}
               className={`w-full px-3 py-1.5 rounded font-semibold shadow-md transition-all flex items-center justify-center gap-2 text-sm ${
-                items.length === 0
+                !itemsLoading && items.length === 0
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
               }`}
@@ -577,7 +648,7 @@ export default function Home() {
       <main className="flex-1 w-full mx-auto px-4 py-4">
         <div className="h-full max-w-7xl mx-auto">
           {/* Empty State Message */}
-          {items.length === 0 && (
+          {!itemsLoading && items.length === 0 && (
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-lg p-4 mb-4 text-center">
               <p className="text-lg font-bold text-gray-800">
                 📦 Welcome! Add an item to begin. Click the menu icon (☰) and Add Item
