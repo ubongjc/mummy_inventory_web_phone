@@ -18,7 +18,6 @@ export default function Calendar({
   onDateRangeChange,
 }: CalendarProps) {
   const [events, setEvents] = useState<any[]>([]);
-  const [initialLoading, setInitialLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const isFetchingRef = useRef(false);
   const lastFetchRef = useRef('');
@@ -104,9 +103,6 @@ export default function Calendar({
     } catch (error) {
       console.error('Error fetching events:', error);
     } finally {
-      if (initialLoading) {
-        setInitialLoading(false);
-      }
       isFetchingRef.current = false;
     }
   };
@@ -133,29 +129,13 @@ export default function Calendar({
       role="region"
       aria-label="Rental booking calendar"
     >
-      {initialLoading ? (
-        <div
-          className="flex items-center justify-center h-full"
-          role="status"
-          aria-live="polite"
-          aria-label="Loading calendar data"
-        >
-          <div className="flex flex-col items-center gap-3">
-            <div
-              className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
-              aria-hidden="true"
-            ></div>
-            <div className="text-black text-lg font-bold">Loading calendar...</div>
-          </div>
+      <div className="h-full">
+        {/* Screen reader announcement for calendar updates */}
+        <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {events.length} booking{events.length !== 1 ? 's' : ''} displayed on calendar
         </div>
-      ) : (
-        <div className="h-full">
-          {/* Screen reader announcement for calendar updates */}
-          <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-            {events.length} booking{events.length !== 1 ? 's' : ''} displayed on calendar
-          </div>
 
-          <FullCalendar
+        <FullCalendar
             ref={calendarRef}
             plugins={[dayGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
@@ -354,8 +334,7 @@ export default function Calendar({
             hiddenDays={[]}
             contentHeight="auto"
           />
-        </div>
-      )}
+      </div>
     </div>
   );
 }
