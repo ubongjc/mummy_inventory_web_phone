@@ -192,3 +192,182 @@ This is an automated email, please do not reply.
     text,
   });
 }
+
+/**
+ * Premium Feature: Send booking reminder (upcoming rental)
+ */
+export async function sendUpcomingReminderEmail(
+  to: string,
+  customerName: string,
+  bookingReference: string,
+  startDate: Date,
+  items: string[]
+) {
+  const formattedDate = startDate.toLocaleDateString('en-NG', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const itemsList = items.map((item) => `<li>${item}</li>`).join('');
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #2563eb;">Upcoming Rental Reminder</h2>
+      <p>Hi ${customerName},</p>
+      <p>This is a friendly reminder that your rental is coming up soon!</p>
+      <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p><strong>Booking Reference:</strong> ${bookingReference}</p>
+        <p><strong>Start Date:</strong> ${formattedDate}</p>
+        <p><strong>Items:</strong></p>
+        <ul>${itemsList}</ul>
+      </div>
+      <p>If you have any questions, please contact us.</p>
+    </div>
+  `;
+
+  return sendEmail({
+    to,
+    subject: `Reminder: Your rental starts on ${formattedDate}`,
+    html,
+  });
+}
+
+/**
+ * Premium Feature: Send return reminder
+ */
+export async function sendReturnReminderEmail(
+  to: string,
+  customerName: string,
+  bookingReference: string,
+  endDate: Date,
+  items: string[]
+) {
+  const formattedDate = endDate.toLocaleDateString('en-NG');
+  const itemsList = items.map((item) => `<li>${item}</li>`).join('');
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #dc2626;">Return Reminder</h2>
+      <p>Hi ${customerName},</p>
+      <p>Your rental period has ended. Please return the following items:</p>
+      <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p><strong>Booking Reference:</strong> ${bookingReference}</p>
+        <p><strong>End Date:</strong> ${formattedDate}</p>
+        <ul>${itemsList}</ul>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({
+    to,
+    subject: `Reminder: Please return your rental items`,
+    html,
+  });
+}
+
+/**
+ * Premium Feature: Send payment reminder
+ */
+export async function sendPaymentReminderEmail(
+  to: string,
+  customerName: string,
+  bookingReference: string,
+  dueDate: Date,
+  amountDue: number
+) {
+  const formattedDate = dueDate.toLocaleDateString('en-NG');
+  const formattedAmount = `₦${amountDue.toLocaleString('en-NG', { minimumFractionDigits: 2 })}`;
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #f59e0b;">Payment Reminder</h2>
+      <p>Hi ${customerName},</p>
+      <p>This is a reminder that you have an outstanding payment due.</p>
+      <div style="background-color: #fffbeb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p><strong>Booking Reference:</strong> ${bookingReference}</p>
+        <p><strong>Due Date:</strong> ${formattedDate}</p>
+        <p><strong>Amount Due:</strong> ${formattedAmount}</p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({
+    to,
+    subject: `Payment Reminder: ${formattedAmount} due ${formattedDate}`,
+    html,
+  });
+}
+
+/**
+ * Premium Feature: Send payment receipt
+ */
+export async function sendPaymentReceiptEmail(
+  to: string,
+  customerName: string,
+  bookingReference: string,
+  amount: number,
+  paymentDate: Date
+) {
+  const formattedDate = paymentDate.toLocaleDateString('en-NG');
+  const formattedAmount = `₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}`;
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #10b981;">Payment Receipt</h2>
+      <p>Hi ${customerName},</p>
+      <p>Thank you for your payment! Here are the details:</p>
+      <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p><strong>Booking Reference:</strong> ${bookingReference}</p>
+        <p><strong>Amount Paid:</strong> ${formattedAmount}</p>
+        <p><strong>Payment Date:</strong> ${formattedDate}</p>
+      </div>
+      <p>This email serves as your receipt.</p>
+    </div>
+  `;
+
+  return sendEmail({
+    to,
+    subject: `Payment Receipt - ${formattedAmount}`,
+    html,
+  });
+}
+
+/**
+ * Premium Feature: Send inquiry notification to owner
+ */
+export async function sendInquiryNotificationEmail(
+  to: string,
+  ownerName: string,
+  inquiryDetails: {
+    name: string;
+    email: string;
+    phone: string;
+    message: string;
+    startDate: Date;
+    endDate: Date;
+  }
+) {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #2563eb;">New Rental Inquiry</h2>
+      <p>Hi ${ownerName},</p>
+      <p>You have received a new inquiry from your public booking page!</p>
+      <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p><strong>Customer Name:</strong> ${inquiryDetails.name}</p>
+        <p><strong>Email:</strong> ${inquiryDetails.email}</p>
+        <p><strong>Phone:</strong> ${inquiryDetails.phone}</p>
+        <p><strong>Rental Period:</strong> ${inquiryDetails.startDate.toLocaleDateString('en-NG')} to ${inquiryDetails.endDate.toLocaleDateString('en-NG')}</p>
+        ${inquiryDetails.message ? `<p><strong>Message:</strong><br/>${inquiryDetails.message}</p>` : ''}
+      </div>
+      <p>Log in to your dashboard to respond and create a booking.</p>
+    </div>
+  `;
+
+  return sendEmail({
+    to,
+    subject: `New Rental Inquiry from ${inquiryDetails.name}`,
+    html,
+  });
+}
