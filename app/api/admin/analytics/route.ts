@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
         },
       },
       select: {
-        plan: true,
+        status: true,
         createdAt: true,
       },
       orderBy: {
@@ -173,12 +173,14 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Group by plan and date
+    // Group by plan type (derived from status) and date
     const subscriptionsByPlanAndDate = allSubscriptions.reduce((acc: any, sub) => {
       const date = new Date(sub.createdAt).toISOString().split("T")[0];
-      const key = `${sub.plan}-${date}`;
+      // Determine plan type from status
+      const planType = ['active', 'trialing'].includes(sub.status) ? 'premium' : 'free';
+      const key = `${planType}-${date}`;
       if (!acc[key]) {
-        acc[key] = { plan: sub.plan, date, count: 0 };
+        acc[key] = { plan: planType, date, count: 0 };
       }
       acc[key].count += 1;
       return acc;
