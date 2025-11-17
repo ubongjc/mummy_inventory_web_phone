@@ -112,28 +112,32 @@ export default function PremiumPage() {
     },
     {
       name: 'Premium',
-      price: 'TBD',
-      period: 'Coming Soon',
+      price: '₦15,000',
+      period: 'per month',
       popular: true,
       features: [
         'Unlimited items & customers',
         'Unlimited active bookings',
         'Unlimited bookings per month',
         'Unlimited booking history',
-        'Tax calculator',
+        'Tax calculator (VAT 7.5%)',
         'Events near you',
         'Custom analytics dashboard',
-        'Online payments',
+        'Online payments (Stripe)',
         'Customer reminders & notifications',
         'Public booking page',
         'Team collaboration (up to 5 members)',
-        'Wholesale supplier connection',
+        'QR code check-in/out',
+        'Bundles & kits',
+        'Delivery/pickup scheduler',
+        'Dynamic pricing rules',
+        'Maintenance tracking',
         'Data export to Excel/CSV/PDF',
         '5 photos per item',
         'Priority email + WhatsApp support',
       ],
-      cta: 'Coming Soon',
-      ctaDisabled: true,
+      cta: 'Upgrade Now',
+      ctaDisabled: false,
       color: 'from-yellow-500 to-amber-600',
     },
   ];
@@ -167,11 +171,19 @@ export default function PremiumPage() {
         {/* Hero Section */}
         <div className="text-center max-w-3xl mx-auto">
           <h2 className="text-lg md:text-4xl font-bold text-black mb-2 md:mb-4">
-            Premium Features Coming Soon
+            Unlock Premium Features
           </h2>
           <p className="text-xs md:text-lg text-gray-700">
-            These powerful features are currently in development and will be available soon to help you grow your rental business
+            Upgrade to Premium for ₦15,000/month and unlock unlimited growth for your rental business
           </p>
+          <div className="mt-4 md:mt-6">
+            <a
+              href="/billing"
+              className="inline-block px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg md:rounded-xl font-bold text-sm md:text-lg shadow-lg transition-all"
+            >
+              Upgrade to Premium
+            </a>
+          </div>
         </div>
 
         {/* Features Grid */}
