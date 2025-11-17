@@ -35,7 +35,7 @@ export async function GET() {
         createdAt: true,
         subscription: {
           select: {
-            plan: true,
+            status: true,
           },
         },
       },
