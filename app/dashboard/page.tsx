@@ -73,12 +73,14 @@ export default function Home() {
   );
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [usageStats, setUsageStats] = useState<any | null>(null);
 
   // Fetch items, user profile, and settings on mount
   useEffect(() => {
     fetchItems();
     fetchUserProfile();
     fetchSettings();
+    fetchUsageStats();
   }, [refreshKey]);
 
   // Refresh user profile and settings when page becomes visible
@@ -176,6 +178,22 @@ export default function Home() {
     }
   };
 
+  const fetchUsageStats = async () => {
+    try {
+      const response = await fetch('/api/user/usage', {
+        cache: 'no-store',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUsageStats(data);
+      } else {
+        console.error('Failed to fetch usage stats:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching usage stats:', error);
+    }
+  };
+
   const fetchItemReservations = async (start: string, end: string) => {
     try {
       const response = await fetch(`/api/availability/summary?start=${start}&end=${end}`);
@@ -266,34 +284,70 @@ export default function Home() {
           {/* Menu Items */}
           <nav className="flex-1 overflow-y-auto p-4">
             <div className="space-y-2">
-              <button
-                onClick={() => {
-                  setIsAddItemModalOpen(true);
-                  setIsMenuOpen(false);
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 font-semibold shadow-lg transition-all"
-              >
-                <Plus className="w-5 h-5" />
-                Add Item
-              </button>
+              {/* Add Item Button */}
+              <div>
+                <button
+                  onClick={() => {
+                    if (usageStats?.items && usageStats.items.current < usageStats.items.limit) {
+                      setIsAddItemModalOpen(true);
+                      setIsMenuOpen(false);
+                    }
+                  }}
+                  disabled={usageStats?.items && usageStats.items.current >= usageStats.items.limit}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold shadow-lg transition-all ${
+                    usageStats?.items && usageStats.items.current >= usageStats.items.limit
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700'
+                  }`}
+                >
+                  <Plus className="w-5 h-5" />
+                  Add Item
+                </button>
+                {usageStats?.items && usageStats.items.current >= usageStats.items.limit && (
+                  <p className="text-xs text-red-600 font-semibold mt-1 ml-1">
+                    Item limit reached ({usageStats.items.limit} items)
+                  </p>
+                )}
+              </div>
 
-              <button
-                onClick={() => {
-                  if (items.length > 0) {
-                    setIsAddBookingModalOpen(true);
-                    setIsMenuOpen(false);
+              {/* New Booking Button */}
+              <div>
+                <button
+                  onClick={() => {
+                    const canAddBooking = usageStats?.activeBookings && usageStats.activeBookings.current < usageStats.activeBookings.limit &&
+                                          usageStats?.monthlyBookings && usageStats.monthlyBookings.current < usageStats.monthlyBookings.limit;
+                    if (items.length > 0 && canAddBooking) {
+                      setIsAddBookingModalOpen(true);
+                      setIsMenuOpen(false);
+                    }
+                  }}
+                  disabled={
+                    (!itemsLoading && items.length === 0) ||
+                    (usageStats?.activeBookings && usageStats.activeBookings.current >= usageStats.activeBookings.limit) ||
+                    (usageStats?.monthlyBookings && usageStats.monthlyBookings.current >= usageStats.monthlyBookings.limit)
                   }
-                }}
-                disabled={!itemsLoading && items.length === 0}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold shadow-lg transition-all ${
-                  !itemsLoading && items.length === 0
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700'
-                }`}
-              >
-                <Plus className="w-5 h-5" />
-                New Booking
-              </button>
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold shadow-lg transition-all ${
+                    (!itemsLoading && items.length === 0) ||
+                    (usageStats?.activeBookings && usageStats.activeBookings.current >= usageStats.activeBookings.limit) ||
+                    (usageStats?.monthlyBookings && usageStats.monthlyBookings.current >= usageStats.monthlyBookings.limit)
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700'
+                  }`}
+                >
+                  <Plus className="w-5 h-5" />
+                  New Booking
+                </button>
+                {usageStats?.activeBookings && usageStats.activeBookings.current >= usageStats.activeBookings.limit && (
+                  <p className="text-xs text-red-600 font-semibold mt-1 ml-1">
+                    Active booking limit reached ({usageStats.activeBookings.limit} active)
+                  </p>
+                )}
+                {usageStats?.monthlyBookings && usageStats.monthlyBookings.current >= usageStats.monthlyBookings.limit && (
+                  <p className="text-xs text-red-600 font-semibold mt-1 ml-1">
+                    Monthly booking limit reached ({usageStats.monthlyBookings.limit}/month)
+                  </p>
+                )}
+              </div>
 
               <Link
                 href="/bookings"

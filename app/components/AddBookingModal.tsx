@@ -98,6 +98,9 @@ export default function AddBookingModal({
     advancePayment: "",
   });
 
+  // Usage stats for plan limits
+  const [usageStats, setUsageStats] = useState<any | null>(null);
+
   // Calculate max date (1 year from today)
   const today = new Date();
   const maxDate = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
@@ -155,6 +158,7 @@ export default function AddBookingModal({
 
       fetchCustomers();
       fetchItems();
+      fetchUsageStats();
       // Auto-focus the first item dropdown after a brief delay to ensure it's rendered
       setTimeout(() => {
         firstItemSelectRef.current?.focus();
@@ -297,6 +301,22 @@ export default function AddBookingModal({
       setItems(itemsWithAvailability);
     } catch (err) {
       console.error("Error fetching items:", err);
+    }
+  };
+
+  const fetchUsageStats = async () => {
+    try {
+      const response = await fetch('/api/user/usage', {
+        cache: 'no-store',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUsageStats(data);
+      } else {
+        console.error('Failed to fetch usage stats:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching usage stats:', error);
     }
   };
 
@@ -1055,13 +1075,29 @@ export default function AddBookingModal({
                       </option>
                     ))}
                   </select>
-                  <button
-                    type="button"
-                    onClick={() => setShowNewCustomer(true)}
-                    className="text-xs text-blue-600 hover:underline"
-                  >
-                    + Create new customer
-                  </button>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (usageStats?.customers && usageStats.customers.current < usageStats.customers.limit) {
+                          setShowNewCustomer(true);
+                        }
+                      }}
+                      disabled={usageStats?.customers && usageStats.customers.current >= usageStats.customers.limit}
+                      className={`text-xs ${
+                        usageStats?.customers && usageStats.customers.current >= usageStats.customers.limit
+                          ? 'text-gray-400 cursor-not-allowed'
+                          : 'text-blue-600 hover:underline'
+                      }`}
+                    >
+                      + Create new customer
+                    </button>
+                    {usageStats?.customers && usageStats.customers.current >= usageStats.customers.limit && (
+                      <p className="text-xs text-red-600 font-semibold mt-0.5">
+                        Customer limit reached ({usageStats.customers.limit} customers)
+                      </p>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-1.5 p-2 border rounded bg-gray-50">
