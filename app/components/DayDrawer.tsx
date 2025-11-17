@@ -245,12 +245,12 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-40"
+        className="fixed inset-0 bg-black bg-opacity-50 z-[9998]"
         onClick={handleBackdropClick}
       />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 h-full w-full md:w-2/3 lg:w-1/2 xl:w-1/3 bg-gradient-to-br from-white to-gray-50 shadow-2xl z-50 overflow-y-auto border-l-4 border-blue-500">
+      <div className="fixed right-0 top-0 h-full w-full md:w-2/3 lg:w-1/2 xl:w-1/3 bg-gradient-to-br from-white to-gray-50 shadow-2xl z-[9999] overflow-y-auto border-l-4 border-blue-500">
         <div className="p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">

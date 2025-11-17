@@ -234,7 +234,16 @@ export default function AnalyticsPage() {
               </h3>
             </div>
             <p className="text-base md:text-2xl font-bold text-black">
-              ${analytics?.revenue?.reduce((sum: number, d: any) => sum + d.amount, 0).toFixed(2) || "0.00"}
+              ₦{(() => {
+                const total = analytics?.revenue?.reduce((sum: number, d: any) => {
+                  const amount = Number(d.amount) || 0;
+                  // Sanity check: individual amount should be < 100 million
+                  return sum + (amount > 100000000 ? 0 : amount);
+                }, 0) || 0;
+                // Cap total at 1 billion for display
+                const cappedTotal = total > 1000000000 ? 0 : total;
+                return cappedTotal.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+              })()}
             </p>
           </div>
 

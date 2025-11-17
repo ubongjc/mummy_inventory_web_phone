@@ -503,10 +503,10 @@ export default function EditBookingModal({
   return (
     <>
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-50"
+        className="fixed inset-0 bg-black bg-opacity-50 z-[10000]"
         onClick={onClose}
       />
-      <div className="fixed inset-0 flex items-center justify-center z-50 p-2 overflow-y-auto">
+      <div className="fixed inset-0 flex items-center justify-center z-[10000] p-2 overflow-y-auto">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-4 border border-gray-200 transform transition-all max-h-[95vh] flex flex-col">
           <div className="flex items-center justify-between p-3 border-b flex-shrink-0">
             <h3 className="text-base font-bold text-black">Edit Booking</h3>

@@ -88,9 +88,12 @@ export async function GET(request: NextRequest) {
       if (!acc[date]) {
         acc[date] = 0;
       }
-      // Calculate booking revenue
+      // Calculate booking revenue - convert to number and sanitize
       const revenue = booking.items.reduce((sum: number, bi: any) => {
-        return sum + (bi.item?.price || 0);
+        const price = Number(bi.item?.price) || 0;
+        // Sanity check: price should be reasonable (< 100 million)
+        const sanitizedPrice = price > 100000000 ? 0 : price;
+        return sum + sanitizedPrice;
       }, 0);
       acc[date] += revenue;
       return acc;
@@ -196,7 +199,7 @@ export async function GET(request: NextRequest) {
       },
       revenue: Object.entries(dailyRevenue).map(([date, amount]) => ({
         date,
-        amount,
+        amount: Number(amount) || 0,
       })),
       topItems: itemsWithNames,
       inquiries: Object.entries(dailyInquiries).map(([date, count]) => ({

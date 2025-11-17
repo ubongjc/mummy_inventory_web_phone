@@ -112,11 +112,19 @@ export default function Calendar({
   };
 
   useEffect(() => {
-    // Fetch events for the current month on mount and when selectedItemIds changes
-    const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth(), 1);
-    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    fetchEvents(start, end);
+    // Fetch events for the currently displayed date range when selectedItemIds changes
+    if (hasLoadedOnce.current && calendarRef.current) {
+      // If calendar has loaded, refetch for the currently visible date range
+      const calendarApi = calendarRef.current.getApi();
+      const currentView = calendarApi.view;
+      fetchEvents(currentView.activeStart, currentView.activeEnd);
+    } else {
+      // On initial mount, fetch for the current month
+      const now = new Date();
+      const start = new Date(now.getFullYear(), now.getMonth(), 1);
+      const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      fetchEvents(start, end);
+    }
   }, [selectedItemIds]);
 
   return (
@@ -168,6 +176,24 @@ export default function Calendar({
               // Stop propagation to prevent dateClick from firing
               info.jsEvent.stopPropagation();
               info.jsEvent.preventDefault();
+
+              // Find which day cell was clicked by looking at the clicked element's parent
+              const target = info.jsEvent.target as HTMLElement;
+              const dayCell = target.closest('.fc-daygrid-day');
+
+              if (dayCell) {
+                // Get the date from the day cell's data attribute
+                const dateStr = dayCell.getAttribute('data-date');
+                if (dateStr) {
+                  // Parse the date string (YYYY-MM-DD) and create a date for that day
+                  const [year, month, day] = dateStr.split('-').map(Number);
+                  const clickedDate = new Date(year, month - 1, day);
+                  onDateClick(clickedDate);
+                  return;
+                }
+              }
+
+              // Fallback to event start date if we can't determine the clicked day
               const eventDate = new Date(info.event.start!);
               onDateClick(eventDate);
             }}
