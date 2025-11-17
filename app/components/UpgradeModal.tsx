@@ -24,7 +24,9 @@ export default function UpgradeModal({
   feature,
   limit,
 }: UpgradeModalProps) {
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   const defaultMessage =
     feature || limit

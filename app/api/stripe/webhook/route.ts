@@ -230,14 +230,18 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
   const customerId = invoice.customer as string;
   const subscriptionId = invoice.subscription as string;
 
-  if (!subscriptionId) return;
+  if (!subscriptionId) {
+    return;
+  }
 
   // Find subscription
   const dbSubscription = await prisma.subscription.findUnique({
     where: { stripeCustomerId: customerId },
   });
 
-  if (!dbSubscription) return;
+  if (!dbSubscription) {
+    return;
+  }
 
   // Ensure subscription is active
   await prisma.subscription.update({
@@ -262,7 +266,9 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
     where: { stripeCustomerId: customerId },
   });
 
-  if (!dbSubscription) return;
+  if (!dbSubscription) {
+    return;
+  }
 
   // Update status to past_due
   await prisma.subscription.update({

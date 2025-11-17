@@ -393,7 +393,7 @@ export default function BillingPage() {
             {isPremium && (
               <div className="bg-white bg-opacity-20 rounded-lg p-4 text-center">
                 <p className="text-white font-semibold">
-                  ✨ You're on Premium!
+                  ✨ You&apos;re on Premium!
                 </p>
               </div>
             )}
@@ -413,7 +413,7 @@ export default function BillingPage() {
               </h3>
               <p className="text-gray-600">
                 Yes, you can cancel your subscription at any time from the
-                billing portal. You'll continue to have access to Premium
+                billing portal. You&apos;ll continue to have access to Premium
                 features until the end of your current billing period.
               </p>
             </div>
@@ -444,7 +444,7 @@ export default function BillingPage() {
                 What happens to my data if I cancel?
               </h3>
               <p className="text-gray-600">
-                Your data is always safe. If you cancel Premium, you'll revert
+                Your data is always safe. If you cancel Premium, you&apos;ll revert
                 to the Free plan limits, but all your data will be preserved.
                 You can upgrade again at any time.
               </p>

@@ -59,7 +59,9 @@ export async function isPremium(userId: string): Promise<boolean> {
     },
   });
 
-  if (!user?.isPremium) return false;
+  if (!user?.isPremium) {
+    return false;
+  }
 
   return (
     user.subscription?.status !== undefined &&
@@ -331,10 +333,14 @@ export async function checkPermission(
     select: { role: true },
   });
 
-  if (!user) return false;
+  if (!user) {
+    return false;
+  }
 
   // OWNER can do everything
-  if (user.role === "OWNER") return true;
+  if (user.role === "OWNER") {
+    return true;
+  }
 
   // ADMIN can read, write, delete
   if (user.role === "ADMIN") {
