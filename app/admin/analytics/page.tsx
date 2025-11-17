@@ -234,7 +234,7 @@ export default function AnalyticsPage() {
               </h3>
             </div>
             <p className="text-base md:text-2xl font-bold text-black">
-              ${analytics?.revenue?.reduce((sum: number, d: any) => sum + d.amount, 0).toFixed(2) || "0.00"}
+              ${(analytics?.revenue?.reduce((sum: number, d: any) => sum + d.amount, 0) || 0).toFixed(2)}
             </p>
           </div>
 
