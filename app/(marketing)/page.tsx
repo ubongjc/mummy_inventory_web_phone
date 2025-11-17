@@ -491,103 +491,191 @@ export default function HomePage() {
             isComparisonOpen ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0'
           }`}
         >
-          <div className="grid md:grid-cols-2 gap-4 md:gap-8">
-            {/* Free Plan */}
-            <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-8 border-2 border-gray-200">
-              <div className="mb-4 md:mb-6">
-                <h4 className="text-xl md:text-3xl font-bold text-gray-900 mb-2 md:mb-3">Free</h4>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl md:text-5xl font-bold text-gray-900">$0</span>
-                  <span className="text-sm md:text-lg text-gray-600">forever</span>
-                </div>
-              </div>
-              <ul className="space-y-3 md:space-y-4">
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm md:text-lg text-gray-700">Unlimited items & customers</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm md:text-lg text-gray-700">Calendar booking management</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm md:text-lg text-gray-700">Inventory tracking</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm md:text-lg text-gray-700">Basic reporting</span>
-                </li>
-              </ul>
-              <button
-                disabled
-                className="w-full mt-6 md:mt-8 px-4 py-3 md:px-6 md:py-4 bg-gray-300 text-gray-600 font-bold rounded-lg cursor-not-allowed text-sm md:text-lg"
-              >
-                Current Plan
-              </button>
+          <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl p-3 md:p-8 border-4 border-blue-200">
+            {/* Comparison Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b-2 border-gray-200">
+                    <th className="text-left p-2 md:p-4 text-sm md:text-xl font-bold text-gray-900">Feature</th>
+                    <th className="text-center p-2 md:p-4 text-sm md:text-xl font-bold text-gray-900">Free</th>
+                    <th className="text-center p-2 md:p-4 text-sm md:text-xl font-bold bg-gradient-to-r from-yellow-100 to-amber-100 rounded-t-xl">
+                      <div className="flex items-center justify-center gap-1 md:gap-2">
+                        <Star className="w-4 h-4 md:w-5 md:h-5 text-yellow-600 fill-yellow-600" />
+                        <span className="text-yellow-900">Premium</span>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {/* Items */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="p-2 md:p-4">
+                      <div className="font-semibold text-xs md:text-base text-gray-900">Items (Inventory)</div>
+                    </td>
+                    <td className="text-center p-2 md:p-4 text-xs md:text-base text-gray-700">15 items</td>
+                    <td className="text-center p-2 md:p-4 bg-yellow-50 text-xs md:text-base font-semibold text-yellow-900">Unlimited</td>
+                  </tr>
+
+                  {/* Customers */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="p-2 md:p-4">
+                      <div className="font-semibold text-xs md:text-base text-gray-900">Customers</div>
+                    </td>
+                    <td className="text-center p-2 md:p-4 text-xs md:text-base text-gray-700">50 customers</td>
+                    <td className="text-center p-2 md:p-4 bg-yellow-50 text-xs md:text-base font-semibold text-yellow-900">Unlimited</td>
+                  </tr>
+
+                  {/* Active Bookings */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="p-2 md:p-4">
+                      <div className="font-semibold text-xs md:text-base text-gray-900">Active Bookings</div>
+                      <div className="text-[10px] md:text-sm text-gray-500">CONFIRMED + OUT status</div>
+                    </td>
+                    <td className="text-center p-2 md:p-4 text-xs md:text-base text-gray-700">15 concurrent</td>
+                    <td className="text-center p-2 md:p-4 bg-yellow-50 text-xs md:text-base font-semibold text-yellow-900">Unlimited</td>
+                  </tr>
+
+                  {/* Bookings Per Month */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="p-2 md:p-4">
+                      <div className="font-semibold text-xs md:text-base text-gray-900">Bookings Per Month</div>
+                    </td>
+                    <td className="text-center p-2 md:p-4 text-xs md:text-base text-gray-700">25 bookings</td>
+                    <td className="text-center p-2 md:p-4 bg-yellow-50 text-xs md:text-base font-semibold text-yellow-900">Unlimited</td>
+                  </tr>
+
+                  {/* Booking History */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="p-2 md:p-4">
+                      <div className="font-semibold text-xs md:text-base text-gray-900">Booking History Access</div>
+                    </td>
+                    <td className="text-center p-2 md:p-4 text-xs md:text-base text-gray-700">Last 3 months</td>
+                    <td className="text-center p-2 md:p-4 bg-yellow-50 text-xs md:text-base font-semibold text-yellow-900">Unlimited</td>
+                  </tr>
+
+                  {/* Data Export */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="p-2 md:p-4">
+                      <div className="font-semibold text-xs md:text-base text-gray-900">Data Export</div>
+                      <div className="text-[10px] md:text-sm text-gray-500">Excel/CSV/PDF</div>
+                    </td>
+                    <td className="text-center p-2 md:p-4 text-xs md:text-base text-red-600">✗ Not available</td>
+                    <td className="text-center p-2 md:p-4 bg-yellow-50 text-xs md:text-base font-semibold text-green-600">✓ Available</td>
+                  </tr>
+
+                  {/* Photos */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="p-2 md:p-4">
+                      <div className="font-semibold text-xs md:text-base text-gray-900">Photos/Attachments</div>
+                    </td>
+                    <td className="text-center p-2 md:p-4 text-xs md:text-base text-gray-700">0 photos</td>
+                    <td className="text-center p-2 md:p-4 bg-yellow-50 text-xs md:text-base font-semibold text-yellow-900">5 photos per item</td>
+                  </tr>
+
+                  {/* SMS/Email Notifications */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="p-2 md:p-4">
+                      <div className="font-semibold text-xs md:text-base text-gray-900">SMS/Email Notifications</div>
+                    </td>
+                    <td className="text-center p-2 md:p-4 text-xs md:text-base text-gray-700">Manual only</td>
+                    <td className="text-center p-2 md:p-4 bg-yellow-50 text-xs md:text-base font-semibold text-green-600">✓ Automated</td>
+                  </tr>
+
+                  {/* Public Booking Page */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="p-2 md:p-4">
+                      <div className="font-semibold text-xs md:text-base text-gray-900">Public Booking Page</div>
+                    </td>
+                    <td className="text-center p-2 md:p-4 text-xs md:text-base text-red-600">✗ Not available</td>
+                    <td className="text-center p-2 md:p-4 bg-yellow-50 text-xs md:text-base font-semibold text-green-600">✓ Available</td>
+                  </tr>
+
+                  {/* Team Collaboration */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="p-2 md:p-4">
+                      <div className="font-semibold text-xs md:text-base text-gray-900">Team Collaboration</div>
+                    </td>
+                    <td className="text-center p-2 md:p-4 text-xs md:text-base text-gray-700">1 user only</td>
+                    <td className="text-center p-2 md:p-4 bg-yellow-50 text-xs md:text-base font-semibold text-yellow-900">Up to 5 members</td>
+                  </tr>
+
+                  {/* Customer Support */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="p-2 md:p-4">
+                      <div className="font-semibold text-xs md:text-base text-gray-900">Customer Support</div>
+                    </td>
+                    <td className="text-center p-2 md:p-4 text-xs md:text-base text-gray-700">Email only</td>
+                    <td className="text-center p-2 md:p-4 bg-yellow-50 text-xs md:text-base font-semibold text-yellow-900">Priority + WhatsApp</td>
+                  </tr>
+
+                  {/* Tax Calculator */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="p-2 md:p-4">
+                      <div className="font-semibold text-xs md:text-base text-gray-900">Tax Calculator</div>
+                    </td>
+                    <td className="text-center p-2 md:p-4 text-xs md:text-base text-red-600">✗ Not available</td>
+                    <td className="text-center p-2 md:p-4 bg-yellow-50 text-xs md:text-base font-semibold text-green-600">✓ Available</td>
+                  </tr>
+
+                  {/* Events Near You */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="p-2 md:p-4">
+                      <div className="font-semibold text-xs md:text-base text-gray-900">Events Near You</div>
+                    </td>
+                    <td className="text-center p-2 md:p-4 text-xs md:text-base text-red-600">✗ Not available</td>
+                    <td className="text-center p-2 md:p-4 bg-yellow-50 text-xs md:text-base font-semibold text-green-600">✓ Available</td>
+                  </tr>
+
+                  {/* Custom Analytics */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="p-2 md:p-4">
+                      <div className="font-semibold text-xs md:text-base text-gray-900">Custom Analytics</div>
+                    </td>
+                    <td className="text-center p-2 md:p-4 text-xs md:text-base text-red-600">✗ Not available</td>
+                    <td className="text-center p-2 md:p-4 bg-yellow-50 text-xs md:text-base font-semibold text-green-600">✓ Available</td>
+                  </tr>
+
+                  {/* Online Payments */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="p-2 md:p-4">
+                      <div className="font-semibold text-xs md:text-base text-gray-900">Online Payments</div>
+                    </td>
+                    <td className="text-center p-2 md:p-4 text-xs md:text-base text-red-600">✗ Not available</td>
+                    <td className="text-center p-2 md:p-4 bg-yellow-50 text-xs md:text-base font-semibold text-green-600">✓ Available</td>
+                  </tr>
+
+                  {/* Wholesale Supplier Connection */}
+                  <tr className="hover:bg-gray-50">
+                    <td className="p-2 md:p-4">
+                      <div className="font-semibold text-xs md:text-base text-gray-900">Wholesale Supplier Connection</div>
+                    </td>
+                    <td className="text-center p-2 md:p-4 text-xs md:text-base text-red-600">✗ Not available</td>
+                    <td className="text-center p-2 md:p-4 bg-yellow-50 text-xs md:text-base font-semibold text-green-600">✓ Available</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
-            {/* Premium Plan */}
-            <div className="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl md:rounded-2xl shadow-xl p-4 md:p-8 border-4 border-yellow-400 relative">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-gradient-to-r from-yellow-500 to-amber-600 text-white px-4 py-1.5 md:px-6 md:py-2 rounded-full text-sm md:text-base font-bold shadow-lg">
-                  Coming Soon
-                </span>
+            {/* CTA Section */}
+            <div className="mt-6 md:mt-8 p-4 md:p-6 bg-gradient-to-r from-yellow-50 via-amber-50 to-yellow-50 rounded-xl border-2 border-yellow-300 text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Star className="w-5 h-5 md:w-6 md:h-6 text-yellow-500 fill-yellow-500" />
+                <p className="text-sm md:text-lg text-gray-900 font-bold">
+                  Premium Features Coming Soon
+                </p>
+                <Star className="w-5 h-5 md:w-6 md:h-6 text-yellow-500 fill-yellow-500" />
               </div>
-              <div className="mb-4 md:mb-6 mt-3 md:mt-6">
-                <h4 className="text-xl md:text-3xl font-bold text-gray-900 mb-2 md:mb-3">Premium</h4>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl md:text-5xl font-bold text-gray-900">TBD</span>
-                </div>
-              </div>
-              <ul className="space-y-3 md:space-y-4">
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm md:text-lg text-gray-700 font-semibold">Everything in Free</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm md:text-lg text-gray-700">Tax calculator</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm md:text-lg text-gray-700">Events near you</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm md:text-lg text-gray-700">Custom analytics dashboard</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm md:text-lg text-gray-700">Online payments</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm md:text-lg text-gray-700">Customer reminders & notifications</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm md:text-lg text-gray-700">Public booking page</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm md:text-lg text-gray-700">Team collaboration</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm md:text-lg text-gray-700">Wholesale supplier connection</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm md:text-lg text-gray-700">Data export & reports</span>
-                </li>
-              </ul>
-              <button
-                disabled
-                className="w-full mt-6 md:mt-8 px-4 py-3 md:px-6 md:py-4 bg-gray-400 text-gray-200 font-bold rounded-lg cursor-not-allowed text-sm md:text-lg"
+              <p className="text-xs md:text-base text-gray-600 mb-3">
+                Sign up for free now and we'll notify you when premium features launch!
+              </p>
+              <Link
+                href="/auth/sign-up"
+                className="inline-flex items-center gap-2 px-4 py-2 md:px-6 md:py-3 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all text-sm md:text-base"
               >
-                Coming Soon
-              </button>
+                Get Started Free
+                <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
+              </Link>
             </div>
           </div>
         </div>
