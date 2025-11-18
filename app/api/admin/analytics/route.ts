@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Aggregate by day
-    const dailyUserGrowth = users.reduce((acc: any, user) => {
+    const dailyUserGrowth = users.reduce((acc: any, user: { createdAt: Date }) => {
       const date = new Date(user.createdAt).toISOString().split("T")[0];
       if (!acc[date]) {
         acc[date] = 0;
@@ -148,7 +148,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const dailyInquiries = inquiries.reduce((acc: any, inquiry) => {
+    const dailyInquiries = inquiries.reduce((acc: any, inquiry: { createdAt: Date }) => {
       const date = new Date(inquiry.createdAt).toISOString().split("T")[0];
       if (!acc[date]) {
         acc[date] = 0;
@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
         },
       },
       select: {
-        plan: true,
+        status: true,
         createdAt: true,
       },
       orderBy: {
@@ -173,12 +173,14 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Group by plan and date
-    const subscriptionsByPlanAndDate = allSubscriptions.reduce((acc: any, sub) => {
+    // Group by plan type (derived from status) and date
+    const subscriptionsByPlanAndDate = allSubscriptions.reduce((acc: any, sub: { status: string; createdAt: Date }) => {
       const date = new Date(sub.createdAt).toISOString().split("T")[0];
-      const key = `${sub.plan}-${date}`;
+      // Determine plan type from status
+      const planType = ['active', 'trialing'].includes(sub.status) ? 'premium' : 'free';
+      const key = `${planType}-${date}`;
       if (!acc[key]) {
-        acc[key] = { plan: sub.plan, date, count: 0 };
+        acc[key] = { plan: planType, date, count: 0 };
       }
       acc[key].count += 1;
       return acc;

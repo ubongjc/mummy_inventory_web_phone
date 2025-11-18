@@ -79,22 +79,30 @@ async function handleSuccessfulPayment(data: any) {
 
     // Update user's premium status
     if (metadata?.userId) {
+      const now = new Date();
+      const periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+
       await prisma.subscription.upsert({
         where: { userId: metadata.userId },
         create: {
           userId: metadata.userId,
-          plan: 'premium',
+          stripeCustomerId: `paystack_${metadata.userId}`,
           status: 'active',
-          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          currentPeriodStart: now,
+          currentPeriodEnd: periodEnd,
         },
         update: {
-          plan: 'premium',
           status: 'active',
-          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-          updatedAt: new Date(),
+          currentPeriodStart: now,
+          currentPeriodEnd: periodEnd,
+          updatedAt: now,
         },
+      });
+
+      // Update user's isPremium flag
+      await prisma.user.update({
+        where: { id: metadata.userId },
+        data: { isPremium: true },
       });
 
       console.log('User upgraded to premium plan:', metadata.userId);

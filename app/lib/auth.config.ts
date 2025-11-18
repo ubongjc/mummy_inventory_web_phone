@@ -38,6 +38,11 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid email or password");
         }
 
+        // Check if user has active premium subscription
+        const isPremium = user.subscription?.status
+          ? ["active", "trialing"].includes(user.subscription.status)
+          : false;
+
         // Return user object
         return {
           id: user.id,
@@ -46,7 +51,8 @@ export const authOptions: NextAuthOptions = {
             ? `${user.firstName} ${user.lastName || ""}`.trim()
             : user.email,
           role: user.role,
-          plan: user.subscription?.plan || "free",
+          isPremium,
+          subscriptionStatus: user.subscription?.status || null,
         };
       },
     }),
@@ -56,7 +62,8 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
-        token.plan = user.plan;
+        token.isPremium = user.isPremium;
+        token.subscriptionStatus = user.subscriptionStatus;
       }
       return token;
     },
@@ -64,7 +71,8 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
-        session.user.plan = token.plan as string;
+        session.user.isPremium = token.isPremium as boolean;
+        session.user.subscriptionStatus = token.subscriptionStatus as string | null;
       }
       return session;
     },

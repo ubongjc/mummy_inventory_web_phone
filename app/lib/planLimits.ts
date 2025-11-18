@@ -166,11 +166,14 @@ export const FEATURE_DESCRIPTIONS = {
 /**
  * Helper to get user's plan type from subscription
  */
-export function getUserPlanType(subscription: { plan: string } | null): PlanType {
-  if (!subscription || subscription.plan === 'free') {
+export function getUserPlanType(subscription: { status: string } | null): PlanType {
+  if (!subscription) {
     return 'free';
   }
-  return 'premium';
+
+  // Check if subscription is active or trialing
+  const isActive = ['active', 'trialing'].includes(subscription.status);
+  return isActive ? 'premium' : 'free';
 }
 
 /**

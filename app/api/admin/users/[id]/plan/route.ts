@@ -35,18 +35,33 @@ export async function PATCH(
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
-    // Update or create subscription with new plan
+    // Update or create subscription with new status-based approach
+    const isPremium = plan === "premium";
+    const status = isPremium ? "active" : "canceled";
+
     const subscription = await prisma.subscription.upsert({
       where: { userId },
-      update: { plan },
+      update: {
+        status,
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+      },
       create: {
         userId,
-        plan,
-        status: "active",
+        stripeCustomerId: `admin_${userId}`, // Placeholder for admin-created subscriptions
+        status,
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       },
     });
 
-    return NextResponse.json({ success: true, subscription });
+    // Update user's isPremium flag
+    await prisma.user.update({
+      where: { id: userId },
+      data: { isPremium },
+    });
+
+    return NextResponse.json({ success: true, subscription, isPremium });
   } catch (error) {
     console.error("Error updating user plan:", error);
     return NextResponse.json(

@@ -17,11 +17,15 @@ model Item {
   totalQuantity  Int       // authoritative stock count (0-100000)
   price          Decimal?  @db.Decimal(12, 2) // default booking price per unit
   notes          String?   @db.VarChar(50)
+  photos         String[]  @default([]) // Premium: up to 5 URLs
+  prepBufferDays Int?      // Premium: days needed between bookings for prep/maintenance
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   bookingItems   BookingItem[]
+  bundleItems    BundleItem[]
+  maintenanceTickets MaintenanceTicket[]
 
   @@unique([userId, name], name: "unique_user_item_name")
   @@index([userId])
@@ -60,6 +64,11 @@ model Booking {
   totalPrice      Decimal?      @db.Decimal(12, 2) // total agreed booking price
   advancePayment  Decimal?      @db.Decimal(12, 2) // initial advance payment
   paymentDueDate  DateTime?     // date when complete payment is due
+  taxAmount       Decimal?      @db.Decimal(12, 2) // Premium: computed tax amount
+  totalWithTax    Decimal?      @db.Decimal(12, 2) // Premium: total including tax
+  remindersSent   String[]      @default([]) // Premium: ['upcoming', 'return', 'payment']
+  pickupTime      DateTime?     // Premium: scheduled pickup time
+  deliveryTime    DateTime?     // Premium: scheduled delivery time
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -67,6 +76,7 @@ model Booking {
   customer        Customer      @relation(fields: [customerId], references: [id])
   items           BookingItem[]
   payments        Payment[]     // track all payments made
+  photos          BookingPhoto[] // Premium: damage/condition photos
 
   @@index([userId])
   @@index([startDate])
@@ -107,16 +117,20 @@ model Settings {
   id                    String   @id @default(cuid())
   userId                String   @unique // Each user has their own settings
   businessName          String?  @db.VarChar(25)
-  currency              String   @default("USD") @db.VarChar(3) // ISO 4217 code
-  currencySymbol        String   @default("$") @db.VarChar(5)
+  currency              String   @default("NGN") @db.VarChar(3) // ISO 4217 code
+  currencySymbol        String   @default("₦") @db.VarChar(5)
   businessPhone         String?  @db.VarChar(15) // E.164 format
   businessEmail         String?  @db.VarChar(254)
-  businessAddress       String?  @db.VarChar(100)
-  taxRate               Decimal? @db.Decimal(5, 2) // percentage (e.g., 10.00 for 10%)
+  businessAddress       String?  @db.VarChar(200)
+  taxRate               Decimal  @default(7.5) @db.Decimal(5, 2) // VAT percentage (e.g., 7.5 for Nigeria)
+  taxEnabled            Boolean  @default(false) // Premium: enable tax calculation
+  taxInclusive          Boolean  @default(false) // Premium: price includes tax vs adds on top
   lowStockThreshold     Int      @default(5)
   defaultRentalDays     Int      @default(1)
   dateFormat            String   @default("MM/DD/YYYY") @db.VarChar(20)
-  timezone              String   @default("UTC") @db.VarChar(64) // IANA timezone
+  timezone              String   @default("Africa/Lagos") @db.VarChar(64) // IANA timezone
+  remindersEnabled      Boolean  @default(false) // Premium: enable customer reminders
+  notificationsEnabled  Boolean  @default(false) // Premium: enable smart notifications
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
@@ -130,12 +144,15 @@ model User {
   id                String        @id @default(cuid())
   email             String        @unique @db.VarChar(254)
   passwordHash      String
-  role              String        @default("user") @db.VarChar(20) // 'user' | 'admin'
+  role              String        @default("OWNER") @db.VarChar(20) // 'OWNER' | 'ADMIN' | 'MEMBER'
   firstName         String?       @db.VarChar(50)
   lastName          String?       @db.VarChar(50)
   businessName      String?       @db.VarChar(100) // Personalized business name for each user
+  businessAddress   String?       @db.VarChar(200) // For events near you feature
   logoUrl           String?       @db.VarChar(500) // URL to user's custom logo
+  isPremium         Boolean       @default(false) // Quick access flag, synced from subscription
   emailVerified     Boolean       @default(false)
+  ownerId           String?       // For team members: points to owner
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
@@ -149,22 +166,27 @@ model User {
   subscription      Subscription?
   publicPage        PublicPage?
   passwordResets    PasswordReset[]
+  teamMembers       User[]        @relation("TeamMembers")
+  owner             User?         @relation("TeamMembers", fields: [ownerId], references: [id])
+  bundles           Bundle[]
 
   @@index([email])
+  @@index([ownerId])
 }
 
 model Subscription {
-  id                String   @id @default(cuid())
-  userId            String   @unique
-  plan              String   @default("free") @db.VarChar(20) // 'free' | 'pro' | 'business'
-  status            String   @default("active") @db.VarChar(20) // 'active' | 'trialing' | 'past_due' | 'canceled'
-  currentPeriodEnd  DateTime?
-  stripeCustomerId  String?  @unique @db.VarChar(100)
-  stripeSubId       String?  @unique @db.VarChar(100)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  stripeCustomerId     String   @unique @db.VarChar(100)
+  stripeSubscriptionId String?  @unique @db.VarChar(100)
+  status               String   @default("active") @db.VarChar(20) // 'active' | 'trialing' | 'past_due' | 'canceled' | 'incomplete'
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model PublicPage {
@@ -215,4 +237,99 @@ model PasswordReset {
 
   @@index([token])
   @@index([userId])
+}
+
+// Premium Feature Models
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String   @db.VarChar(200)
+  description String?  @db.Text
+  startDate   DateTime
+  endDate     DateTime?
+  location    String?  @db.VarChar(200)
+  lat         Float?
+  lng         Float?
+  organizer   Json?    // {name, phone, email, socials}
+  sourceUrl   String?  @db.VarChar(500)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([startDate])
+  @@index([lat, lng])
+}
+
+model Bundle {
+  id          String       @id @default(cuid())
+  userId      String
+  name        String       @db.VarChar(100)
+  description String?      @db.VarChar(200)
+  price       Decimal?     @db.Decimal(12, 2)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       BundleItem[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model BundleItem {
+  id       String @id @default(cuid())
+  bundleId String
+  itemId   String
+  quantity Int
+
+  bundle   Bundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  item     Item   @relation(fields: [itemId], references: [id])
+
+  @@unique([bundleId, itemId])
+  @@index([bundleId])
+  @@index([itemId])
+}
+
+model BookingPhoto {
+  id        String   @id @default(cuid())
+  bookingId String
+  url       String   @db.VarChar(500)
+  caption   String?  @db.VarChar(200)
+  uploadedAt DateTime @default(now())
+
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+}
+
+model MaintenanceTicket {
+  id          String   @id @default(cuid())
+  itemId      String
+  description String   @db.Text
+  status      String   @default("open") @db.VarChar(20) // 'open' | 'in_progress' | 'resolved'
+  priority    String   @default("medium") @db.VarChar(20) // 'low' | 'medium' | 'high'
+  photos      String[] @default([])
+  resolvedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  item        Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([itemId])
+  @@index([status])
+}
+
+model PricingRule {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String   @db.VarChar(100)
+  itemId      String?  // null means applies to all items
+  ruleType    String   @db.VarChar(20) // 'weekend' | 'holiday' | 'long_rental' | 'category'
+  multiplier  Decimal  @db.Decimal(5, 2) // e.g., 1.5 for 50% markup
+  minDays     Int?     // for long rental discounts
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([itemId])
 }

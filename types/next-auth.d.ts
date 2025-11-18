@@ -7,7 +7,8 @@ declare module "next-auth" {
     email: string;
     name?: string | null;
     role: string;
-    plan: string;
+    isPremium: boolean;
+    subscriptionStatus: string | null;
   }
 
   interface Session {
@@ -16,7 +17,8 @@ declare module "next-auth" {
       email: string;
       name?: string | null;
       role: string;
-      plan: string;
+      isPremium: boolean;
+      subscriptionStatus: string | null;
     };
   }
 }
@@ -25,6 +27,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     role: string;
-    plan: string;
+    isPremium: boolean;
+    subscriptionStatus: string | null;
   }
 }

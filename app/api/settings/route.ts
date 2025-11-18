@@ -49,6 +49,11 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const validated = updateSettingsSchema.parse(body);
 
+    // Remove null values from validated data (Prisma doesn't accept null, only undefined)
+    const cleanedData = Object.fromEntries(
+      Object.entries(validated).filter(([_, value]) => value !== null)
+    );
+
     // Get existing settings for this user
     let settings = await prisma.settings.findUnique({
       where: { userId: session.user.id }
@@ -60,7 +65,7 @@ export async function PATCH(request: NextRequest) {
       secureLog("[WARNING] Creating new settings for existing user", { userId: session.user.id });
       settings = await prisma.settings.create({
         data: {
-          ...validated,
+          ...cleanedData,
           userId: session.user.id
         },
       });
@@ -69,7 +74,7 @@ export async function PATCH(request: NextRequest) {
       // This prevents accidentally resetting fields that weren't changed
       settings = await prisma.settings.update({
         where: { id: settings.id },
-        data: validated,
+        data: cleanedData,
       });
     }
 

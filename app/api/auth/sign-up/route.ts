@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     // Hash password
     const passwordHash = await hashPassword(validated.password);
 
-    // Create user with free subscription
+    // Create user (free tier - no subscription needed)
     const user = await prisma.user.create({
       data: {
         email,
@@ -93,12 +93,7 @@ export async function POST(request: NextRequest) {
         firstName,
         lastName,
         businessName,
-        subscription: {
-          create: {
-            plan: "free",
-            status: "active",
-          },
-        },
+        isPremium: false,
       },
       select: {
         id: true,

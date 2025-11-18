@@ -22,9 +22,9 @@ export async function GET(request: NextRequest) {
     // Get user statistics
     const totalUsers = await prisma.user.count();
 
-    // Count users by plan
+    // Count users by plan (premium = active or trialing subscriptions)
     const premiumUsers = await prisma.subscription.count({
-      where: { plan: "premium", status: "active" },
+      where: { status: { in: ["active", "trialing"] } },
     });
 
     // Free users = all users without premium subscriptions
