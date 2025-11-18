@@ -1238,7 +1238,7 @@ export default function BookingsPage() {
                                   <span className="text-green-700">
                                     {formatCurrency(
                                       (booking.advancePayment || 0) +
-                                      (booking.payments?.reduce((sum, p) => sum + p.amount, 0) || 0)
+                                      (booking.payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0)
                                     )}
                                   </span>
                                 </div>
@@ -1248,7 +1248,7 @@ export default function BookingsPage() {
                                     {formatCurrency(
                                       booking.totalPrice -
                                       (booking.advancePayment || 0) -
-                                      (booking.payments?.reduce((sum, p) => sum + p.amount, 0) || 0)
+                                      (booking.payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0)
                                     )}
                                   </span>
                                 </div>
