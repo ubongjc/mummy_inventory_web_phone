@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -14,7 +14,7 @@ import {
   Crown,
 } from 'lucide-react';
 
-export default function BillingPage() {
+function BillingContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -453,5 +453,17 @@ export default function BillingPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function BillingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+      </div>
+    }>
+      <BillingContent />
+    </Suspense>
   );
 }

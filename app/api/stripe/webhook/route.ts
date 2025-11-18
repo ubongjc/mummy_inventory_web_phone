@@ -13,7 +13,7 @@ if (!process.env.STRIPE_WEBHOOK_SECRET) {
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: "2024-11-20.acacia",
+      apiVersion: "2025-02-24.acacia",
     })
   : null;
 
@@ -108,6 +108,11 @@ export async function POST(req: NextRequest) {
 }
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+  if (!stripe) {
+    console.error("Stripe not configured");
+    return;
+  }
+
   const userId = session.metadata?.userId;
   const customerId = session.customer as string;
 

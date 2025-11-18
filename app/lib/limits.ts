@@ -28,7 +28,8 @@ async function getUserSubscription(userId: string) {
     throw new Error('User not found');
   }
 
-  const planType = getUserPlanType(user.subscription);
+  // Pass isPremium flag to allow admin overrides and testing
+  const planType = getUserPlanType(user.subscription, user.isPremium);
   return { planType, subscription: user.subscription };
 }
 

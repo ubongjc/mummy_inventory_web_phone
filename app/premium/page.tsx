@@ -1,147 +1,283 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import {
   ArrowLeft,
   Sparkles,
   CheckCircle,
   Globe,
-  TrendingUp,
   Bell,
   CreditCard,
   Users,
-  Calendar,
   BarChart3,
   Lock,
   Calculator,
   BellRing,
-  Truck,
   FileDown,
   MapPin,
+  Loader2,
+  Settings,
+  ExternalLink,
 } from 'lucide-react';
 
 export default function PremiumPage() {
-  const features = [
-    {
-      icon: <Calculator className="w-5 h-5 md:w-8 md:h-8" />,
-      title: 'Tax Calculator',
-      description:
-        'Automatically calculate taxes on rentals based on your location and apply them to invoices and receipts',
-      color: 'from-blue-500 to-indigo-600',
-    },
-    {
-      icon: <MapPin className="w-5 h-5 md:w-8 md:h-8" />,
-      title: 'Events Near You',
-      description:
-        'Get notified about local events like weddings, festivals, and conferences that could need your rentals',
-      color: 'from-purple-500 to-pink-600',
-    },
-    {
-      icon: <BarChart3 className="w-5 h-5 md:w-8 md:h-8" />,
-      title: 'Custom Analytics',
-      description:
-        'Track utilization rates, revenue trends, conversion rates, and identify your most profitable items',
-      color: 'from-green-500 to-emerald-600',
-    },
-    {
-      icon: <CreditCard className="w-5 h-5 md:w-8 md:h-8" />,
-      title: 'Online Payments',
-      description:
-        'Let customers pay securely through the app with Stripe. Automatic payment tracking and receipts',
-      color: 'from-orange-500 to-red-600',
-    },
-    {
-      icon: <BellRing className="w-5 h-5 md:w-8 md:h-8" />,
-      title: 'Customer Reminders',
-      description:
-        'Send automated reminders to customers for upcoming rentals, returns, and outstanding payments',
-      color: 'from-cyan-500 to-blue-600',
-    },
-    {
-      icon: <Bell className="w-5 h-5 md:w-8 md:h-8" />,
-      title: 'Automated Notifications',
-      description: 'Email and SMS alerts for new inquiries, overdue payments, low stock, and upcoming bookings',
-      color: 'from-violet-500 to-purple-600',
-    },
-    {
-      icon: <Globe className="w-5 h-5 md:w-8 md:h-8" />,
-      title: 'Public Booking Page',
-      description:
-        'Share a custom link so customers can check availability and inquire about rentals directly on your branded page',
-      color: 'from-pink-500 to-rose-600',
-    },
-    {
-      icon: <Users className="w-5 h-5 md:w-8 md:h-8" />,
-      title: 'Team Collaboration',
-      description: 'Add team members with custom roles and permissions to manage your rental business together',
-      color: 'from-indigo-500 to-blue-600',
-    },
-    {
-      icon: <Truck className="w-5 h-5 md:w-8 md:h-8" />,
-      title: 'Wholesale Supplier Connection',
-      description: 'Connect with wholesale suppliers to easily restock inventory and manage purchase orders',
-      color: 'from-amber-500 to-orange-600',
-    },
-    {
-      icon: <FileDown className="w-5 h-5 md:w-8 md:h-8" />,
-      title: 'Data Export & Reports',
-      description: 'Export your data in multiple formats (CSV, Excel, PDF) and generate detailed business reports',
-      color: 'from-emerald-500 to-green-600',
-    },
-  ];
+  const { data: session, status } = useSession();
+  const [loading, setLoading] = useState(true);
+  const isPremium = session?.user?.isPremium || false;
 
-  const plans = [
-    {
-      name: 'Free',
-      price: '$0',
-      period: 'forever',
-      features: [
-        '15 items maximum',
-        '50 customers maximum',
-        '15 active bookings (CONFIRMED + OUT)',
-        '25 bookings per month',
-        'Last 3 months of booking history',
-        'Calendar booking management',
-        'Inventory tracking',
-        'Basic reporting',
-        'Email support',
-      ],
-      cta: 'Current Plan',
-      ctaDisabled: true,
-      color: 'from-gray-500 to-gray-700',
-    },
-    {
-      name: 'Premium',
-      price: '₦15,000',
-      period: 'per month',
-      popular: true,
-      features: [
-        'Unlimited items & customers',
-        'Unlimited active bookings',
-        'Unlimited bookings per month',
-        'Unlimited booking history',
-        'Tax calculator (VAT 7.5%)',
-        'Events near you',
-        'Custom analytics dashboard',
-        'Online payments (Stripe)',
-        'Customer reminders & notifications',
-        'Public booking page',
-        'Team collaboration (up to 5 members)',
-        'QR code check-in/out',
-        'Bundles & kits',
-        'Delivery/pickup scheduler',
-        'Dynamic pricing rules',
-        'Maintenance tracking',
-        'Data export to Excel/CSV/PDF',
-        '5 photos per item',
-        'Priority email + WhatsApp support',
-      ],
-      cta: 'Upgrade Now',
-      ctaDisabled: false,
-      color: 'from-yellow-500 to-amber-600',
-    },
-  ];
+  useEffect(() => {
+    if (status !== 'loading') {
+      setLoading(false);
+    }
+  }, [status]);
 
+  if (loading || status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
+
+  // Premium users see the features dashboard
+  if (isPremium) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+        {/* Header */}
+        <header className="bg-white shadow-lg border-b-2">
+          <div className="max-w-7xl mx-auto px-3 md:px-4 py-2 md:py-4">
+            <div className="flex items-center gap-2 md:gap-4">
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-1 md:gap-2 px-2 py-1 md:px-4 md:py-2 bg-gradient-to-r from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white rounded-lg font-semibold transition-all duration-200 shadow-md text-xs md:text-sm"
+              >
+                <ArrowLeft className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="hidden sm:inline">Back to Dashboard</span>
+                <span className="sm:hidden">Back</span>
+              </Link>
+              <div className="flex-1">
+                <h1 className="text-sm md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-1 md:gap-2">
+                  <Sparkles className="w-4 h-4 md:w-7 md:h-7 text-yellow-500" />
+                  <span className="hidden sm:inline">Premium Features</span>
+                  <span className="sm:hidden">Premium</span>
+                </h1>
+                <p className="text-[10px] md:text-sm text-gray-600 flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3 text-green-600" />
+                  Active Premium Subscription
+                </p>
+              </div>
+              <Link
+                href="/billing"
+                className="flex items-center gap-1 px-2 py-1 md:px-3 md:py-2 text-xs md:text-sm bg-white border-2 border-gray-300 hover:border-gray-400 rounded-lg transition-all"
+              >
+                <Settings className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="hidden sm:inline">Manage</span>
+              </Link>
+            </div>
+          </div>
+        </header>
+
+        <main className="max-w-7xl mx-auto px-3 md:px-4 py-4 md:py-8 space-y-6">
+          {/* Welcome Section */}
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-xl p-6 md:p-8 text-white">
+            <h2 className="text-xl md:text-3xl font-bold mb-2">Welcome to Premium! 🎉</h2>
+            <p className="text-sm md:text-lg opacity-90">
+              You now have access to all premium features. Select any feature below to get started.
+            </p>
+          </div>
+
+          {/* Premium Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Tax Calculator */}
+            <Link
+              href="/settings"
+              className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all border-2 border-transparent hover:border-blue-500 group"
+            >
+              <div className="flex items-start gap-4 mb-4">
+                <div className="p-3 bg-blue-100 rounded-lg group-hover:bg-blue-600 transition-colors">
+                  <Calculator className="w-6 h-6 text-blue-600 group-hover:text-white transition-colors" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1 flex items-center justify-between">
+                    Tax Calculator
+                    <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Configure tax settings for automatic calculation on all rentals
+                  </p>
+                </div>
+              </div>
+              <div className="text-xs text-blue-600 font-semibold">Configure in Settings →</div>
+            </Link>
+
+            {/* Events Near You */}
+            <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-purple-200">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="p-3 bg-purple-100 rounded-lg">
+                  <MapPin className="w-6 h-6 text-purple-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">Events Near You</h3>
+                  <p className="text-sm text-gray-600">
+                    Get notified about local events that could need your rentals
+                  </p>
+                </div>
+              </div>
+              <div className="text-xs text-purple-600 font-semibold">Coming Soon</div>
+            </div>
+
+            {/* Custom Analytics */}
+            <Link
+              href="/admin/analytics"
+              className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all border-2 border-transparent hover:border-green-500 group"
+            >
+              <div className="flex items-start gap-4 mb-4">
+                <div className="p-3 bg-green-100 rounded-lg group-hover:bg-green-600 transition-colors">
+                  <BarChart3 className="w-6 h-6 text-green-600 group-hover:text-white transition-colors" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1 flex items-center justify-between">
+                    Custom Analytics
+                    <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-green-600" />
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Track revenue, utilization rates, and identify top items
+                  </p>
+                </div>
+              </div>
+              <div className="text-xs text-green-600 font-semibold">View Analytics →</div>
+            </Link>
+
+            {/* Online Payments */}
+            <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-orange-200">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="p-3 bg-orange-100 rounded-lg">
+                  <CreditCard className="w-6 h-6 text-orange-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">Online Payments</h3>
+                  <p className="text-sm text-gray-600">
+                    Accept secure payments through Stripe integration
+                  </p>
+                </div>
+              </div>
+              <div className="text-xs text-orange-600 font-semibold">Coming Soon</div>
+            </div>
+
+            {/* Customer Reminders */}
+            <Link
+              href="/settings"
+              className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all border-2 border-transparent hover:border-pink-500 group"
+            >
+              <div className="flex items-start gap-4 mb-4">
+                <div className="p-3 bg-pink-100 rounded-lg group-hover:bg-pink-600 transition-colors">
+                  <BellRing className="w-6 h-6 text-pink-600 group-hover:text-white transition-colors" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1 flex items-center justify-between">
+                    Customer Reminders
+                    <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-pink-600" />
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Send automated reminders for rentals and returns
+                  </p>
+                </div>
+              </div>
+              <div className="text-xs text-pink-600 font-semibold">Configure in Settings →</div>
+            </Link>
+
+            {/* Automated Notifications */}
+            <Link
+              href="/settings"
+              className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all border-2 border-transparent hover:border-indigo-500 group"
+            >
+              <div className="flex items-start gap-4 mb-4">
+                <div className="p-3 bg-indigo-100 rounded-lg group-hover:bg-indigo-600 transition-colors">
+                  <Bell className="w-6 h-6 text-indigo-600 group-hover:text-white transition-colors" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1 flex items-center justify-between">
+                    Smart Notifications
+                    <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-indigo-600" />
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Get alerts for overdue payments and low stock
+                  </p>
+                </div>
+              </div>
+              <div className="text-xs text-indigo-600 font-semibold">Configure in Settings →</div>
+            </Link>
+
+            {/* Public Booking Page */}
+            <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-cyan-200">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="p-3 bg-cyan-100 rounded-lg">
+                  <Globe className="w-6 h-6 text-cyan-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">Public Booking Page</h3>
+                  <p className="text-sm text-gray-600">
+                    Share a custom link for customers to check availability
+                  </p>
+                </div>
+              </div>
+              <div className="text-xs text-cyan-600 font-semibold">Coming Soon</div>
+            </div>
+
+            {/* Team Collaboration */}
+            <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-rose-200">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="p-3 bg-rose-100 rounded-lg">
+                  <Users className="w-6 h-6 text-rose-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">Team Collaboration</h3>
+                  <p className="text-sm text-gray-600">
+                    Add team members with custom roles and permissions
+                  </p>
+                </div>
+              </div>
+              <div className="text-xs text-rose-600 font-semibold">Coming Soon</div>
+            </div>
+
+            {/* Data Export */}
+            <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-emerald-200">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="p-3 bg-emerald-100 rounded-lg">
+                  <FileDown className="w-6 h-6 text-emerald-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">Data Export</h3>
+                  <p className="text-sm text-gray-600">
+                    Export your data in CSV, Excel, or PDF formats
+                  </p>
+                </div>
+              </div>
+              <div className="text-xs text-emerald-600 font-semibold">Available in all pages</div>
+            </div>
+          </div>
+
+          {/* Help Section */}
+          <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200">
+            <h3 className="text-lg font-bold text-gray-900 mb-3">Need Help?</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              As a premium member, you get priority support via email and WhatsApp. If you have any questions about using these features, feel free to reach out!
+            </p>
+            <Link
+              href="/billing"
+              className="inline-block px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-semibold text-sm transition-all"
+            >
+              Manage Subscription
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Non-premium users see the upgrade page
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       {/* Header */}
@@ -149,11 +285,12 @@ export default function PremiumPage() {
         <div className="max-w-7xl mx-auto px-3 md:px-4 py-2 md:py-4">
           <div className="flex items-center gap-2 md:gap-4">
             <Link
-              href="/"
+              href="/dashboard"
               className="flex items-center gap-1 md:gap-2 px-2 py-1 md:px-4 md:py-2 bg-gradient-to-r from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white rounded-lg font-semibold transition-all duration-200 shadow-md text-xs md:text-sm"
             >
               <ArrowLeft className="w-3 h-3 md:w-4 md:h-4" />
-              <span className="hidden sm:inline">Back to Home</span>
+              <span className="hidden sm:inline">Back to Dashboard</span>
+              <span className="sm:hidden">Back</span>
             </Link>
             <div className="flex-1">
               <h1 className="text-sm md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-1 md:gap-2">
@@ -177,19 +314,19 @@ export default function PremiumPage() {
             Upgrade to Premium for ₦15,000/month and unlock unlimited growth for your rental business
           </p>
           <div className="mt-4 md:mt-6">
-            <a
+            <Link
               href="/billing"
               className="inline-block px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg md:rounded-xl font-bold text-sm md:text-lg shadow-lg transition-all"
             >
               Upgrade to Premium
-            </a>
+            </Link>
           </div>
         </div>
 
         {/* Features Grid */}
         <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl p-3 md:p-12 border-4 border-yellow-200">
           <div className="grid grid-cols-2 gap-2 md:gap-6">
-            {/* Premium Feature 1 - Tax Calculator */}
+            {/* Tax Calculator */}
             <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg md:rounded-2xl border border-blue-200 md:border-2">
               <div className="p-1.5 md:p-3 bg-blue-600 rounded-lg md:rounded-xl flex-shrink-0">
                 <Calculator className="w-3 h-3 md:w-6 md:h-6 text-white" />
@@ -197,12 +334,12 @@ export default function PremiumPage() {
               <div>
                 <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Tax Calculator</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
-                  Automatically calculate taxes on rentals based on your location and apply them to invoices and receipts
+                  Automatically calculate taxes on rentals based on your location
                 </p>
               </div>
             </div>
 
-            {/* Premium Feature 2 - Events Near You */}
+            {/* Events Near You */}
             <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg md:rounded-2xl border border-purple-200 md:border-2">
               <div className="p-1.5 md:p-3 bg-purple-600 rounded-lg md:rounded-xl flex-shrink-0">
                 <MapPin className="w-3 h-3 md:w-6 md:h-6 text-white" />
@@ -210,12 +347,12 @@ export default function PremiumPage() {
               <div>
                 <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Events Near You</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
-                  Get notified about local events like weddings, festivals, and conferences that could need your rentals
+                  Get notified about local events that could need your rentals
                 </p>
               </div>
             </div>
 
-            {/* Premium Feature 3 - Custom Analytics */}
+            {/* Custom Analytics */}
             <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-lg md:rounded-2xl border border-green-200 md:border-2">
               <div className="p-1.5 md:p-3 bg-green-600 rounded-lg md:rounded-xl flex-shrink-0">
                 <BarChart3 className="w-3 h-3 md:w-6 md:h-6 text-white" />
@@ -223,12 +360,12 @@ export default function PremiumPage() {
               <div>
                 <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Custom Analytics</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
-                  Track utilization rates, revenue trends, conversion rates, and identify your most profitable items
+                  Track utilization rates and revenue trends
                 </p>
               </div>
             </div>
 
-            {/* Premium Feature 4 - Online Payments */}
+            {/* Online Payments */}
             <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg md:rounded-2xl border border-orange-200 md:border-2">
               <div className="p-1.5 md:p-3 bg-orange-600 rounded-lg md:rounded-xl flex-shrink-0">
                 <CreditCard className="w-3 h-3 md:w-6 md:h-6 text-white" />
@@ -236,12 +373,12 @@ export default function PremiumPage() {
               <div>
                 <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Online Payments</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
-                  Let customers pay securely through the app with Stripe. Automatic payment tracking and receipts
+                  Let customers pay securely through Stripe
                 </p>
               </div>
             </div>
 
-            {/* Premium Feature 5 - Customer Reminders */}
+            {/* Customer Reminders */}
             <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg md:rounded-2xl border border-pink-200 md:border-2">
               <div className="p-1.5 md:p-3 bg-pink-600 rounded-lg md:rounded-xl flex-shrink-0">
                 <BellRing className="w-3 h-3 md:w-6 md:h-6 text-white" />
@@ -249,25 +386,25 @@ export default function PremiumPage() {
               <div>
                 <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Customer Reminders</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
-                  Send automated reminders to customers for upcoming rentals, returns, and outstanding payments
+                  Send automated reminders to customers
                 </p>
               </div>
             </div>
 
-            {/* Premium Feature 6 - Automated Notifications */}
+            {/* Automated Notifications */}
             <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg md:rounded-2xl border border-indigo-200 md:border-2">
               <div className="p-1.5 md:p-3 bg-indigo-600 rounded-lg md:rounded-xl flex-shrink-0">
                 <Bell className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Automated Notifications</h4>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Smart Notifications</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
-                  Email and SMS alerts for new inquiries, overdue payments, low stock, and upcoming bookings
+                  Email and SMS alerts for important events
                 </p>
               </div>
             </div>
 
-            {/* Premium Feature 7 - Public Booking Page */}
+            {/* Public Booking Page */}
             <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-lg md:rounded-2xl border border-cyan-200 md:border-2">
               <div className="p-1.5 md:p-3 bg-cyan-600 rounded-lg md:rounded-xl flex-shrink-0">
                 <Globe className="w-3 h-3 md:w-6 md:h-6 text-white" />
@@ -275,12 +412,12 @@ export default function PremiumPage() {
               <div>
                 <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Public Booking Page</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
-                  Share a custom link so customers can check availability and inquire about rentals directly on your branded page
+                  Share a custom link for customer inquiries
                 </p>
               </div>
             </div>
 
-            {/* Premium Feature 8 - Team Collaboration */}
+            {/* Team Collaboration */}
             <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-rose-50 to-rose-100 rounded-lg md:rounded-2xl border border-rose-200 md:border-2">
               <div className="p-1.5 md:p-3 bg-rose-600 rounded-lg md:rounded-xl flex-shrink-0">
                 <Users className="w-3 h-3 md:w-6 md:h-6 text-white" />
@@ -288,33 +425,7 @@ export default function PremiumPage() {
               <div>
                 <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Team Collaboration</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
-                  Add team members with custom roles and permissions to manage your rental business together
-                </p>
-              </div>
-            </div>
-
-            {/* Premium Feature 9 - Wholesale Supplier Connection */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg md:rounded-2xl border border-amber-200 md:border-2">
-              <div className="p-1.5 md:p-3 bg-amber-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <Truck className="w-3 h-3 md:w-6 md:h-6 text-white" />
-              </div>
-              <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Wholesale Supplier Connection</h4>
-                <p className="text-[10px] md:text-base text-gray-600">
-                  Connect with wholesale suppliers to easily restock inventory and manage purchase orders
-                </p>
-              </div>
-            </div>
-
-            {/* Premium Feature 10 - Data Export & Reports */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg md:rounded-2xl border border-emerald-200 md:border-2">
-              <div className="p-1.5 md:p-3 bg-emerald-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <FileDown className="w-3 h-3 md:w-6 md:h-6 text-white" />
-              </div>
-              <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Data Export & Reports</h4>
-                <p className="text-[10px] md:text-base text-gray-600">
-                  Export your data in multiple formats (CSV, Excel, PDF) and generate detailed business reports
+                  Add team members with custom permissions
                 </p>
               </div>
             </div>
@@ -332,8 +443,7 @@ export default function PremiumPage() {
                 Secure & Reliable
               </h3>
               <p className="text-xs md:text-base text-gray-600 mb-2 md:mb-4">
-                Your data is encrypted and backed up daily. We use industry-standard security
-                practices to keep your business information safe.
+                Your data is encrypted and backed up daily. Industry-standard security practices.
               </p>
               <ul className="space-y-1 md:space-y-2">
                 <li className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm text-gray-700">
