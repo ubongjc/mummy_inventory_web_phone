@@ -114,7 +114,7 @@ export function PaymentPanel({
               value={date}
               onChange={(date) => setDate(date)}
               label="Payment Date"
-              maxDate={toYmd(new Date())}
+              minDate={toYmd(new Date())}
             />
           </div>
         </div>
