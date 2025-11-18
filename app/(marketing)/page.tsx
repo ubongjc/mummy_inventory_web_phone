@@ -42,7 +42,8 @@ export default function HomePage() {
     }
   }, [status, router]);
 
-  if (status === 'loading') {
+  // Show loading spinner while checking authentication or redirecting
+  if (status === 'loading' || status === 'authenticated') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600"></div>

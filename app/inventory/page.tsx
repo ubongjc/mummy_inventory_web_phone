@@ -37,6 +37,7 @@ export default function InventoryPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<any>({});
   const [showItemSummary, setShowItemSummary] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Search states
   const [itemSearch, setItemSearch] = useState("");
@@ -90,8 +91,15 @@ export default function InventoryPage() {
   const { formatCurrency } = useSettings();
 
   useEffect(() => {
-    fetchItems();
-    fetchCustomers();
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        await Promise.all([fetchItems(), fetchCustomers()]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
   }, []);
 
   const fetchItems = async () => {
@@ -413,6 +421,14 @@ export default function InventoryPage() {
       alert("Failed to delete. Please try again.");
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">

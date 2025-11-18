@@ -178,7 +178,11 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
   };
 
   const handleEditSuccess = () => {
-    fetchDayData(); // Refresh the data
+    fetchDayData(); // Refresh the day drawer data
+    // Notify parent component (Dashboard) to refresh calendar
+    if (onDataChange) {
+      onDataChange();
+    }
   };
 
   const toggleBookingExpanded = (bookingId: string) => {

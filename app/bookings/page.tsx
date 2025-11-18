@@ -135,8 +135,15 @@ export default function BookingsPage() {
   }, [isDefaultFiltersOpen, dateRangeFilter, sortBy, statusFilter]);
 
   useEffect(() => {
-    fetchBookings();
-    fetchItems();
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        await Promise.all([fetchBookings(), fetchItems()]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
   }, []);
 
   useEffect(() => {
@@ -178,8 +185,6 @@ export default function BookingsPage() {
       setBookings(data);
     } catch (error) {
       console.error("Error fetching bookings:", error);
-    } finally {
-      setLoading(false);
     }
   };
 

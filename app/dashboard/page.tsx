@@ -62,6 +62,7 @@ export default function Home() {
   const [isItemFilterOpen, setIsItemFilterOpen] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
   const [itemsLoading, setItemsLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
   const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
   const [itemSearchQuery, setItemSearchQuery] = useState('');
   const [itemSortBy, setItemSortBy] = useState<
@@ -77,10 +78,20 @@ export default function Home() {
 
   // Fetch items, user profile, and settings on mount
   useEffect(() => {
-    fetchItems();
-    fetchUserProfile();
-    fetchSettings();
-    fetchUsageStats();
+    const loadInitialData = async () => {
+      setPageLoading(true);
+      try {
+        await Promise.all([
+          fetchItems(),
+          fetchUserProfile(),
+          fetchSettings(),
+          fetchUsageStats()
+        ]);
+      } finally {
+        setPageLoading(false);
+      }
+    };
+    loadInitialData();
   }, [refreshKey]);
 
   // Refresh user profile and settings when page becomes visible
@@ -115,12 +126,10 @@ export default function Home() {
 
   const fetchUserProfile = async () => {
     try {
-      // Try to get cached data from localStorage first for instant display
-      const cachedBusinessName = localStorage.getItem('businessName');
+      // Try to get cached role from localStorage first for instant display
       const cachedRole = localStorage.getItem('userRole');
-      if ((cachedBusinessName || cachedRole) && !userProfile) {
+      if (cachedRole && !userProfile) {
         setUserProfile({
-          businessName: cachedBusinessName || undefined,
           role: cachedRole || 'user'
         } as UserProfile);
       }
@@ -132,15 +141,12 @@ export default function Home() {
         const data = await response.json();
         setUserProfile(data);
 
-        // Cache business name and role in localStorage
-        if (data.businessName) {
-          localStorage.setItem('businessName', data.businessName);
-        }
+        // Cache role in localStorage
         if (data.role) {
           localStorage.setItem('userRole', data.role);
         }
 
-        console.log('User profile loaded:', data.businessName || 'No business name set');
+        console.log('User profile loaded');
       } else if (response.status === 401) {
         console.log('User not authenticated - personalization features unavailable');
       } else {
@@ -249,6 +255,14 @@ export default function Home() {
   const handleDataChange = () => {
     setRefreshKey((prev) => prev + 1);
   };
+
+  if (pageLoading) {
+    return (
+      <div className="h-screen flex flex-col bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
@@ -597,10 +611,10 @@ export default function Home() {
               <div className="pt-0.5 flex-1 overflow-visible">
                 <h2 className="text-lg md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight whitespace-nowrap">
                   Hi,
-                  {(settings?.businessName || userProfile?.businessName) ? (
+                  {settings?.businessName ? (
                     <>
                       <br />
-                      {settings?.businessName || userProfile?.businessName}!
+                      {settings.businessName}!
                     </>
                   ) : userProfile?.firstName ? (
                     <>
