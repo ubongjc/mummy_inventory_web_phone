@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, ChevronDown, ChevronUp } from "lucide-react";
+import { X, ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import EditBookingModal from "./EditBookingModal";
+import DatePicker from "./DatePicker";
 import { useSettings } from "@/app/hooks/useSettings";
 
 interface DayDrawerProps {
@@ -79,7 +80,12 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [expandedBookings, setExpandedBookings] = useState<Set<string>>(new Set());
-  const { formatCurrency } = useSettings();
+  const [addingPaymentFor, setAddingPaymentFor] = useState<string | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+  const [paymentNotes, setPaymentNotes] = useState("");
+  const [paymentError, setPaymentError] = useState("");
+  const { formatCurrency, settings } = useSettings();
 
   // Format date without timezone conversion
   const formatDate = (dateString: string, includeYear = false) => {
@@ -242,6 +248,57 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
     } catch (error) {
       console.error("Error updating booking color:", error);
       alert("Failed to update booking color");
+    }
+  };
+
+  const handleAddPayment = async (bookingId: string) => {
+    if (!paymentAmount || parseFloat(paymentAmount) < 0.01) {
+      setPaymentError("Please enter a valid payment amount (minimum 0.01)");
+      return;
+    }
+
+    // Find the booking to validate against total price
+    const booking = bookings.find(r => r.id === bookingId);
+    if (booking && booking.totalPrice) {
+      const newPaymentAmount = parseFloat(paymentAmount);
+      const totalPaid = (booking.advancePayment ? Number(booking.advancePayment) : 0) +
+                        (booking.payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0);
+      const remainingBalance = Number(booking.totalPrice) - totalPaid;
+
+      if (newPaymentAmount > remainingBalance) {
+        setPaymentError(`Payment amount (${formatCurrency(newPaymentAmount)}) exceeds remaining balance (${formatCurrency(remainingBalance)})`);
+        return;
+      }
+    }
+
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}/payments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: parseFloat(paymentAmount),
+          paymentDate: paymentDate || new Date().toISOString(),
+          notes: paymentNotes,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add payment");
+      }
+
+      // Reset form and refresh data
+      setPaymentAmount("");
+      setPaymentDate(new Date().toISOString().split('T')[0]);
+      setPaymentNotes("");
+      setPaymentError("");
+      setAddingPaymentFor(null);
+      fetchDayData();
+      // Notify parent component to refresh calendar
+      if (onDataChange) {
+        onDataChange();
+      }
+    } catch (err: any) {
+      setPaymentError(err.message);
     }
   };
 
@@ -477,7 +534,7 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
                                         <span className="text-green-700">
                                           {formatCurrency(
                                             (booking.advancePayment || 0) +
-                                            (booking.payments?.reduce((sum, p) => sum + p.amount, 0) || 0)
+                                            (booking.payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0)
                                           )}
                                         </span>
                                       </div>
@@ -487,7 +544,7 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
                                           {formatCurrency(
                                             booking.totalPrice -
                                             (booking.advancePayment || 0) -
-                                            (booking.payments?.reduce((sum, p) => sum + p.amount, 0) || 0)
+                                            (booking.payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0)
                                           )}
                                         </span>
                                       </div>
@@ -499,6 +556,88 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
                                       Due: {new Date(booking.paymentDueDate).toLocaleDateString()}
                                     </div>
                                   )}
+
+                                  {/* Add Payment Button/Form */}
+                                  {addingPaymentFor === booking.id ? (
+                                    <div className="mt-2 pt-2 border-t-2 border-green-300 bg-green-50 rounded-lg p-2">
+                                      <div className="text-[11px] font-bold text-green-900 mb-2 text-center">💰 Record New Payment</div>
+                                      {paymentError && (
+                                        <div className="bg-red-50 text-red-600 p-1.5 rounded text-[10px] mb-2 font-semibold">
+                                          {paymentError}
+                                        </div>
+                                      )}
+                                      <div className="space-y-2">
+                                        {/* Amount and Date on same line */}
+                                        <div className="grid grid-cols-2 gap-2">
+                                          <div className="min-w-0">
+                                            <label className="block text-[9px] font-bold text-green-800 mb-1">AMOUNT ({settings?.currencySymbol || "₦"})</label>
+                                            <input
+                                              type="number"
+                                              value={paymentAmount}
+                                              onChange={(e) => setPaymentAmount(e.target.value)}
+                                              placeholder="0.00"
+                                              step="0.01"
+                                              min="0"
+                                              className="h-10 w-full min-w-0 px-3 py-2 border-2 border-green-400 rounded-lg text-[10px] font-bold focus:ring-2 focus:ring-green-500 outline-none bg-white"
+                                            />
+                                          </div>
+                                          <div className="min-w-0">
+                                            <DatePicker
+                                              value={paymentDate}
+                                              onChange={(date) => setPaymentDate(date)}
+                                              label="Select Payment Date:"
+                                              minDate={new Date().toISOString().split('T')[0]}
+                                              className="text-[9px]"
+                                            />
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <label className="block text-[9px] font-bold text-green-800 mb-1">NOTES (Optional)</label>
+                                          <input
+                                            type="text"
+                                            value={paymentNotes}
+                                            onChange={(e) => setPaymentNotes(e.target.value)}
+                                            placeholder="Add any notes here..."
+                                            className="w-full px-2 py-1 border-2 border-green-400 rounded-lg text-[10px] font-medium focus:ring-2 focus:ring-green-500 outline-none bg-white"
+                                          />
+                                        </div>
+                                        <div className="flex gap-1.5 pt-1">
+                                          <button
+                                            onClick={() => handleAddPayment(booking.id)}
+                                            className="flex-1 px-2 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-[11px] font-bold"
+                                          >
+                                            SAVE
+                                          </button>
+                                          <button
+                                            onClick={() => {
+                                              setAddingPaymentFor(null);
+                                              setPaymentAmount("");
+                                              setPaymentDate(new Date().toISOString().split('T')[0]);
+                                              setPaymentNotes("");
+                                              setPaymentError("");
+                                            }}
+                                            className="flex-1 px-2 py-1.5 bg-gray-400 text-white rounded-lg hover:bg-gray-500 text-[11px] font-bold"
+                                          >
+                                            CANCEL
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      onClick={() => {
+                                        setAddingPaymentFor(booking.id);
+                                        setPaymentDate(new Date().toISOString().split('T')[0]);
+                                        setPaymentAmount("");
+                                        setPaymentNotes("");
+                                        setPaymentError("");
+                                      }}
+                                      className="mt-2 w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-[11px] font-bold shadow-sm"
+                                    >
+                                      <Plus className="w-3.5 h-3.5" />
+                                      ADD PAYMENT
+                                    </button>
+                                  )}
                                 </div>
                               )}
 
@@ -509,7 +648,12 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
                                     e.stopPropagation();
                                     handleEditBooking(booking);
                                   }}
-                                  className="flex-1 flex items-center justify-center px-2 py-1.5 border rounded-lg text-xs font-bold transition-colors text-blue-600 hover:text-white hover:bg-blue-600 border-blue-600"
+                                  disabled={addingPaymentFor === booking.id}
+                                  className={`flex-1 flex items-center justify-center px-2 py-1.5 border rounded-lg text-xs font-bold transition-colors ${
+                                    addingPaymentFor === booking.id
+                                      ? 'text-gray-400 bg-gray-100 border-gray-300 cursor-not-allowed opacity-50'
+                                      : 'text-blue-600 hover:text-white hover:bg-blue-600 border-blue-600'
+                                  }`}
                                 >
                                   EDIT
                                 </button>

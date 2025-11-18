@@ -81,7 +81,7 @@ export default function BookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [addingPaymentFor, setAddingPaymentFor] = useState<string | null>(null);
   const [paymentAmount, setPaymentAmount] = useState("");
-  const [paymentDate, setPaymentDate] = useState("");
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentNotes, setPaymentNotes] = useState("");
   const [paymentError, setPaymentError] = useState("");
   const { formatCurrency, settings } = useSettings();
@@ -552,7 +552,7 @@ export default function BookingsPage() {
 
       // Reset form and refresh data
       setPaymentAmount("");
-      setPaymentDate("");
+      setPaymentDate(new Date().toISOString().split('T')[0]);
       setPaymentNotes("");
       setPaymentError("");
       setAddingPaymentFor(null);
@@ -1238,7 +1238,7 @@ export default function BookingsPage() {
                                   <span className="text-green-700">
                                     {formatCurrency(
                                       (booking.advancePayment || 0) +
-                                      (booking.payments?.reduce((sum, p) => sum + p.amount, 0) || 0)
+                                      (booking.payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0)
                                     )}
                                   </span>
                                 </div>
@@ -1248,7 +1248,7 @@ export default function BookingsPage() {
                                     {formatCurrency(
                                       booking.totalPrice -
                                       (booking.advancePayment || 0) -
-                                      (booking.payments?.reduce((sum, p) => sum + p.amount, 0) || 0)
+                                      (booking.payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0)
                                     )}
                                   </span>
                                 </div>
@@ -1316,7 +1316,7 @@ export default function BookingsPage() {
                                       onClick={() => {
                                         setAddingPaymentFor(null);
                                         setPaymentAmount("");
-                                        setPaymentDate("");
+                                        setPaymentDate(new Date().toISOString().split('T')[0]);
                                         setPaymentNotes("");
                                         setPaymentError("");
                                       }}
@@ -1329,7 +1329,13 @@ export default function BookingsPage() {
                               </div>
                             ) : (
                               <button
-                                onClick={() => setAddingPaymentFor(booking.id)}
+                                onClick={() => {
+                                  setAddingPaymentFor(booking.id);
+                                  setPaymentDate(new Date().toISOString().split('T')[0]);
+                                  setPaymentAmount("");
+                                  setPaymentNotes("");
+                                  setPaymentError("");
+                                }}
                                 className="mt-2 w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-[11px] font-bold shadow-sm"
                               >
                                 <Plus className="w-3.5 h-3.5" />
