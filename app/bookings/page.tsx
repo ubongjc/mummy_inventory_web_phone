@@ -1290,6 +1290,7 @@ export default function BookingsPage() {
                                         value={paymentDate}
                                         onChange={(date) => setPaymentDate(date)}
                                         label="Select Payment Date:"
+                                        minDate={new Date().toISOString().split('T')[0]}
                                         className="text-[9px]"
                                       />
                                     </div>

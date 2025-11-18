@@ -829,6 +829,9 @@ export default function EditBookingModal({
                     const newPayment = await response.json();
                     setPayments([newPayment, ...payments]);
                     setError("");
+
+                    // Trigger parent refresh to update calendar/bookings view
+                    onSuccess();
                   }}
                   onSuccess={() => {
                     setError("");
