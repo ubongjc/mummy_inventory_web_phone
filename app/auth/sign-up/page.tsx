@@ -15,6 +15,7 @@ type SignUpFormData = z.infer<typeof signUpFormSchema>;
 export default function SignUpPage() {
   const router = useRouter();
   const [error, setError] = useState('');
+  const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState({ score: 0, label: '', color: '' });
 
@@ -50,6 +51,7 @@ export default function SignUpPage() {
 
   const onSubmit = async (data: SignUpFormData) => {
     setError('');
+    setServerErrors({});
     setLoading(true);
 
     try {
@@ -69,7 +71,21 @@ export default function SignUpPage() {
       const responseData = await response.json();
 
       if (!response.ok) {
-        throw new Error(responseData.error || 'Failed to create account');
+        // Handle validation errors from server
+        if (responseData.details && Array.isArray(responseData.details)) {
+          const fieldErrors: Record<string, string> = {};
+          responseData.details.forEach((err: any) => {
+            const field = err.path?.[0];
+            if (field) {
+              fieldErrors[field] = err.message;
+            }
+          });
+          setServerErrors(fieldErrors);
+          setError('Please fix the errors below and try again.');
+        } else {
+          setError(responseData.error || 'Failed to create account');
+        }
+        return;
       }
 
       // Auto sign in after successful signup
@@ -137,13 +153,15 @@ export default function SignUpPage() {
                     {...register('firstName')}
                     placeholder="John"
                     className={`w-full pl-8 md:pl-11 pr-2 md:pr-4 py-2 md:py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base ${
-                      errors.firstName ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
+                      errors.firstName || serverErrors.firstName ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
                     }`}
                   />
                 </div>
-                {errors.firstName && (
+                {(errors.firstName || serverErrors.firstName) && (
                   <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
-                    <p className="text-[10px] md:text-xs text-red-700 font-medium">{errors.firstName.message}</p>
+                    <p className="text-[10px] md:text-xs text-red-700 font-medium">
+                      {errors.firstName?.message || serverErrors.firstName}
+                    </p>
                   </div>
                 )}
               </div>
@@ -157,12 +175,14 @@ export default function SignUpPage() {
                   {...register('lastName')}
                   placeholder="Doe"
                   className={`w-full px-2 md:px-4 py-2 md:py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base ${
-                    errors.lastName ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
+                    errors.lastName || serverErrors.lastName ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
                   }`}
                 />
-                {errors.lastName && (
+                {(errors.lastName || serverErrors.lastName) && (
                   <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
-                    <p className="text-[10px] md:text-xs text-red-700 font-medium">{errors.lastName.message}</p>
+                    <p className="text-[10px] md:text-xs text-red-700 font-medium">
+                      {errors.lastName?.message || serverErrors.lastName}
+                    </p>
                   </div>
                 )}
               </div>
@@ -180,16 +200,18 @@ export default function SignUpPage() {
                   placeholder="My Rental Business"
                   maxLength={25}
                   className={`w-full pl-8 md:pl-11 pr-2 md:pr-4 py-2 md:py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base ${
-                    errors.businessName ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
+                    errors.businessName || serverErrors.businessName ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
                   }`}
                 />
               </div>
               <p className="text-[10px] md:text-xs text-gray-500 mt-1">
                 {watch('businessName')?.length || 0}/25 characters
               </p>
-              {errors.businessName && (
+              {(errors.businessName || serverErrors.businessName) && (
                 <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
-                  <p className="text-[10px] md:text-xs text-red-700 font-medium">{errors.businessName.message}</p>
+                  <p className="text-[10px] md:text-xs text-red-700 font-medium">
+                    {errors.businessName?.message || serverErrors.businessName}
+                  </p>
                 </div>
               )}
             </div>
@@ -205,13 +227,15 @@ export default function SignUpPage() {
                   {...register('email')}
                   placeholder="you@example.com"
                   className={`w-full pl-8 md:pl-11 pr-2 md:pr-4 py-2 md:py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base ${
-                    errors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
+                    errors.email || serverErrors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
                   }`}
                 />
               </div>
-              {errors.email && (
+              {(errors.email || serverErrors.email) && (
                 <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
-                  <p className="text-[10px] md:text-xs text-red-700 font-medium">{errors.email.message}</p>
+                  <p className="text-[10px] md:text-xs text-red-700 font-medium">
+                    {errors.email?.message || serverErrors.email}
+                  </p>
                 </div>
               )}
             </div>
@@ -229,7 +253,7 @@ export default function SignUpPage() {
                   })}
                   placeholder="••••••••"
                   className={`w-full pl-8 md:pl-11 pr-2 md:pr-4 py-2 md:py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base ${
-                    errors.password ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
+                    errors.password || serverErrors.password ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
                   }`}
                 />
               </div>
@@ -267,11 +291,13 @@ export default function SignUpPage() {
               )}
 
               <p className="text-[10px] md:text-xs text-gray-500 mt-1">
-                {errors.password ? "At least 7 characters (letters, numbers, or special characters)" : "At least 7 characters"}
+                Must be at least 8 characters with uppercase, lowercase, and a number
               </p>
-              {errors.password && (
+              {(errors.password || serverErrors.password) && (
                 <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
-                  <p className="text-[10px] md:text-xs text-red-700 font-medium">{errors.password.message}</p>
+                  <p className="text-[10px] md:text-xs text-red-700 font-medium">
+                    {errors.password?.message || serverErrors.password}
+                  </p>
                 </div>
               )}
             </div>
@@ -287,13 +313,15 @@ export default function SignUpPage() {
                   {...register('confirmPassword')}
                   placeholder="••••••••"
                   className={`w-full pl-8 md:pl-11 pr-2 md:pr-4 py-2 md:py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base ${
-                    errors.confirmPassword ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
+                    errors.confirmPassword || serverErrors.confirmPassword ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
                   }`}
                 />
               </div>
-              {errors.confirmPassword && (
+              {(errors.confirmPassword || serverErrors.confirmPassword) && (
                 <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
-                  <p className="text-[10px] md:text-xs text-red-700 font-medium">{errors.confirmPassword.message}</p>
+                  <p className="text-[10px] md:text-xs text-red-700 font-medium">
+                    {errors.confirmPassword?.message || serverErrors.confirmPassword}
+                  </p>
                 </div>
               )}
             </div>
