@@ -53,10 +53,15 @@ export const addressValidation = z
   .or(z.literal(""))
   .transform((val) => (val ? sanitizeInput(val) : ""));
 
-// Simple password validation - just require 7+ characters (easy for non-tech users)
+// Password validation - match server requirements
 export const passwordValidation = z
   .string()
-  .min(7, "Password must be at least 7 characters");
+  .min(8, "Password must be at least 8 characters")
+  .max(100, "Password must be 100 characters or less")
+  .regex(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+    "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+  );
 
 // Sign-up form schema
 export const signUpFormSchema = z
