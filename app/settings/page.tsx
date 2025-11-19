@@ -694,6 +694,7 @@ export default function SettingsPage() {
         title="Delete Account"
         message="This will permanently delete your account and ALL associated data including items, customers, bookings, payments, and settings. This action cannot be undone!"
         itemCount={1}
+        itemCountMessage="Your entire account and all data will be permanently deleted!"
       />
     </div>
   );
