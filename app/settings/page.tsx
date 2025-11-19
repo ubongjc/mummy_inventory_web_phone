@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Settings as SettingsIcon, Save, Building2, DollarSign, Globe, Calendar, AlertTriangle, ArrowLeft, Home, Package, CalendarDays, Image as ImageIcon, User } from "lucide-react";
+import { Settings as SettingsIcon, Save, Building2, DollarSign, Globe, Calendar, AlertTriangle, ArrowLeft, Home, Package, CalendarDays, Image as ImageIcon, User, Trash2 } from "lucide-react";
 import { sanitizeInput, phoneRegex, emailRegex } from "@/app/lib/clientValidation";
+import DeleteConfirmModal from "../components/DeleteConfirmModal";
+import { signOut } from "next-auth/react";
 
 interface Settings {
   id: string;
@@ -99,6 +101,8 @@ export default function SettingsPage() {
     businessPhone: "",
     businessEmail: "",
   });
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -385,6 +389,28 @@ export default function SettingsPage() {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      const response = await fetch("/api/user/account", {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete account");
+      }
+
+      // Successfully deleted - sign out and redirect
+      await signOut({ callbackUrl: "/" });
+    } catch (error: any) {
+      console.error("Error deleting account:", error);
+      setMessage({ type: "error", text: `Failed to delete account: ${error.message}` });
+      setIsDeleting(false);
+      setIsDeleteModalOpen(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6 flex items-center justify-center">
@@ -624,6 +650,29 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* Danger Zone - Delete Account */}
+        <div className="bg-red-50 rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 mb-4 sm:mb-6 border-2 border-red-300">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
+            <h2 className="text-lg sm:text-xl font-bold text-red-900">Danger Zone</h2>
+          </div>
+
+          <div className="bg-white rounded-lg p-4 border border-red-200">
+            <h3 className="text-sm sm:text-base font-bold text-black mb-2">Delete Account</h3>
+            <p className="text-xs sm:text-sm text-gray-700 mb-3 sm:mb-4">
+              Once you delete your account, there is no going back. This will permanently delete your account and all associated data including items, customers, bookings, and settings.
+            </p>
+            <button
+              onClick={() => setIsDeleteModalOpen(true)}
+              disabled={isDeleting}
+              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
+            >
+              <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
+              {isDeleting ? "Deleting Account..." : "Delete My Account"}
+            </button>
+          </div>
+        </div>
+
         {/* Save Button */}
         <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border border-gray-200">
           <button
@@ -636,6 +685,17 @@ export default function SettingsPage() {
           </button>
         </div>
       </div>
+
+      {/* Delete Account Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteAccount}
+        title="Delete Account"
+        message="This will permanently delete your account and ALL associated data including items, customers, bookings, payments, and settings. This action cannot be undone!"
+        itemCount={1}
+        itemCountMessage="Your entire account and all data will be permanently deleted!"
+      />
     </div>
   );
 }
