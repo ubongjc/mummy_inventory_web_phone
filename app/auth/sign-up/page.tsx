@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { UserPlus, Mail, Lock, User, AlertCircle, CheckCircle, Home, Briefcase } from 'lucide-react';
@@ -17,6 +16,8 @@ export default function SignUpPage() {
   const [error, setError] = useState('');
   const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
   const [passwordStrength, setPasswordStrength] = useState({ score: 0, label: '', color: '' });
 
   const {
@@ -88,20 +89,9 @@ export default function SignUpPage() {
         return;
       }
 
-      // Auto sign in after successful signup
-      const signInResult = await signIn('credentials', {
-        email: data.email,
-        password: data.password,
-        redirect: false,
-      });
-
-      if (signInResult?.ok) {
-        router.push('/dashboard');
-        router.refresh();
-      } else {
-        // If auto sign-in fails, redirect to sign-in page
-        router.push('/auth/sign-in?message=Account created successfully. Please sign in.');
-      }
+      // Show success message and prompt to verify email
+      setUserEmail(data.email);
+      setSuccess(true);
     } catch (err) {
       const error = err as Error;
       setError(error.message || 'An unexpected error occurred');
@@ -133,13 +123,61 @@ export default function SignUpPage() {
 
         {/* Sign Up Form */}
         <div className="bg-white rounded-xl md:rounded-2xl shadow-xl p-4 md:p-8 border border-gray-200">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 md:space-y-5">
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-2 md:p-4 flex items-start gap-2 md:gap-3">
-                <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-xs md:text-sm text-red-700 font-medium">{error}</p>
+          {success ? (
+            <div className="text-center space-y-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 md:p-6 flex flex-col items-center gap-3">
+                <CheckCircle className="w-12 h-12 md:w-16 md:h-16 text-green-600" />
+                <div>
+                  <p className="text-base md:text-lg font-bold text-green-800 mb-2">Account Created!</p>
+                  <p className="text-xs md:text-sm text-green-700">
+                    We&apos;ve sent a verification email to:
+                  </p>
+                  <p className="text-sm md:text-base font-semibold text-green-900 mt-1">{userEmail}</p>
+                </div>
               </div>
-            )}
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 md:p-4">
+                <p className="text-xs md:text-sm text-blue-800 font-semibold mb-2">Next Steps:</p>
+                <ol className="text-xs md:text-sm text-blue-700 space-y-1.5 text-left list-decimal list-inside">
+                  <li>Check your email inbox (and spam folder)</li>
+                  <li>Click the verification link in the email</li>
+                  <li>Return here to sign in</li>
+                </ol>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 md:p-4">
+                <p className="text-xs md:text-sm text-yellow-800">
+                  <strong>Important:</strong> The verification link never expires, so you can verify your email at any time.
+                </p>
+              </div>
+
+              <Link
+                href="/auth/sign-in"
+                className="block w-full py-2 md:py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl text-center text-sm md:text-base"
+              >
+                Go to Sign In
+              </Link>
+
+              <div className="text-center">
+                <p className="text-xs md:text-sm text-gray-600">
+                  Didn&apos;t receive the email?{' '}
+                  <Link
+                    href="/auth/resend-verification"
+                    className="text-blue-600 hover:text-blue-700 font-bold"
+                  >
+                    Resend verification email
+                  </Link>
+                </p>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 md:space-y-5">
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-2 md:p-4 flex items-start gap-2 md:gap-3">
+                  <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs md:text-sm text-red-700 font-medium">{error}</p>
+                </div>
+              )}
 
             <div className="grid grid-cols-2 gap-2 md:gap-4">
               <div>
@@ -340,16 +378,19 @@ export default function SignUpPage() {
                 Free forever • No credit card required • Cancel anytime
               </p>
             </div>
-          </form>
+            </form>
+          )}
 
-          <div className="mt-4 md:mt-6 text-center">
-            <p className="text-gray-600 text-xs md:text-sm">
-              Already have an account?{' '}
-              <Link href="/auth/sign-in" className="text-blue-600 hover:text-blue-700 font-bold">
-                Sign in
-              </Link>
-            </p>
-          </div>
+          {!success && (
+            <div className="mt-4 md:mt-6 text-center">
+              <p className="text-gray-600 text-xs md:text-sm">
+                Already have an account?{' '}
+                <Link href="/auth/sign-in" className="text-blue-600 hover:text-blue-700 font-bold">
+                  Sign in
+                </Link>
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

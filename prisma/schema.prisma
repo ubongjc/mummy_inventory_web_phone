@@ -149,6 +149,7 @@ model User {
   subscription      Subscription?
   publicPage        PublicPage?
   passwordResets    PasswordReset[]
+  emailVerifications EmailVerification[]
 
   @@index([email])
 }
@@ -208,6 +209,19 @@ model PasswordReset {
   userId          String
   token           String   @unique @db.VarChar(100)
   expiresAt       DateTime
+  used            Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}
+
+model EmailVerification {
+  id              String   @id @default(cuid())
+  userId          String
+  token           String   @unique @db.VarChar(100)
   used            Boolean  @default(false)
   createdAt       DateTime @default(now())
 

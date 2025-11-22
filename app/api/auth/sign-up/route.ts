@@ -9,7 +9,9 @@ import {
   sanitizeEmail,
   secureLog,
 } from "@/app/lib/security";
+import { sendEmailVerification } from "@/app/lib/email";
 import { z } from "zod";
+import crypto from "crypto";
 
 const signUpSchema = z.object({
   email: z
@@ -93,6 +95,7 @@ export async function POST(request: NextRequest) {
         firstName,
         lastName,
         businessName,
+        emailVerified: false, // Explicitly set to false
         subscription: {
           create: {
             plan: "free",
@@ -111,10 +114,52 @@ export async function POST(request: NextRequest) {
 
     secureLog("[AUTH] New user created", { userId: user.id, email: user.email });
 
+    // Generate email verification token
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+
+    // Invalidate any existing unused verification tokens for this user
+    await prisma.emailVerification.updateMany({
+      where: {
+        userId: user.id,
+        used: false,
+      },
+      data: {
+        used: true,
+      },
+    });
+
+    // Create email verification token
+    await prisma.emailVerification.create({
+      data: {
+        userId: user.id,
+        token: verificationToken,
+        used: false,
+      },
+    });
+
+    // Send verification email
+    try {
+      await sendEmailVerification(user.email, verificationToken);
+      secureLog("[AUTH] Email verification sent", {
+        userId: user.id,
+        email: user.email,
+      });
+    } catch (emailError) {
+      console.error("[AUTH] Failed to send verification email:", emailError);
+      secureLog("[ERROR] Email verification failed", {
+        userId: user.id,
+        error: (emailError as Error).message,
+      });
+      // Still return success but log the error
+      // User can request a new verification email later
+    }
+
     return NextResponse.json(
       {
-        message: "Account created successfully",
+        message:
+          "Account created successfully. Please check your email to verify your account.",
         user,
+        emailSent: true,
       },
       { status: 201 }
     );
