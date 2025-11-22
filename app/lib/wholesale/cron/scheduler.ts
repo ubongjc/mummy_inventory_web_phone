@@ -9,16 +9,14 @@
  */
 
 import cron from "node-cron";
-import { ScraperOrchestrator } from "../scrapers/orchestrator";
-import { exportToJsonl, exportToCsv } from "../export";
+import { queueRefreshJob } from "../jobs/queue";
 import { prisma } from "@/app/lib/prisma";
 
 export class WholesaleRefreshScheduler {
   private jobs: cron.ScheduledTask[] = [];
-  private orchestrator: ScraperOrchestrator;
 
   constructor() {
-    this.orchestrator = new ScraperOrchestrator();
+    // No orchestrator needed - using job queue instead
   }
 
   /**
@@ -76,60 +74,26 @@ export class WholesaleRefreshScheduler {
       // Log start
       await this.logRefreshEvent(trigger, "started");
 
-      // Run scrapers
-      const result = await this.orchestrator.run({
+      // Queue the refresh job
+      const { jobId, runId } = await queueRefreshJob({
         sources: ["maps", "directory"],
         fullCrawl: false, // Incremental update
+        triggeredBy: `cron-${trigger}`,
       });
 
       console.log(
-        `[Scheduler] Scraping completed: ${result.totalRecordsFound} found, ${result.totalRecordsNew} new, ${result.totalRecordsUpdated} updated`
+        `[Scheduler] Scheduled refresh ${trigger} queued as job ${jobId} (run ${runId})`
       );
 
-      // Run deduplication
-      await this.orchestrator.runDeduplication();
-
-      // Export data
-      await this.exportData();
-
-      // Log completion
-      await this.logRefreshEvent(trigger, "completed", result);
-
-      // Send notification (optional)
-      await this.sendNotification(trigger, result);
-
-      console.log(`[Scheduler] Scheduled refresh ${trigger} completed successfully`);
+      // Log that job was queued
+      await this.logRefreshEvent(trigger, "completed", {
+        jobId,
+        runId,
+        status: "queued",
+      });
     } catch (error) {
       console.error(`[Scheduler] Error in scheduled refresh:`, error);
       await this.logRefreshEvent(trigger, "failed", null, String(error));
-    }
-  }
-
-  /**
-   * Export data to files
-   */
-  private async exportData(): Promise<void> {
-    try {
-      console.log("[Scheduler] Exporting data...");
-
-      // Get all approved suppliers
-      const suppliers = await prisma.wholesaleSupplier.findMany({
-        where: {
-          approvalStatus: "approved",
-          isBlacklisted: false,
-        },
-        orderBy: { confidence: "desc" },
-      });
-
-      // Export to JSONL
-      const jsonlPath = await exportToJsonl(suppliers);
-      console.log(`[Scheduler] Exported to JSONL: ${jsonlPath}`);
-
-      // Export to CSV
-      const csvPath = await exportToCsv(suppliers);
-      console.log(`[Scheduler] Exported to CSV: ${csvPath}`);
-    } catch (error) {
-      console.error("[Scheduler] Export error:", error);
     }
   }
 
@@ -161,20 +125,6 @@ export class WholesaleRefreshScheduler {
     } catch (err) {
       console.error("[Scheduler] Error logging refresh event:", err);
     }
-  }
-
-  /**
-   * Send notification (email/SMS)
-   */
-  private async sendNotification(trigger: string, result: any): Promise<void> {
-    // TODO: Implement email notification
-    // - Send summary email to admins
-    // - Include: total suppliers, new suppliers, updated suppliers, errors
-    // - Use existing email infrastructure (Resend, SendGrid, etc.)
-
-    console.log(
-      `[Scheduler] Notification: ${trigger} - ${result.totalRecordsNew} new, ${result.totalRecordsUpdated} updated`
-    );
   }
 
   /**

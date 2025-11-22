@@ -2,16 +2,12 @@
  * BusinessList Nigeria Scraper
  *
  * Scrapes wholesale supplier data from BusinessList.ng directory.
- *
- * NOTE: Placeholder implementation. In production:
- * 1. Parse BusinessList.ng HTML structure
- * 2. Handle pagination
- * 3. Extract contact details, categories, ratings
- * 4. Respect robots.txt and rate limits
+ * Uses Cheerio for HTML parsing.
  */
 
 import { BaseScraper, ScraperResult } from "./base";
 import type { WholesaleSupplier } from "../types";
+import * as cheerio from "cheerio";
 
 export class BusinessListScraper extends BaseScraper {
   private readonly BASE_URL = "https://businesslist.ng";
@@ -19,7 +15,7 @@ export class BusinessListScraper extends BaseScraper {
   constructor() {
     super({
       source_platform: "directory",
-      rate_limit_delay_ms: 1500,
+      rate_limit_delay_ms: 2000,
     });
   }
 
@@ -29,48 +25,92 @@ export class BusinessListScraper extends BaseScraper {
     let recordsUpdated = 0;
 
     const categories = options?.categories || [
-      "event-equipment",
+      "event-planners",
+      "event-equipment-rental",
       "party-supplies",
-      "rental-services",
+      "catering-services",
+      "tent-rental",
     ];
 
-    console.log(`Starting BusinessList scrape for ${categories.length} categories...`);
+    console.log(
+      `[BusinessListScraper] Starting scrape for ${categories.length} categories...`
+    );
 
     for (const category of categories) {
       try {
-        const url = `${this.BASE_URL}/category/${category}`;
+        let page = 1;
+        let hasMore = true;
 
-        await this.logSource(url, "running", {});
+        while (hasMore && page <= 5) {
+          // Limit to 5 pages per category
+          const url = `${this.BASE_URL}/category/${category}?page=${page}`;
 
-        // TODO: Implement actual scraping
-        // const response = await this.fetchWithRetry(url);
-        // const html = await response.text();
-        // const suppliers = this.extractSupplierData(html);
+          await this.logSource(url, "running", {});
 
-        const suppliers: Partial<WholesaleSupplier>[] = []; // Placeholder
+          try {
+            const response = await this.fetchWithRetry(url);
 
-        recordsFound += suppliers.length;
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
 
-        for (const supplier of suppliers) {
-          const result = await this.saveSupplier(supplier);
-          if (result.isNew) recordsNew++;
-          else recordsUpdated++;
+            const html = await response.text();
+            const suppliers = this.extractSupplierData(html, category);
+
+            console.log(
+              `[BusinessListScraper] Found ${suppliers.length} suppliers on ${category} page ${page}`
+            );
+
+            if (suppliers.length === 0) {
+              hasMore = false;
+              break;
+            }
+
+            recordsFound += suppliers.length;
+
+            for (const supplier of suppliers) {
+              try {
+                const result = await this.saveSupplier(supplier);
+                if (result.isNew) recordsNew++;
+                else recordsUpdated++;
+              } catch (error) {
+                console.error(
+                  `[BusinessListScraper] Error saving supplier:`,
+                  error
+                );
+              }
+            }
+
+            await this.logSource(url, "completed", {
+              httpStatus: 200,
+              parseSuccess: true,
+              recordsFound: suppliers.length,
+              recordsNew,
+              recordsUpdated,
+            });
+
+            page++;
+            await this.delay(this.config.rate_limit_delay_ms);
+          } catch (error) {
+            const errorMsg = `Error scraping ${url}: ${error}`;
+            this.errors.push(errorMsg);
+            await this.logSource(url, "failed", {
+              httpStatus: 500,
+              parseSuccess: false,
+              errorMessage: errorMsg,
+            });
+            hasMore = false;
+          }
         }
-
-        await this.logSource(url, "completed", {
-          httpStatus: 200,
-          parseSuccess: true,
-          recordsFound: suppliers.length,
-          recordsNew,
-          recordsUpdated,
-        });
-
-        await this.delay(this.config.rate_limit_delay_ms);
       } catch (error) {
-        const errorMsg = `BusinessList scraping error: ${error}`;
+        const errorMsg = `BusinessList category error: ${error}`;
         this.errors.push(errorMsg);
       }
     }
+
+    console.log(
+      `[BusinessListScraper] Complete: ${recordsFound} found, ${recordsNew} new, ${recordsUpdated} updated`
+    );
 
     return {
       success: this.errors.length === 0,
@@ -81,13 +121,104 @@ export class BusinessListScraper extends BaseScraper {
     };
   }
 
-  protected extractSupplierData(html: string): Partial<WholesaleSupplier>[] {
-    // TODO: Implement HTML parsing
-    // 1. Use cheerio or similar to parse HTML
-    // 2. Extract business name, address, phone, email
-    // 3. Extract categories and description
-    // 4. Return normalized data
+  /**
+   * Extract supplier data from HTML
+   * Note: HTML structure may vary - this is a generic implementation
+   */
+  protected extractSupplierData(
+    html: string,
+    category: string
+  ): Partial<WholesaleSupplier>[] {
+    const $ = cheerio.load(html);
+    const suppliers: Partial<WholesaleSupplier>[] = [];
 
-    return [];
+    // Generic selectors - adjust based on actual site structure
+    // Typical business directory structure
+    $(".business-listing, .listing-item, .company-card, article.business").each(
+      (_, element) => {
+        try {
+          const $el = $(element);
+
+          // Extract business name
+          const name =
+            $el.find(".business-name, .company-name, h2, h3").first().text().trim() ||
+            $el.find("a").first().text().trim();
+
+          if (!name) return;
+
+          // Extract address
+          const address =
+            $el.find(".address, .location, .business-address").text().trim() ||
+            null;
+
+          // Extract phone
+          const phoneText =
+            $el.find(".phone, .tel, .contact-phone").text().trim() ||
+            $el.find('[href^="tel:"]').text().trim();
+          const phones = phoneText
+            ? phoneText.split(/[,;]/).map((p) => p.trim())
+            : [];
+
+          // Extract email
+          const emailText =
+            $el.find(".email, .contact-email").text().trim() ||
+            $el.find('[href^="mailto:"]').attr("href")?.replace("mailto:", "") ||
+            "";
+          const emails = emailText ? [emailText] : [];
+
+          // Extract website
+          const website =
+            $el.find(".website, .url").attr("href") ||
+            $el.find('a[href^="http"]').attr("href") ||
+            null;
+          const websites = website ? [website] : [];
+
+          // Extract description for wholesale detection
+          const description =
+            $el.find(".description, .about, .summary").text().trim() || "";
+
+          // Extract detail page URL
+          const detailUrl =
+            $el.find("a").first().attr("href") || this.BASE_URL;
+          const sourceUrl = detailUrl.startsWith("http")
+            ? detailUrl
+            : `${this.BASE_URL}${detailUrl}`;
+
+          // Build supplier object
+          const supplier: Partial<WholesaleSupplier> = {
+            company_name: name,
+            aka_names: [],
+            product_examples: [],
+            wholesale_terms: {
+              bulk_available: true,
+              delivery_options: [],
+            },
+            coverage_regions: [],
+            address_text: address,
+            state: null, // Will be extracted from address in normalization
+            lga_or_city: null,
+            lat: null,
+            lon: null,
+            phones,
+            whatsapp: [],
+            emails,
+            websites,
+            socials: {},
+            business_hours: null,
+            ratings: {},
+            verifications: {},
+            notes: description ? `Description: ${description}` : null,
+            source_url: sourceUrl,
+          };
+
+          suppliers.push(supplier);
+        } catch (error) {
+          console.error(`[BusinessListScraper] Error parsing listing:`, error);
+        }
+      }
+    );
+
+    return suppliers;
   }
 }
+

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth";
 import { prisma } from "@/app/lib/prisma";
+import { queueRefreshJob } from "@/app/lib/wholesale/jobs/queue";
 
 /**
  * POST /api/wholesale/admin/refresh
@@ -40,38 +41,16 @@ export async function POST(request: NextRequest) {
       full_crawl = false,
     } = body;
 
-    // Generate unique run ID
-    const runId = `run_${new Date().toISOString().replace(/[:.]/g, "_")}`;
-
     // Default sources if not specified
-    const sourcesToCrawl = sources || [
-      "maps",
-      "directory",
-      "marketplace",
-      "social",
-    ];
+    const sourcesToCrawl = sources || ["maps", "directory"];
 
-    // Default states - all if not specified
-    const statesToCrawl = states || null;
-
-    // Create initial source logs for this run
-    const logPromises = sourcesToCrawl.map((source: string) =>
-      prisma.wholesaleSupplierSourceLog.create({
-        data: {
-          runId,
-          sourcePlatform: source,
-          sourceUrl: `${source}://pending`,
-          status: "pending",
-          recordsFound: 0,
-          recordsNew: 0,
-          recordsUpdated: 0,
-          httpStatus: null,
-          parseSuccess: false,
-        },
-      })
-    );
-
-    await Promise.all(logPromises);
+    // Queue the refresh job
+    const { jobId, runId } = await queueRefreshJob({
+      sources: sourcesToCrawl,
+      states: states || undefined,
+      fullCrawl: full_crawl,
+      triggeredBy: session.user.id,
+    });
 
     // Log the refresh request
     await prisma.activityLog.create({
@@ -83,18 +62,12 @@ export async function POST(request: NextRequest) {
         details: {
           manual_refresh,
           sources: sourcesToCrawl,
-          states: statesToCrawl,
+          states: states || "all",
           full_crawl,
+          jobId,
         },
       },
     });
-
-    // TODO: Trigger actual background job to run scrapers
-    // For now, we'll return a placeholder response
-    // In production, this would queue a background job using:
-    // - Bull/BullMQ for job queues
-    // - Or trigger a serverless function
-    // - Or use cron-like background task runner
 
     // Estimate duration based on sources and full_crawl
     const estimatedMinutes = full_crawl
@@ -103,13 +76,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       run_id: runId,
-      status: "started",
+      job_id: jobId,
+      status: "queued",
       estimated_duration_minutes: estimatedMinutes,
       sources_queued: sourcesToCrawl,
-      states_queued: statesToCrawl || "all",
+      states_queued: states || "all",
       progress_url: `/api/wholesale/admin/refresh/${runId}`,
-      message:
-        "Refresh job queued. Note: Background scraping is not yet implemented. This is a placeholder endpoint.",
+      message: "Refresh job queued successfully. Processing will begin shortly.",
     });
   } catch (error) {
     console.error("Error triggering refresh:", error);
