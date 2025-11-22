@@ -56,16 +56,9 @@ export default function PremiumPage() {
     },
     {
       icon: <BellRing className="w-5 h-5 md:w-8 md:h-8" />,
-      title: 'Customer Reminders',
+      title: 'Smart Notifications & Reminders',
       description:
-        'Send automated reminders to customers for upcoming rentals, returns, and outstanding payments',
-      color: 'from-cyan-500 to-blue-600',
-      status: 'coming-soon',
-    },
-    {
-      icon: <Bell className="w-5 h-5 md:w-8 md:h-8" />,
-      title: 'Automated Notifications',
-      description: 'Email and SMS alerts for new inquiries, overdue payments, low stock, and upcoming bookings',
+        'Automated email & SMS for customer reminders (upcoming rentals, returns, payments) and business alerts (new inquiries, overdue payments, low stock, bookings)',
       color: 'from-violet-500 to-purple-600',
       status: 'coming-soon',
     },
@@ -134,7 +127,7 @@ export default function PremiumPage() {
         'Events near you',
         'Custom analytics dashboard',
         'Online payments',
-        'Customer reminders & notifications',
+        'Smart notifications & reminders (Email + SMS)',
         'Public booking page',
         'Team collaboration (up to 5 members)',
         'Wholesale supplier connection',
@@ -275,28 +268,15 @@ export default function PremiumPage() {
               </div>
             </div>
 
-            {/* Premium Feature 5 - Customer Reminders */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg md:rounded-2xl border border-pink-200 md:border-2">
-              <div className="p-1.5 md:p-3 bg-pink-600 rounded-lg md:rounded-xl flex-shrink-0">
+            {/* Premium Feature 5 - Smart Notifications & Reminders */}
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-violet-50 to-purple-100 rounded-lg md:rounded-2xl border border-violet-200 md:border-2">
+              <div className="p-1.5 md:p-3 bg-gradient-to-br from-violet-600 to-purple-600 rounded-lg md:rounded-xl flex-shrink-0">
                 <BellRing className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Customer Reminders</h4>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Smart Notifications & Reminders</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
-                  Send automated reminders to customers for upcoming rentals, returns, and outstanding payments
-                </p>
-              </div>
-            </div>
-
-            {/* Premium Feature 6 - Automated Notifications */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg md:rounded-2xl border border-indigo-200 md:border-2">
-              <div className="p-1.5 md:p-3 bg-indigo-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <Bell className="w-3 h-3 md:w-6 md:h-6 text-white" />
-              </div>
-              <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Automated Notifications</h4>
-                <p className="text-[10px] md:text-base text-gray-600">
-                  Email and SMS alerts for new inquiries, overdue payments, low stock, and upcoming bookings
+                  Automated email & SMS for customer reminders (upcoming rentals, returns, payments) and business alerts (new inquiries, overdue payments, low stock, bookings)
                 </p>
               </div>
             </div>

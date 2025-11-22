@@ -40,8 +40,9 @@ model Customer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bookings  Booking[]
+  user            User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookings        Booking[]
+  notificationOptOut CustomerNotificationOptOut?
 
   @@unique([userId, email], name: "unique_user_customer_email")
   @@index([userId])
@@ -146,10 +147,12 @@ model User {
   settings          Settings?
 
   // Premium features
-  subscription      Subscription?
-  publicPage        PublicPage?
-  passwordResets    PasswordReset[]
-  emailVerifications EmailVerification[]
+  subscription           Subscription?
+  publicPage             PublicPage?
+  passwordResets         PasswordReset[]
+  emailVerifications     EmailVerification[]
+  notificationPreferences NotificationPreferences?
+  notificationLogs       NotificationLog[]
 
   @@index([email])
 }
@@ -280,4 +283,80 @@ model EventSourceLog {
 
   @@index([sourcePlatform])
   @@index([runAtUtc])
+}
+
+// Smart Notifications & Reminders - Premium Feature
+model NotificationPreferences {
+  id                          String   @id @default(cuid())
+  userId                      String   @unique
+
+  // Business alerts (email & SMS for owner)
+  newInquiryEmail             Boolean  @default(true)
+  newInquirySms               Boolean  @default(false)
+  overduePaymentEmail         Boolean  @default(true)
+  overduePaymentSms           Boolean  @default(false)
+  lowStockEmail               Boolean  @default(true)
+  lowStockSms                 Boolean  @default(false)
+  upcomingBookingEmail        Boolean  @default(true)
+  upcomingBookingSms          Boolean  @default(false)
+  bookingConfirmedEmail       Boolean  @default(true)
+  bookingConfirmedSms         Boolean  @default(false)
+
+  // Customer reminders (email & SMS sent to customers)
+  customerRentalReminderEmail Boolean  @default(true)
+  customerRentalReminderSms   Boolean  @default(false)
+  customerReturnReminderEmail Boolean  @default(true)
+  customerReturnReminderSms   Boolean  @default(false)
+  customerPaymentReminderEmail Boolean @default(true)
+  customerPaymentReminderSms  Boolean  @default(false)
+
+  // Timing preferences (in hours before event)
+  reminderHoursBefore         Int      @default(24) // hours before event to send reminder
+
+  // SMS settings (for Twilio/Africa's Talking etc.)
+  smsProviderPhone            String?  @db.VarChar(15) // Business SMS number
+
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+
+  user                        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// Customer opt-out tracking (CAN-SPAM compliance)
+model CustomerNotificationOptOut {
+  id          String   @id @default(cuid())
+  customerId  String
+  optOutEmail Boolean  @default(false) // opted out of all email notifications
+  optOutSms   Boolean  @default(false) // opted out of all SMS notifications
+  optOutDate  DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId])
+  @@index([customerId])
+}
+
+// Notification log for tracking sent notifications
+model NotificationLog {
+  id              String   @id @default(cuid())
+  userId          String
+  customerId      String?
+  bookingId       String?
+  notificationType String  @db.VarChar(50) // 'new_inquiry', 'overdue_payment', 'low_stock', 'rental_reminder', etc.
+  channel         String   @db.VarChar(10) // 'email' | 'sms'
+  recipient       String   @db.VarChar(254) // email or phone number
+  status          String   @db.VarChar(20) // 'sent' | 'failed' | 'bounced'
+  errorMessage    String?  @db.Text
+  sentAt          DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([customerId])
+  @@index([bookingId])
+  @@index([notificationType])
+  @@index([sentAt])
 }
