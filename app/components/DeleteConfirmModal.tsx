@@ -10,6 +10,7 @@ interface DeleteConfirmModalProps {
   title: string;
   message: string;
   itemCount: number;
+  itemCountMessage?: string; // Optional custom message to override the default itemCount display
 }
 
 export default function DeleteConfirmModal({
@@ -19,6 +20,7 @@ export default function DeleteConfirmModal({
   title,
   message,
   itemCount,
+  itemCountMessage,
 }: DeleteConfirmModalProps) {
   const [confirmText, setConfirmText] = useState("");
 
@@ -64,7 +66,7 @@ export default function DeleteConfirmModal({
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-black font-semibold mb-2">{message}</p>
               <p className="text-red-700 font-bold text-lg">
-                {itemCount} {itemCount === 1 ? "item" : "items"} will be permanently deleted!
+                {itemCountMessage || `${itemCount} ${itemCount === 1 ? "item" : "items"} will be permanently deleted!`}
               </p>
             </div>
 

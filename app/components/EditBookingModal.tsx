@@ -106,6 +106,26 @@ export default function EditBookingModal({
   const itemSelectRefs = useRef<{ [key: number]: HTMLSelectElement | null }>({});
   const previousItemsLength = useRef(bookingItems.length);
 
+  // Usage stats for plan limits
+  const [usageStats, setUsageStats] = useState<any | null>(null);
+
+  // Calculate max date based on plan type
+  const today = new Date();
+  const planType = usageStats?.planType || 'free';
+  const maxDate = planType === 'free'
+    ? (() => {
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+        // Calculate 2 months ahead
+        const maxYear = currentMonth + 2 >= 12 ? currentYear + 1 : currentYear;
+        const maxMonth = (currentMonth + 2) % 12;
+        // Last day of that month
+        return new Date(maxYear, maxMonth + 1, 0);
+      })()
+    : new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
+
+  const maxDateStr = maxDate.toISOString().split('T')[0];
+
   // Track initial values to detect changes
   const [initialValues, setInitialValues] = useState<{
     customerId: string;
@@ -132,6 +152,7 @@ export default function EditBookingModal({
     if (isOpen && booking) {
       fetchCustomers();
       fetchItems();
+      fetchUsageStats();
       // Clear error when modal opens
       setError("");
       // Populate form with booking data
@@ -287,6 +308,22 @@ export default function EditBookingModal({
       setItems(itemsWithAvailability);
     } catch (err) {
       console.error("Error fetching items:", err);
+    }
+  };
+
+  const fetchUsageStats = async () => {
+    try {
+      const response = await fetch('/api/user/usage', {
+        cache: 'no-store',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUsageStats(data);
+      } else {
+        console.error('Failed to fetch usage stats:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching usage stats:', error);
     }
   };
 
@@ -477,7 +514,8 @@ export default function EditBookingModal({
           );
         }
 
-        throw new Error(errorData.error || "Failed to update booking");
+        // Show detailed message for plan limit errors, otherwise show generic error
+        throw new Error(errorData.details || errorData.error || "Failed to update booking");
       }
 
       // Trigger data refresh
@@ -552,6 +590,7 @@ export default function EditBookingModal({
                   value={startDate}
                   onChange={(date) => setStartDate(date)}
                   label="Start Date:"
+                  maxDate={maxDateStr}
                   required
                   className="text-sm"
                 />
@@ -562,6 +601,7 @@ export default function EditBookingModal({
                   onChange={(date) => setEndDate(date)}
                   label="Return Date:"
                   minDate={startDate}
+                  maxDate={maxDateStr}
                   required
                   className="text-sm"
                 />

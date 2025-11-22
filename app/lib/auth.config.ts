@@ -38,6 +38,13 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid email or password");
         }
 
+        // Check if email is verified
+        if (!user.emailVerified) {
+          throw new Error(
+            "Please verify your email address before signing in. Check your inbox for the verification link."
+          );
+        }
+
         // Check if user has active premium subscription
         const isPremium = user.subscription?.status
           ? ["active", "trialing"].includes(user.subscription.status)

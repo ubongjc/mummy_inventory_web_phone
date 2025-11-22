@@ -20,9 +20,16 @@ export async function GET() {
 
     if (!settings) {
       // Create default settings for this user
+      // Copy businessName from User if it exists
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { businessName: true }
+      });
+
       settings = await prisma.settings.create({
         data: {
-          userId: session.user.id
+          userId: session.user.id,
+          businessName: user?.businessName || null
         },
       });
     }
