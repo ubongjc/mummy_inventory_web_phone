@@ -39,7 +39,7 @@ export async function sendEmail({ to, subject, html, text }: SendEmailOptions) {
  * Send email verification email
  */
 export async function sendEmailVerification(email: string, verificationToken: string) {
-  const verificationUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/verify-email?token=${verificationToken}`;
+  const verificationUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/auth/verify-email?token=${verificationToken}`;
 
   const html = `
     <!DOCTYPE html>
