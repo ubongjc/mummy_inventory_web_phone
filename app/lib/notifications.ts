@@ -115,8 +115,9 @@ export class NotificationService {
 
   /**
    * Send email with professional templates
+   * Public method for sending generic emails (e.g., support requests)
    */
-  private static async sendEmail(
+  static async sendEmail(
     to: string,
     subject: string,
     text: string,
