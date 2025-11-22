@@ -161,6 +161,38 @@ export async function POST(request: NextRequest) {
     const startDate = toUTCMidnight(validated.startDate);
     const endDate = toUTCMidnight(validated.endDate);
 
+    // Check if free user is trying to book more than 2 calendar months in the future
+    const userWithSubscription = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: { subscription: true }
+    });
+
+    const planType = userWithSubscription?.subscription?.plan || 'free';
+
+    if (planType === 'free') {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+
+      // Calculate the last day of 2 months from now
+      // If current month is November (10), max month is January (0 of next year)
+      const maxYear = currentMonth + 2 >= 12 ? currentYear + 1 : currentYear;
+      const maxMonth = (currentMonth + 2) % 12;
+      const maxAllowedDate = new Date(maxYear, maxMonth + 1, 0, 23, 59, 59, 999); // Last day of the max month
+
+      if (endDate > maxAllowedDate) {
+        const maxDateStr = maxAllowedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        return NextResponse.json(
+          {
+            error: "Booking date exceeds free plan limit",
+            details: `Free users can only book up to 2 months in advance (through ${maxDateStr}). Upgrade to Premium for unlimited booking dates.`,
+            maxDate: maxAllowedDate.toISOString().split('T')[0],
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     // Check if user has reached their active booking limit (only for new CONFIRMED/OUT bookings)
     const bookingStatus = validated.status || "CONFIRMED";
     if (bookingStatus === "CONFIRMED" || bookingStatus === "OUT") {

@@ -24,6 +24,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
+import { useInactivityTimeout } from '../hooks/useInactivityTimeout';
 
 interface Item {
   id: string;
@@ -75,6 +76,9 @@ export default function Home() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [usageStats, setUsageStats] = useState<any | null>(null);
+
+  // Enable 5-minute inactivity timeout
+  useInactivityTimeout(5);
 
   // Fetch items, user profile, and settings on mount
   useEffect(() => {
@@ -676,6 +680,7 @@ export default function Home() {
             onDateClick={handleDateClick}
             selectedItemIds={selectedItemIds}
             onDateRangeChange={(start, end) => setCalendarDateRange({ start, end })}
+            userPlan={usageStats?.planType || 'free'}
           />
         </div>
       </main>

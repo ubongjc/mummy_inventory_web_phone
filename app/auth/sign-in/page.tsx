@@ -103,9 +103,24 @@ export default function SignInPage() {
         <div className="bg-white rounded-xl md:rounded-2xl shadow-xl p-4 md:p-8 border border-gray-200">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-700 font-medium">{error}</p>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm text-red-700 font-medium">{error}</p>
+                    {error.toLowerCase().includes('verify your email') && (
+                      <p className="text-sm text-red-600 mt-2">
+                        Didn&apos;t receive the email?{' '}
+                        <Link
+                          href="/auth/resend-verification"
+                          className="font-bold underline hover:text-red-700"
+                        >
+                          Resend verification email
+                        </Link>
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 

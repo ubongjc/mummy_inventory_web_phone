@@ -10,12 +10,14 @@ interface CalendarProps {
   onDateClick: (date: Date) => void;
   selectedItemIds: string[];
   onDateRangeChange?: (start: string, end: string) => void;
+  userPlan?: string; // 'free' or 'premium'
 }
 
 export default function Calendar({
   onDateClick,
   selectedItemIds,
   onDateRangeChange,
+  userPlan = 'free',
 }: CalendarProps) {
   const [events, setEvents] = useState<any[]>([]);
   const [isMobile, setIsMobile] = useState(false);
@@ -23,6 +25,27 @@ export default function Calendar({
   const lastFetchRef = useRef('');
   const calendarRef = useRef<any>(null);
   const hasLoadedOnce = useRef(false);
+
+  // Calculate valid date range for free users (3 months before, 2 months after current month)
+  const getValidDateRange = () => {
+    if (userPlan !== 'free') {
+      return { minDate: null, maxDate: null };
+    }
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    // 3 months before current month
+    const minDate = new Date(currentYear, currentMonth - 3, 1);
+
+    // 2 months after current month (end of that month)
+    const maxDate = new Date(currentYear, currentMonth + 3, 0); // Day 0 = last day of previous month
+
+    return { minDate, maxDate };
+  };
+
+  const { minDate, maxDate } = getValidDateRange();
 
   // Detect mobile screen size
   useEffect(() => {
@@ -218,6 +241,21 @@ export default function Calendar({
               });
             }}
             datesSet={(dateInfo) => {
+              // Check if the new date range is within the valid range for free users
+              if (userPlan === 'free' && minDate && maxDate) {
+                const viewStart = new Date(dateInfo.view.currentStart);
+
+                // If trying to navigate before minDate or after maxDate, prevent it
+                if (viewStart < minDate || viewStart > maxDate) {
+                  // Reset to current month
+                  const calendarApi = calendarRef.current?.getApi();
+                  if (calendarApi) {
+                    calendarApi.gotoDate(new Date());
+                  }
+                  return;
+                }
+              }
+
               // Refetch events when the view changes (month/week/day navigation)
               fetchEvents(dateInfo.start, dateInfo.end);
 
@@ -333,6 +371,15 @@ export default function Calendar({
             weekends={true}
             hiddenDays={[]}
             contentHeight="auto"
+            // Restrict date range for free users
+            validRange={
+              userPlan === 'free' && minDate && maxDate
+                ? {
+                    start: minDate.toISOString().split('T')[0],
+                    end: new Date(maxDate.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Add 1 day to make it inclusive
+                  }
+                : undefined
+            }
           />
       </div>
     </div>

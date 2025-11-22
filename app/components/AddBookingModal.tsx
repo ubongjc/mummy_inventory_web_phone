@@ -101,10 +101,24 @@ export default function AddBookingModal({
   // Usage stats for plan limits
   const [usageStats, setUsageStats] = useState<any | null>(null);
 
-  // Calculate max date (1 year from today)
+  // Calculate max date based on plan type
   const today = new Date();
-  const maxDate = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
   const todayStr = today.toISOString().split('T')[0];
+
+  // For free users: 2 calendar months from now, for premium: 1 year
+  const planType = usageStats?.planType || 'free';
+  const maxDate = planType === 'free'
+    ? (() => {
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+        // Calculate 2 months ahead
+        const maxYear = currentMonth + 2 >= 12 ? currentYear + 1 : currentYear;
+        const maxMonth = (currentMonth + 2) % 12;
+        // Last day of that month
+        return new Date(maxYear, maxMonth + 1, 0);
+      })()
+    : new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
+
   const maxDateStr = maxDate.toISOString().split('T')[0];
 
   // Format date without timezone conversion
@@ -172,14 +186,18 @@ export default function AddBookingModal({
       if (endDate < startDate) {
         setDateError("Return date cannot be before start date");
       } else if (startDate > maxDateStr || endDate > maxDateStr) {
-        setDateError("Dates cannot be more than 1 year ahead");
+        const maxDateFormatted = maxDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        const limitMessage = planType === 'free'
+          ? `Free users can only book up to 2 months in advance (through ${maxDateFormatted}). Upgrade to Premium for unlimited booking dates.`
+          : "Dates cannot be more than 1 year ahead";
+        setDateError(limitMessage);
       } else {
         setDateError("");
       }
     } else {
       setDateError("");
     }
-  }, [startDate, endDate, maxDateStr]);
+  }, [startDate, endDate, maxDateStr, planType, maxDate]);
 
   // Handle Escape key to close modal
   useEffect(() => {
@@ -795,8 +813,9 @@ export default function AddBookingModal({
           );
         }
 
+        // Show detailed message for plan limit errors, otherwise show generic error
         throw new Error(
-          errorData.error || "Failed to create booking"
+          errorData.details || errorData.error || "Failed to create booking"
         );
       }
 
