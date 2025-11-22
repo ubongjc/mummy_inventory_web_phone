@@ -437,3 +437,126 @@ model ActivityLog {
   @@index([entity])
   @@index([createdAt])
 }
+// Wholesale Supplier Discovery - Premium Feature
+// Helps rental businesses find wholesale suppliers for event equipment
+
+model WholesaleSupplier {
+  id                    String   @id @default(cuid())
+  supplierId            String   @unique @db.VarChar(64) // stable hash of (company_name + primary_phone + state)
+
+  // Basic Info
+  companyName           String   @db.VarChar(200)
+  akaNames              Json?    // Array of alternative names
+
+  // Categories & Products
+  categories            Json     // Array: seating, tables, tents, flooring_grass, linens, decor, lighting, sound, staging_truss, catering, power_generators, mobile_toilet, bridal_wear
+  productExamples       Json?    // Array of specific product names
+
+  // Wholesale Terms
+  wholesaleTerms        Json?    // {bulk_available, moq_units, price_range_hint, lead_time_days, delivery_options[], returns_warranty}
+
+  // Location
+  coverageRegions       Json?    // Array: Nigeria-wide, South-West, South-East, etc.
+  addressText           String?  @db.VarChar(500)
+  state                 String?  @db.VarChar(50) // Normalized to 36 states + FCT
+  lgaOrCity             String?  @db.VarChar(100)
+  lat                   Decimal? @db.Decimal(10, 7)
+  lon                   Decimal? @db.Decimal(10, 7)
+
+  // Contact Info
+  phones                Json?    // Array of E.164 formatted phones
+  whatsapp              Json?    // Array of WhatsApp numbers
+  emails                Json?    // Array of email addresses
+  websites              Json?    // Array of website URLs
+  socials               Json?    // {instagram, facebook, tiktok, others[]}
+  businessHours         String?  @db.VarChar(200)
+
+  // Ratings & Reviews
+  ratings               Json?    // {google: {stars, count}, facebook: {stars, count}}
+
+  // Verification
+  verifications         Json?    // {explicit_wholesale_language: bool, evidence_snippets[], cac_number}
+  confidence            Decimal  @default(0.5) @db.Decimal(3, 2) // 0.0-1.0
+
+  // Admin & Source
+  notes                 String?  @db.Text
+  sourceUrl             String   @db.Text
+  sourcePlatform        String   @db.VarChar(100) // maps | directory | marketplace | social | official_site
+  extractedAt           DateTime @default(now())
+  lastSeenAt            DateTime @default(now())
+
+  // Admin Status
+  approvalStatus        String   @default("pending") @db.VarChar(20) // pending | approved | rejected
+  isBlacklisted         Boolean  @default(false)
+  blacklistReason       String?  @db.VarChar(500)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relations
+  approvals             WholesaleSupplierApproval[]
+
+  @@index([supplierId])
+  @@index([state])
+  @@index([approvalStatus])
+  @@index([isBlacklisted])
+  @@index([confidence])
+  @@index([lastSeenAt])
+  @@index([createdAt])
+}
+
+model WholesaleSupplierSourceLog {
+  id                    String   @id @default(cuid())
+  runId                 String   @db.VarChar(64) // Unique ID for each crawl run
+  runAtUtc              DateTime @default(now())
+  sourcePlatform        String   @db.VarChar(100)
+  sourceUrl             String   @db.Text
+  httpStatus            Int?
+  parseSuccess          Boolean  @default(false)
+  recordsFound          Int      @default(0)
+  recordsNew            Int      @default(0)
+  recordsUpdated        Int      @default(0)
+  recordsMerged         Int      @default(0)
+  errorMessage          String?  @db.Text
+  durationMs            Int?
+  manual                Boolean  @default(false) // true if triggered manually
+
+  createdAt             DateTime @default(now())
+
+  @@index([runId])
+  @@index([sourcePlatform])
+  @@index([runAtUtc])
+  @@index([parseSuccess])
+}
+
+model WholesaleSupplierApproval {
+  id                    String   @id @default(cuid())
+  supplierId            String
+  reviewedBy            String?  // Admin user ID
+  reviewedAt            DateTime?
+  action                String   @db.VarChar(20) // approved | rejected | merged
+  notes                 String?  @db.Text
+  mergedIntoSupplierId  String?  @db.VarChar(64) // If duplicate was merged
+
+  createdAt             DateTime @default(now())
+
+  supplier              WholesaleSupplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@index([supplierId])
+  @@index([reviewedBy])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model WholesaleSupplierBlacklist {
+  id                    String   @id @default(cuid())
+  type                  String   @db.VarChar(20) // domain | phone | email | instagram_handle | facebook_page
+  value                 String   @db.VarChar(500)
+  reason                String   @db.Text
+  addedBy               String?  // Admin user ID
+  addedAt               DateTime @default(now())
+
+  @@unique([type, value])
+  @@index([type])
+  @@index([addedAt])
+}
