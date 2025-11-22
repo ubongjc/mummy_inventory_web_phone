@@ -105,7 +105,7 @@ export async function POST(
     }
 
     const body = await req.json();
-    const { name, phone, email, message, startDate, endDate } = body;
+    const { name, phone, email, message, startDate, endDate, selectedItems } = body;
 
     // Validation
     if (!name || name.trim().length < 2 || name.length > 100) {
@@ -154,7 +154,23 @@ export async function POST(
       return NextResponse.json({ error: 'Message is too long (max 1000 characters)' }, { status: 400 });
     }
 
-    // Create inquiry
+    // Validate selected items if provided
+    let totalAmount = 0;
+    if (selectedItems && Array.isArray(selectedItems) && selectedItems.length > 0) {
+      // Calculate total amount
+      const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+      selectedItems.forEach((item: any) => {
+        if (item.price && item.quantity) {
+          totalAmount += Number(item.price) * item.quantity * days;
+        }
+      });
+    }
+
+    // Calculate platform fee (1.5% of total)
+    const platformFee = totalAmount * 0.015;
+
+    // Create inquiry/rental request
     const inquiry = await prisma.publicInquiry.create({
       data: {
         publicPageId: publicPage.id,
@@ -164,7 +180,10 @@ export async function POST(
         message: message?.trim() || null,
         startDate: start,
         endDate: end,
-        status: 'new',
+        selectedItems: selectedItems || null,
+        totalAmount: totalAmount > 0 ? totalAmount : null,
+        platformFee: platformFee > 0 ? platformFee : null,
+        status: 'pending',
       },
     });
 

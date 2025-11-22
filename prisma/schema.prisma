@@ -17,6 +17,7 @@ model Item {
   totalQuantity  Int       // authoritative stock count (0-100000)
   price          Decimal?  @db.Decimal(12, 2) // default booking price per unit
   notes          String?   @db.VarChar(50)
+  imageUrl       String?   @db.VarChar(500) // Cloudinary URL for item image
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
@@ -54,7 +55,7 @@ model Booking {
   customerId      String
   startDate       DateTime      // store date at 00:00Z
   endDate         DateTime      // inclusive range
-  status          String        @default("CONFIRMED") @db.VarChar(20) // CONFIRMED, OUT, RETURNED, CANCELLED
+  status          String        @default("CONFIRMED") @db.VarChar(30) // CONFIRMED, CONFIRMED_WITHOUT_PAYMENT, OUT, RETURNED, CANCELLED
   reference       String?       @db.VarChar(12) // human-friendly code (e.g., BKG-000123)
   notes           String?       @db.VarChar(50)
   color           String?       @db.VarChar(7) // hex color for calendar display (e.g., #3b82f6)
@@ -183,6 +184,8 @@ model PublicPage {
   emailPublic     String?  @db.VarChar(254)
   itemsJson       Json     // Array of {itemId, displayName}
   isActive        Boolean  @default(true)
+  contactMethods  Json?    // Array of contact methods: ['app', 'email', 'sms', 'whatsapp', 'social']
+  customMessage   String?  @db.Text // Custom message/instructions for customers
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -201,13 +204,22 @@ model PublicInquiry {
   message         String?  @db.Text
   startDate       DateTime
   endDate         DateTime
-  status          String   @default("new") @db.VarChar(20) // 'new' | 'contacted' | 'converted' | 'archived'
+  selectedItems   Json?    // Array of {itemId, quantity, name, price}
+  status          String   @default("pending") @db.VarChar(30) // 'pending' | 'confirmed_without_payment' | 'confirmed' | 'cancelled'
+  denialReason    String?  @db.Text // Optional reason when status is 'cancelled'
+  paymentLinkUrl  String?  @db.VarChar(500) // Payment link sent to customer
+  totalAmount     Decimal? @db.Decimal(12, 2) // Total rental amount
+  platformFee     Decimal? @db.Decimal(12, 2) // 1.5% platform fee
   createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   page            PublicPage @relation(fields: [publicPageId], references: [id], onDelete: Cascade)
 
   @@index([publicPageId])
   @@index([createdAt])
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
 }
 
 model PasswordReset {
