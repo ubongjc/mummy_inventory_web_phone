@@ -200,51 +200,78 @@ export default function PremiumPage() {
               </div>
             </div>
 
-            {/* Premium Feature 2 - Events Near You */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg md:rounded-2xl border-2 border-green-400 md:border-4 relative overflow-hidden">
+            {/* Premium Feature 2 - Events Near You - LIVE */}
+            <div className="flex flex-col gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg md:rounded-2xl border-2 border-green-400 md:border-4 relative overflow-hidden">
               <div className="absolute top-0 right-0 bg-green-500 text-white text-[8px] md:text-xs font-bold px-2 py-0.5 md:px-3 md:py-1 rounded-bl-lg">
                 LIVE ✓
               </div>
-              <div className="p-1.5 md:p-3 bg-purple-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <MapPin className="w-3 h-3 md:w-6 md:h-6 text-white" />
-              </div>
-              <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Events Near You</h4>
-                <p className="text-[10px] md:text-base text-gray-600">
-                  Get notified about local events like weddings, festivals, and conferences that could need your rentals
-                </p>
+              <div className="flex items-start gap-2 md:gap-4">
+                <div className="p-1.5 md:p-3 bg-purple-600 rounded-lg md:rounded-xl flex-shrink-0">
+                  <MapPin className="w-3 h-3 md:w-6 md:h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Events Near You</h4>
+                  <p className="text-[10px] md:text-base text-gray-600 mb-2">
+                    Get notified about local events like weddings, festivals, and conferences that could need your rentals
+                  </p>
+                  <Link
+                    href="/events"
+                    className="inline-flex items-center gap-1 px-3 py-1 md:px-4 md:py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-[10px] md:text-sm transition-all shadow-md"
+                  >
+                    Go to Events ⭐
+                    <ArrowLeft className="w-3 h-3 md:w-4 md:h-4 rotate-180" />
+                  </Link>
+                </div>
               </div>
             </div>
 
-            {/* Premium Feature 3 - Custom Analytics */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-lg md:rounded-2xl border-2 border-green-400 md:border-4 relative overflow-hidden">
+            {/* Premium Feature 3 - Custom Analytics - LIVE */}
+            <div className="flex flex-col gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-lg md:rounded-2xl border-2 border-green-400 md:border-4 relative overflow-hidden">
               <div className="absolute top-0 right-0 bg-green-500 text-white text-[8px] md:text-xs font-bold px-2 py-0.5 md:px-3 md:py-1 rounded-bl-lg">
                 LIVE ✓
               </div>
-              <div className="p-1.5 md:p-3 bg-green-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <BarChart3 className="w-3 h-3 md:w-6 md:h-6 text-white" />
-              </div>
-              <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Custom Analytics</h4>
-                <p className="text-[10px] md:text-base text-gray-600">
-                  Track utilization rates, revenue trends, conversion rates, and identify your most profitable items
-                </p>
+              <div className="flex items-start gap-2 md:gap-4">
+                <div className="p-1.5 md:p-3 bg-green-600 rounded-lg md:rounded-xl flex-shrink-0">
+                  <BarChart3 className="w-3 h-3 md:w-6 md:h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Custom Analytics</h4>
+                  <p className="text-[10px] md:text-base text-gray-600 mb-2">
+                    Track utilization rates, revenue trends, conversion rates, and identify your most profitable items
+                  </p>
+                  <Link
+                    href="/analytics"
+                    className="inline-flex items-center gap-1 px-3 py-1 md:px-4 md:py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold text-[10px] md:text-sm transition-all shadow-md"
+                  >
+                    Go to Analytics ⭐
+                    <ArrowLeft className="w-3 h-3 md:w-4 md:h-4 rotate-180" />
+                  </Link>
+                </div>
               </div>
             </div>
 
-            {/* Premium Feature 4 - Online Payments */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg md:rounded-2xl border-2 border-green-400 md:border-4 relative overflow-hidden">
+            {/* Premium Feature 4 - Online Payments - LIVE */}
+            <div className="flex flex-col gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg md:rounded-2xl border-2 border-green-400 md:border-4 relative overflow-hidden">
               <div className="absolute top-0 right-0 bg-green-500 text-white text-[8px] md:text-xs font-bold px-2 py-0.5 md:px-3 md:py-1 rounded-bl-lg">
                 LIVE ✓
               </div>
-              <div className="p-1.5 md:p-3 bg-orange-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <CreditCard className="w-3 h-3 md:w-6 md:h-6 text-white" />
-              </div>
-              <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Online Payments</h4>
-                <p className="text-[10px] md:text-base text-gray-600">
-                  Let customers pay securely with Stripe or Paystack. Automatic payment tracking, receipts, and collection analytics
-                </p>
+              <div className="flex items-start gap-2 md:gap-4">
+                <div className="p-1.5 md:p-3 bg-orange-600 rounded-lg md:rounded-xl flex-shrink-0">
+                  <CreditCard className="w-3 h-3 md:w-6 md:h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Online Payments</h4>
+                  <p className="text-[10px] md:text-base text-gray-600 mb-2">
+                    Let customers pay securely with Stripe or Paystack. Automatic payment tracking, receipts, and collection analytics
+                  </p>
+                  <Link
+                    href="/bookings"
+                    className="inline-flex items-center gap-1 px-3 py-1 md:px-4 md:py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold text-[10px] md:text-sm transition-all shadow-md"
+                  >
+                    Go to Bookings ⭐
+                    <ArrowLeft className="w-3 h-3 md:w-4 md:h-4 rotate-180" />
+                  </Link>
+                </div>
               </div>
             </div>
 
