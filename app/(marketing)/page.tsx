@@ -42,9 +42,11 @@ export default function HomePage() {
     name: '',
     email: '',
     message: '',
+    website: '', // Honeypot field
   });
   const [contactStatus, setContactStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [contactErrorMessage, setContactErrorMessage] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -56,30 +58,87 @@ export default function HomePage() {
   const handleContactFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
+    const { name, value } = e.target;
     setContactFormData({
       ...contactFormData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+    // Clear error for this field when user starts typing
+    if (fieldErrors[name]) {
+      setFieldErrors({
+        ...fieldErrors,
+        [name]: '',
+      });
+    }
+  };
+
+  const validateContactForm = () => {
+    const errors: {[key: string]: string} = {};
+
+    // Name validation
+    if (!contactFormData.name.trim()) {
+      errors.name = 'Name is required';
+    } else if (contactFormData.name.length < 2) {
+      errors.name = 'Name must be at least 2 characters';
+    } else if (contactFormData.name.length > 100) {
+      errors.name = 'Name must be less than 100 characters';
+    } else if (!/^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/.test(contactFormData.name)) {
+      errors.name = 'Name can only contain letters, spaces, hyphens, and apostrophes';
+    }
+
+    // Email validation
+    if (!contactFormData.email.trim()) {
+      errors.email = 'Email is required';
+    } else if (contactFormData.email.length > 254) {
+      errors.email = 'Email must be less than 254 characters';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactFormData.email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+
+    // Message validation
+    if (!contactFormData.message.trim()) {
+      errors.message = 'Message is required';
+    } else if (contactFormData.message.length < 10) {
+      errors.message = 'Message must be at least 10 characters';
+    } else if (contactFormData.message.length > 2000) {
+      errors.message = 'Message must be less than 2000 characters';
+    }
+
+    return errors;
   };
 
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate form
+    const errors = validateContactForm();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
     setContactStatus('loading');
     setContactErrorMessage('');
+    setFieldErrors({});
 
     try {
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...contactFormData,
-          subject: 'general',
+          name: contactFormData.name.trim(),
+          email: contactFormData.email.trim(),
+          message: contactFormData.message.trim(),
+          subject: 'General Inquiry',
           phone: '',
+          website: contactFormData.website, // Honeypot
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to send message');
+        throw new Error(data.error || 'Failed to send message');
       }
 
       setContactStatus('success');
@@ -87,14 +146,18 @@ export default function HomePage() {
         name: '',
         email: '',
         message: '',
+        website: '',
       });
 
-      // Reset success message after 5 seconds
-      setTimeout(() => setContactStatus('idle'), 5000);
-    } catch (_error) {
+      // Reset success message after 8 seconds
+      setTimeout(() => setContactStatus('idle'), 8000);
+    } catch (error) {
       setContactStatus('error');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send message';
       setContactErrorMessage(
-        'Failed to send message. Please try emailing us directly at support@verysimpleinventory.com'
+        errorMessage.includes('rate limit')
+          ? errorMessage
+          : 'Failed to send message. Please try again or email us directly at support@verysimpleinventory.com'
       );
     }
   };
@@ -968,6 +1031,18 @@ export default function HomePage() {
             )}
 
             <form onSubmit={handleContactSubmit} className="space-y-4">
+              {/* Honeypot field - hidden from users, catches bots */}
+              <input
+                type="text"
+                name="website"
+                value={contactFormData.website}
+                onChange={handleContactFormChange}
+                style={{ position: 'absolute', left: '-9999px', opacity: 0, pointerEvents: 'none' }}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+              />
+
               <div>
                 <label className="block text-sm font-bold text-gray-900 mb-2">
                   Your Name <span className="text-red-500">*</span>
@@ -977,10 +1052,17 @@ export default function HomePage() {
                   name="name"
                   value={contactFormData.name}
                   onChange={handleContactFormChange}
-                  required
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 font-medium transition-all bg-white"
+                  maxLength={100}
+                  className={`w-full px-4 py-3 border-2 ${
+                    fieldErrors.name ? 'border-red-500' : 'border-gray-300'
+                  } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 font-medium transition-all bg-white`}
                   placeholder="John Doe"
+                  disabled={contactStatus === 'loading'}
                 />
+                {fieldErrors.name && (
+                  <p className="text-red-600 text-xs mt-1 font-semibold">{fieldErrors.name}</p>
+                )}
+                <p className="text-gray-500 text-xs mt-1">{contactFormData.name.length}/100</p>
               </div>
 
               <div>
@@ -992,10 +1074,17 @@ export default function HomePage() {
                   name="email"
                   value={contactFormData.email}
                   onChange={handleContactFormChange}
-                  required
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 font-medium transition-all bg-white"
+                  maxLength={254}
+                  className={`w-full px-4 py-3 border-2 ${
+                    fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                  } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 font-medium transition-all bg-white`}
                   placeholder="john@example.com"
+                  disabled={contactStatus === 'loading'}
                 />
+                {fieldErrors.email && (
+                  <p className="text-red-600 text-xs mt-1 font-semibold">{fieldErrors.email}</p>
+                )}
+                <p className="text-gray-500 text-xs mt-1">{contactFormData.email.length}/254</p>
               </div>
 
               <div>
@@ -1006,11 +1095,23 @@ export default function HomePage() {
                   name="message"
                   value={contactFormData.message}
                   onChange={handleContactFormChange}
-                  required
+                  maxLength={2000}
                   rows={5}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 font-medium transition-all resize-none bg-white"
+                  className={`w-full px-4 py-3 border-2 ${
+                    fieldErrors.message ? 'border-red-500' : 'border-gray-300'
+                  } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 font-medium transition-all resize-none bg-white`}
                   placeholder="Tell us how we can help you..."
+                  disabled={contactStatus === 'loading'}
                 />
+                {fieldErrors.message && (
+                  <p className="text-red-600 text-xs mt-1 font-semibold">{fieldErrors.message}</p>
+                )}
+                <p className={`text-xs mt-1 ${
+                  contactFormData.message.length >= 2000 ? 'text-red-600 font-bold' : 'text-gray-500'
+                }`}>
+                  {contactFormData.message.length}/2000 characters
+                  {contactFormData.message.length < 10 && contactFormData.message.length > 0 && ' (minimum 10)'}
+                </p>
               </div>
 
               <button
