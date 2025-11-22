@@ -8,7 +8,9 @@ interface Settings {
   businessPhone: string | null;
   businessEmail: string | null;
   businessAddress: string | null;
-  taxRate: number | null;
+  taxRate: number;
+  taxEnabled: boolean;
+  taxInclusive: boolean;
   lowStockThreshold: number;
   defaultRentalDays: number;
   dateFormat: string;

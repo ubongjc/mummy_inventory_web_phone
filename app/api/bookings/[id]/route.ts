@@ -319,6 +319,8 @@ export async function PUT(
         totalPrice: body.totalPrice,
         advancePayment: body.advancePayment,
         paymentDueDate: body.paymentDueDate ? toUTCMidnight(body.paymentDueDate) : null,
+        taxAmount: body.taxAmount,
+        totalWithTax: body.totalWithTax,
         items: {
           create: body.items.map((item: any) => ({
             itemId: item.itemId,

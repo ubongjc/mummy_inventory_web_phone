@@ -360,6 +360,8 @@ export async function POST(request: NextRequest) {
         totalPrice: validated.totalPrice,
         advancePayment: validated.advancePayment,
         paymentDueDate: validated.paymentDueDate ? toUTCMidnight(validated.paymentDueDate) : undefined,
+        taxAmount: validated.taxAmount,
+        totalWithTax: validated.totalWithTax,
         items: {
           create: validated.items.map((item) => ({
             itemId: item.itemId,

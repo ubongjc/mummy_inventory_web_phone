@@ -129,6 +129,16 @@ const baseBookingSchema = z.object({
     .optional(),
   paymentDueDate: z.string().or(z.date()).optional(),
   initialPayments: z.array(initialPaymentSchema).optional(),
+  taxAmount: z.number()
+    .min(0, "Tax amount must be non-negative")
+    .max(10000000, "Tax amount cannot exceed 10,000,000")
+    .transform(roundToTwoDecimals)
+    .optional(),
+  totalWithTax: z.number()
+    .min(0, "Total with tax must be non-negative")
+    .max(10000000, "Total with tax cannot exceed 10,000,000")
+    .transform(roundToTwoDecimals)
+    .optional(),
   color: z.string()
     .regex(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, "Color must be a valid hex code (#RGB or #RRGGBB)")
     .optional(),
@@ -218,6 +228,8 @@ export const updateSettingsSchema = z.object({
     .transform(roundToTwoDecimals)
     .optional()
     .nullable(),
+  taxEnabled: z.boolean().optional(),
+  taxInclusive: z.boolean().optional(),
   lowStockThreshold: z.number()
     .int("Low stock threshold must be a whole number")
     .min(0, "Low stock threshold must be non-negative")

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { X, Plus } from "lucide-react";
 import { useSettings } from "@/app/hooks/useSettings";
+import { calculateTax } from "@/app/lib/tax";
 import DatePicker from "./DatePicker";
 import { PaymentPanel } from "./payments/PaymentPanel";
 import NotesModal from "./NotesModal";
@@ -102,7 +103,10 @@ export default function EditBookingModal({
     message: "",
     itemStatuses: [],
   });
-  const { formatCurrency } = useSettings();
+  const [taxAmount, setTaxAmount] = useState(0);
+  const [subtotal, setSubtotal] = useState(0);
+  const [totalWithTax, setTotalWithTax] = useState(0);
+  const { formatCurrency, settings } = useSettings();
   const itemSelectRefs = useRef<{ [key: number]: HTMLSelectElement | null }>({});
   const previousItemsLength = useRef(bookingItems.length);
 
@@ -247,6 +251,29 @@ export default function EditBookingModal({
   useEffect(() => {
     checkItemsAvailability();
   }, [startDate, endDate, bookingItems, items]);
+
+  // Calculate tax whenever total price or tax settings change
+  useEffect(() => {
+    if (totalPrice && settings) {
+      const price = parseFloat(totalPrice) || 0;
+
+      if (settings.taxEnabled && price > 0) {
+        const taxCalc = calculateTax(price, settings.taxRate, settings.taxInclusive);
+        setSubtotal(taxCalc.subtotal);
+        setTaxAmount(taxCalc.taxAmount);
+        setTotalWithTax(taxCalc.total);
+      } else {
+        // No tax enabled - subtotal equals total
+        setSubtotal(price);
+        setTaxAmount(0);
+        setTotalWithTax(price);
+      }
+    } else {
+      setSubtotal(0);
+      setTaxAmount(0);
+      setTotalWithTax(0);
+    }
+  }, [totalPrice, settings]);
 
   const fetchCustomers = async () => {
     try {
@@ -501,6 +528,9 @@ export default function EditBookingModal({
           totalPrice: totalPrice ? parseFloat(totalPrice) : undefined,
           advancePayment: advancePayment ? parseFloat(advancePayment) : undefined,
           paymentDueDate: paymentDueDate || undefined,
+          // Tax calculation (if enabled)
+          taxAmount: settings?.taxEnabled ? taxAmount : undefined,
+          totalWithTax: settings?.taxEnabled ? totalWithTax : undefined,
         }),
       });
 
@@ -830,6 +860,32 @@ export default function EditBookingModal({
                   </p>
                 </div>
               </div>
+
+              {/* Tax Breakdown (if enabled) */}
+              {settings?.taxEnabled && taxAmount > 0 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2 mt-3">
+                  <h5 className="text-xs font-bold text-blue-900 mb-2">Tax Breakdown</h5>
+                  <div className="space-y-1 text-xs">
+                    <div className="flex justify-between text-gray-700">
+                      <span>Subtotal:</span>
+                      <span className="font-semibold">{formatCurrency(subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-700">
+                      <span>Tax ({settings.taxRate}%):</span>
+                      <span className="font-semibold">{formatCurrency(taxAmount)}</span>
+                    </div>
+                    <div className="flex justify-between text-blue-900 font-bold border-t border-blue-300 pt-1">
+                      <span>Total with Tax:</span>
+                      <span>{formatCurrency(totalWithTax)}</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-gray-600 italic mt-2">
+                    {settings.taxInclusive
+                      ? "Price includes tax"
+                      : "Tax added to price"}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Additional Payments */}

@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Settings as SettingsIcon, Save, Building2, DollarSign, Globe, Calendar, AlertTriangle, ArrowLeft, Home, Package, CalendarDays, Image as ImageIcon, User, Trash2 } from "lucide-react";
+import { Settings as SettingsIcon, Save, Building2, DollarSign, Globe, Calendar, AlertTriangle, ArrowLeft, Home, Package, CalendarDays, Image as ImageIcon, User, Trash2, Receipt, Sparkles } from "lucide-react";
 import { sanitizeInput, phoneRegex, emailRegex } from "@/app/lib/clientValidation";
 import DeleteConfirmModal from "../components/DeleteConfirmModal";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 interface Settings {
   id: string;
@@ -15,7 +15,9 @@ interface Settings {
   businessPhone: string | null;
   businessEmail: string | null;
   businessAddress: string | null;
-  taxRate: number | null;
+  taxRate: number;
+  taxEnabled: boolean;
+  taxInclusive: boolean;
   lowStockThreshold: number;
   defaultBookingDays: number;
   dateFormat: string;
@@ -90,6 +92,9 @@ const TIMEZONE_OPTIONS = [
 ];
 
 export default function SettingsPage() {
+  const { data: session } = useSession();
+  const isPremium = session?.user?.isPremium || false;
+
   const [settings, setSettings] = useState<Settings | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -614,6 +619,124 @@ export default function SettingsPage() {
               ))}
             </select>
           </div>
+        </div>
+
+        {/* Tax Calculator (Premium Feature) */}
+        <div className={`bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 mb-4 sm:mb-6 border-2 ${isPremium ? 'border-yellow-400' : 'border-gray-200'}`}>
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <Receipt className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+            <h2 className="text-lg sm:text-xl font-bold text-black">Tax Calculator</h2>
+            {isPremium && (
+              <span className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold rounded-full">
+                <Sparkles className="w-3 h-3" />
+                PREMIUM
+              </span>
+            )}
+          </div>
+
+          {!isPremium ? (
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-gray-700 mb-3">
+                <span className="font-bold text-black">Tax Calculator</span> is a premium feature. Automatically calculate taxes on rentals based on your location and apply them to invoices and receipts.
+              </p>
+              <Link
+                href="/premium"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold rounded-lg transition-all duration-200 shadow-md text-sm"
+              >
+                <Sparkles className="w-4 h-4" />
+                Upgrade to Premium
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Enable Tax Calculation */}
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div>
+                  <label className="block text-sm font-bold text-black mb-1">
+                    Enable Tax Calculation
+                  </label>
+                  <p className="text-xs text-gray-600">
+                    Automatically calculate and add tax to all bookings
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={settings.taxEnabled}
+                    onChange={(e) => updateSetting("taxEnabled", e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+
+              {/* Tax Rate */}
+              <div>
+                <label className="block text-sm font-bold text-black mb-2">
+                  Tax Rate (%)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  value={settings.taxRate}
+                  onChange={(e) => updateSetting("taxRate", parseFloat(e.target.value) || 0)}
+                  disabled={!settings.taxEnabled}
+                  className="w-full px-3 sm:px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium text-sm sm:text-base disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  placeholder="7.5"
+                />
+                <p className="text-xs text-gray-600 mt-1">
+                  Default: 7.5% (Nigeria VAT). Set your local tax rate.
+                </p>
+              </div>
+
+              {/* Tax Inclusive */}
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div>
+                  <label className="block text-sm font-bold text-black mb-1">
+                    Tax Inclusive Pricing
+                  </label>
+                  <p className="text-xs text-gray-600">
+                    Price includes tax (ON) vs tax added on top (OFF)
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={settings.taxInclusive}
+                    onChange={(e) => updateSetting("taxInclusive", e.target.checked)}
+                    disabled={!settings.taxEnabled}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 peer-disabled:bg-gray-200 peer-disabled:cursor-not-allowed"></div>
+                </label>
+              </div>
+
+              {/* Tax Calculation Example */}
+              {settings.taxEnabled && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-xs font-bold text-black mb-2">Tax Calculation Example:</p>
+                  <div className="text-xs text-gray-700 space-y-1">
+                    {settings.taxInclusive ? (
+                      <>
+                        <p>Price: ₦10,000 (includes {settings.taxRate}% tax)</p>
+                        <p>Subtotal: ₦{(10000 / (1 + settings.taxRate / 100)).toFixed(2)}</p>
+                        <p>Tax: ₦{(10000 - 10000 / (1 + settings.taxRate / 100)).toFixed(2)}</p>
+                        <p className="font-bold">Total: ₦10,000</p>
+                      </>
+                    ) : (
+                      <>
+                        <p>Subtotal: ₦10,000</p>
+                        <p>Tax ({settings.taxRate}%): ₦{(10000 * settings.taxRate / 100).toFixed(2)}</p>
+                        <p className="font-bold">Total: ₦{(10000 * (1 + settings.taxRate / 100)).toFixed(2)}</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Timezone */}
