@@ -230,3 +230,54 @@ model EmailVerification {
   @@index([token])
   @@index([userId])
 }
+
+// Events Near You - Premium Feature
+model NigerianEvent {
+  id                  String    @id @default(cuid())
+  eventId             String    @unique @db.VarChar(100) // stable hash of title + date + location_state + source_url
+  eventType           String    @db.VarChar(50) // wedding | traditional_marriage | burial | memorial | child_dedication | christening | naming | thanksgiving | anniversary | birthday | other_ceremony
+  title               String    @db.VarChar(200)
+  dateStart           DateTime
+  dateEnd             DateTime?
+  locationRaw         String?   @db.VarChar(300)
+  locationState       String?   @db.VarChar(50) // Nigeria state or FCT
+  locationCityLga     String?   @db.VarChar(100)
+  venueName           String?   @db.VarChar(200)
+  contactName         String?   @db.VarChar(100)
+  contactRole         String?   @db.VarChar(100)
+  contactPhone        String?   @db.VarChar(20)
+  contactEmail        String?   @db.VarChar(254)
+  organizerOrg        String?   @db.VarChar(200)
+  organizerSocial     String?   @db.VarChar(500) // Social media URLs (Instagram/Facebook/Twitter)
+  sourcePlatform      String    @db.VarChar(100) // Church Website, Eventbrite, Instagram Post, etc.
+  sourceUrl           String    @db.Text
+  sourcePublishedAt   DateTime?
+  extractedAt         DateTime  @default(now())
+  confidence          Decimal   @default(0.6) @db.Decimal(3, 2) // 0-1 confidence score
+  notes               String?   @db.VarChar(500)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([eventType])
+  @@index([dateStart])
+  @@index([locationState])
+  @@index([sourcePlatform])
+  @@index([createdAt])
+}
+
+model EventSourceLog {
+  id                  String   @id @default(cuid())
+  runAtUtc            DateTime @default(now())
+  sourcePlatform      String   @db.VarChar(100)
+  sourceUrl           String?  @db.Text
+  eventsAdded         Int      @default(0)
+  eventsUpdated       Int      @default(0)
+  eventsRemoved       Int      @default(0)
+  errors              String?  @db.Text // JSON string of errors
+  totalActive         Int      @default(0)
+  executionTimeMs     Int?     // Time taken for this source
+  createdAt           DateTime @default(now())
+
+  @@index([sourcePlatform])
+  @@index([runAtUtc])
+}
