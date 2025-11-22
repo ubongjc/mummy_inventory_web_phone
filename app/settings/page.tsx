@@ -735,6 +735,78 @@ export default function SettingsPage() {
                   </div>
                 </div>
               )}
+
+              {/* Tax Resources & Help */}
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 mt-4">
+                <h3 className="text-sm font-bold text-green-900 mb-3 flex items-center gap-2">
+                  <Receipt className="w-4 h-4" />
+                  Tax Resources & Help
+                </h3>
+
+                <div className="space-y-3 text-xs text-gray-700">
+                  {/* What is this tax? */}
+                  <div className="bg-white rounded-lg p-3 border border-green-100">
+                    <p className="font-bold text-black mb-1">What is VAT/Sales Tax?</p>
+                    <p>This calculator helps you apply VAT (Value Added Tax) or sales tax to your rental bookings. The default rate is 7.5% for Nigeria VAT, but you can adjust it to match your local tax requirements.</p>
+                  </div>
+
+                  {/* Business Income Tax Calculator */}
+                  <div className="bg-white rounded-lg p-3 border border-green-100">
+                    <p className="font-bold text-black mb-1">Calculate Your Business Income Tax</p>
+                    <p className="mb-2">Need to calculate income tax on your rental business earnings? Use this free calculator:</p>
+                    <a
+                      href="https://ng.talent.com/tax-calculator?salary=150000&from=month&region=Nigeria"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold underline"
+                    >
+                      Nigeria Income Tax Calculator
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  </div>
+
+                  {/* Need help filing taxes? */}
+                  <div className="bg-white rounded-lg p-3 border border-green-100">
+                    <p className="font-bold text-black mb-1">Need Help Filing Taxes?</p>
+                    <p className="mb-2">Get professional assistance with tax filing and compliance:</p>
+                    <ul className="space-y-1 ml-4 list-disc">
+                      <li>
+                        <a
+                          href="https://www.firs.gov.ng/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 font-semibold underline"
+                        >
+                          Federal Inland Revenue Service (FIRS)
+                        </a>
+                        {' '}- Official tax authority
+                      </li>
+                      <li>
+                        <a
+                          href="https://taxaide.com.ng/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 font-semibold underline"
+                        >
+                          TaxAide Consulting
+                        </a>
+                        {' '}- Tax consultancy services
+                      </li>
+                      <li>
+                        Contact a local certified tax accountant for personalized guidance
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Important Note */}
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <p className="font-bold text-yellow-900 mb-1">⚠️ Important Note</p>
+                    <p className="text-yellow-800">This tool calculates sales tax (VAT) on transactions. For business income tax, personal income tax, and tax filing requirements, please consult with a qualified tax professional or use the resources above.</p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
