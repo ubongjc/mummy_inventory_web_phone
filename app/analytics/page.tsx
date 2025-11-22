@@ -84,21 +84,47 @@ export default function AnalyticsPage() {
     setError(null);
 
     try {
-      const response = await fetch(`/api/analytics?period=${period}`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+      const response = await fetch(`/api/analytics?period=${period}`, {
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
 
       if (response.status === 403) {
         setError('Premium subscription required to access Custom Analytics');
         return;
       }
 
+      if (response.status === 429) {
+        setError('Too many requests. Please wait a moment and try again.');
+        return;
+      }
+
+      if (response.status === 400) {
+        const data = await response.json();
+        setError(data.error || 'Invalid request');
+        return;
+      }
+
       if (!response.ok) {
-        throw new Error('Failed to fetch analytics');
+        throw new Error('Failed to fetch analytics. Please try again.');
       }
 
       const data = await response.json();
       setAnalytics(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load analytics');
+      if (err instanceof Error) {
+        if (err.name === 'AbortError') {
+          setError('Request timed out. Please check your connection and try again.');
+        } else {
+          setError(err.message || 'Failed to load analytics. Please try again.');
+        }
+      } else {
+        setError('Failed to load analytics. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -113,17 +139,42 @@ export default function AnalyticsPage() {
   }
 
   if (error) {
+    const isPremiumError = error.includes('Premium subscription required');
+
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md text-center">
-          <h2 className="text-xl font-bold text-red-900 mb-2">Access Restricted</h2>
+          <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-3" />
+          <h2 className="text-xl font-bold text-red-900 mb-2">
+            {isPremiumError ? 'Access Restricted' : 'Error Loading Analytics'}
+          </h2>
           <p className="text-red-700 mb-4">{error}</p>
-          <Link
-            href="/premium"
-            className="inline-block px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-          >
-            Upgrade to Premium
-          </Link>
+          <div className="flex gap-2 justify-center">
+            {isPremiumError ? (
+              <Link
+                href="/premium"
+                className="inline-block px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              >
+                Upgrade to Premium
+              </Link>
+            ) : (
+              <>
+                <button
+                  onClick={fetchAnalytics}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Try Again
+                </button>
+                <Link
+                  href="/dashboard"
+                  className="inline-block px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                >
+                  Back to Dashboard
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
     );

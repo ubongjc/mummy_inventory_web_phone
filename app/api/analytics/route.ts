@@ -3,13 +3,21 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/app/lib/prisma';
 import { hasFeature } from '@/app/lib/auth';
-
-const prisma = new PrismaClient();
+import { applyRateLimit } from '@/app/lib/security';
 
 export async function GET(request: NextRequest) {
   try {
+    // Apply rate limiting
+    const rateLimitResult = await applyRateLimit(request);
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
     // Check authentication
     const session = await getServerSession();
     if (!session?.user?.email) {
@@ -35,9 +43,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get time period from query params
+    // Get time period from query params with validation
     const searchParams = request.nextUrl.searchParams;
-    const period = parseInt(searchParams.get('period') || '30', 10);
+    const periodParam = searchParams.get('period') || '30';
+    let period = parseInt(periodParam, 10);
+
+    // Validate period: must be positive and within reasonable bounds (max 2 years)
+    if (isNaN(period) || period < 1 || period > 730) {
+      return NextResponse.json(
+        { error: 'Invalid period. Must be between 1 and 730 days.' },
+        { status: 400 }
+      );
+    }
 
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - period);

@@ -2,15 +2,23 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/app/lib/prisma';
+import { applyRateLimit } from '@/app/lib/security';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    // Apply rate limiting
+    const rateLimitResult = await applyRateLimit(request);
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
     // Check authentication
     const session = await getServerSession();
     if (!session?.user?.email) {

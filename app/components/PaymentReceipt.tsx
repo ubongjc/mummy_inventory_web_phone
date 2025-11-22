@@ -8,6 +8,8 @@ import {
   CheckCircle,
   Calendar,
   DollarSign,
+  RefreshCw,
+  AlertCircle,
 } from 'lucide-react';
 
 interface ReceiptData {
@@ -68,17 +70,47 @@ export function PaymentReceipt({ bookingId }: PaymentReceiptProps) {
   }, [bookingId]);
 
   const fetchReceipt = async () => {
+    setLoading(true);
+    setError('');
+
     try {
-      const response = await fetch(`/api/bookings/${bookingId}/receipt`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+      const response = await fetch(`/api/bookings/${bookingId}/receipt`, {
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (response.status === 404) {
+        throw new Error('Booking or receipt not found');
+      }
+
+      if (response.status === 403) {
+        throw new Error('You do not have permission to view this receipt');
+      }
+
+      if (response.status === 429) {
+        throw new Error('Too many requests. Please wait a moment and try again.');
+      }
 
       if (!response.ok) {
-        throw new Error('Failed to load receipt');
+        throw new Error('Failed to load receipt. Please try again.');
       }
 
       const data = await response.json();
       setReceipt(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load receipt');
+      if (err instanceof Error) {
+        if (err.name === 'AbortError') {
+          setError('Request timed out. Please check your connection and try again.');
+        } else {
+          setError(err.message);
+        }
+      } else {
+        setError('Failed to load receipt. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -96,7 +128,9 @@ export function PaymentReceipt({ bookingId }: PaymentReceiptProps) {
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-md p-8 text-center">
-        <p className="text-gray-600">Loading receipt...</p>
+        <RefreshCw className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-3" />
+        <p className="text-gray-600 font-medium">Loading receipt...</p>
+        <p className="text-sm text-gray-500 mt-1">Please wait</p>
       </div>
     );
   }
@@ -104,7 +138,20 @@ export function PaymentReceipt({ bookingId }: PaymentReceiptProps) {
   if (error || !receipt) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-        <p className="text-red-700">{error || 'Receipt not available'}</p>
+        <div className="flex items-start gap-3 mb-4">
+          <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-red-900 font-semibold">Unable to Load Receipt</p>
+            <p className="text-red-700 text-sm mt-1">{error || 'Receipt not available'}</p>
+          </div>
+        </div>
+        <button
+          onClick={fetchReceipt}
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Try Again
+        </button>
       </div>
     );
   }

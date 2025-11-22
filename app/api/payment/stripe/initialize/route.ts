@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { createStripeService, isStripeConfigured } from '@/app/lib/stripe';
 import { applyRateLimit } from '@/app/lib/security';
+import { prisma } from '@/app/lib/prisma';
 
 export async function POST(req: NextRequest) {
   // Apply rate limiting
@@ -30,6 +31,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Get user
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
     const body = await req.json();
     const { amount, bookingId, description, currency = 'NGN' } = body;
 
@@ -45,6 +55,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // If bookingId provided, verify ownership
+    if (bookingId) {
+      const booking = await prisma.booking.findUnique({
+        where: { id: bookingId },
+        select: { userId: true },
+      });
+
+      if (!booking) {
+        return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+      }
+
+      if (booking.userId !== user.id) {
+        return NextResponse.json(
+          { error: 'You do not have permission to pay for this booking' },
+          { status: 403 }
+        );
+      }
+    }
+
     // Initialize Stripe service
     const stripeService = createStripeService();
 
@@ -55,7 +84,8 @@ export async function POST(req: NextRequest) {
       description: description || `Payment for Booking`,
       customer_email: session.user.email,
       metadata: {
-        userId: session.user.email,
+        userId: user.id,
+        userEmail: session.user.email,
         bookingId: bookingId || '',
         timestamp: new Date().toISOString(),
       },

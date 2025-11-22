@@ -75,7 +75,7 @@ export class StripeService {
   }
 
   /**
-   * Verify webhook signature
+   * Verify webhook signature with replay attack protection
    */
   verifyWebhookSignature(
     payload: string,
@@ -91,15 +91,43 @@ export class StripeService {
       const expectedSig = elements.find((e) => e.startsWith('v1='))?.split('=')[1];
 
       if (!timestamp || !expectedSig) {
+        console.error('Missing timestamp or signature in header');
         return false;
       }
 
+      // Verify timestamp to prevent replay attacks
+      // Reject webhooks older than 5 minutes (300 seconds)
+      const currentTime = Math.floor(Date.now() / 1000);
+      const timestampNum = parseInt(timestamp, 10);
+      const timeDifference = currentTime - timestampNum;
+
+      if (timeDifference > 300) {
+        console.error(`Webhook timestamp too old: ${timeDifference} seconds`);
+        return false;
+      }
+
+      if (timeDifference < -60) {
+        console.error(`Webhook timestamp in future: ${timeDifference} seconds`);
+        return false;
+      }
+
+      // Verify HMAC signature
       const signedPayload = `${timestamp}.${payload}`;
       const hmac = crypto.createHmac('sha256', webhookSecret);
       hmac.update(signedPayload);
       const computedSig = hmac.digest('hex');
 
-      return computedSig === expectedSig;
+      // Use constant-time comparison to prevent timing attacks
+      const isValid = crypto.timingSafeEqual(
+        Buffer.from(computedSig),
+        Buffer.from(expectedSig)
+      );
+
+      if (!isValid) {
+        console.error('Webhook signature mismatch');
+      }
+
+      return isValid;
     } catch (error) {
       console.error('Webhook signature verification error:', error);
       return false;
