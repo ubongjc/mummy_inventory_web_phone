@@ -8,6 +8,10 @@ import {
   paymentReminderTemplate,
   bookingConfirmationTemplate,
   newInquiryTemplate,
+  rentalRequestApprovalTemplate,
+  rentalRequestDenialTemplate,
+  paymentConfirmedTemplate,
+  teamInvitationTemplate,
   EmailTemplateData,
 } from './email-templates';
 
@@ -739,6 +743,214 @@ export class NotificationService {
         recipient: business.businessPhone,
         message: smsMessage,
       });
+    }
+  }
+
+  /**
+   * Send rental request approval notification to customer
+   */
+  static async sendRentalRequestApproval(
+    userId: string,
+    inquiryId: string,
+    customerName: string,
+    customerEmail: string | null,
+    customerPhone: string | null,
+    startDate: Date,
+    endDate: Date,
+    items: string[],
+    totalAmount?: number,
+    paymentLinkUrl?: string
+  ): Promise<void> {
+    const business = await this.getBusinessDetails(userId);
+
+    const templateData: EmailTemplateData & { paymentLinkUrl?: string } = {
+      businessName: business.businessName,
+      businessEmail: business.businessEmail,
+      businessPhone: business.businessPhone,
+      customerName,
+      customerEmail: customerEmail || '',
+      bookingReference: inquiryId.substring(0, 8).toUpperCase(),
+      startDate: startDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+      endDate: endDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+      items,
+      amountDue: totalAmount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      currency: business.currency,
+      paymentLinkUrl,
+    };
+
+    // Send email notification if customer has email
+    if (customerEmail) {
+      const emailContent = rentalRequestApprovalTemplate(templateData);
+      await this.send({
+        userId,
+        type: 'booking_confirmed',
+        channel: 'email',
+        recipient: customerEmail,
+        subject: emailContent.subject,
+        message: emailContent.text,
+        html: emailContent.html,
+      });
+    }
+
+    // Send SMS notification if customer has phone
+    if (customerPhone) {
+      const smsMessage = `Good news! Your rental request has been approved by ${business.businessName}. ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}. ${paymentLinkUrl ? `Pay here: ${paymentLinkUrl}` : 'We will contact you shortly.'}`;
+      await this.send({
+        userId,
+        type: 'booking_confirmed',
+        channel: 'sms',
+        recipient: customerPhone,
+        message: smsMessage,
+      });
+    }
+  }
+
+  /**
+   * Send rental request denial notification to customer
+   */
+  static async sendRentalRequestDenial(
+    userId: string,
+    inquiryId: string,
+    customerName: string,
+    customerEmail: string | null,
+    customerPhone: string | null,
+    startDate: Date,
+    endDate: Date,
+    denialReason?: string
+  ): Promise<void> {
+    const business = await this.getBusinessDetails(userId);
+
+    const templateData: EmailTemplateData & { denialReason?: string } = {
+      businessName: business.businessName,
+      businessEmail: business.businessEmail,
+      businessPhone: business.businessPhone,
+      customerName,
+      customerEmail: customerEmail || '',
+      bookingReference: inquiryId.substring(0, 8).toUpperCase(),
+      startDate: startDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+      endDate: endDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+      denialReason,
+    };
+
+    // Send email notification if customer has email
+    if (customerEmail) {
+      const emailContent = rentalRequestDenialTemplate(templateData);
+      await this.send({
+        userId,
+        type: 'booking_confirmed',
+        channel: 'email',
+        recipient: customerEmail,
+        subject: emailContent.subject,
+        message: emailContent.text,
+        html: emailContent.html,
+      });
+    }
+
+    // Send SMS notification if customer has phone
+    if (customerPhone) {
+      const defaultReason = 'Your booking request could not be fulfilled at this time.';
+      const smsMessage = `Update from ${business.businessName}: ${denialReason || defaultReason} Please contact us if you have questions.`;
+      await this.send({
+        userId,
+        type: 'booking_confirmed',
+        channel: 'sms',
+        recipient: customerPhone,
+        message: smsMessage,
+      });
+    }
+  }
+
+  /**
+   * Send payment confirmation notification to customer
+   */
+  static async sendPaymentConfirmed(
+    userId: string,
+    inquiryId: string,
+    customerName: string,
+    customerEmail: string | null,
+    customerPhone: string | null,
+    startDate: Date,
+    endDate: Date,
+    items: string[],
+    totalAmount?: number
+  ): Promise<void> {
+    const business = await this.getBusinessDetails(userId);
+
+    const templateData: EmailTemplateData = {
+      businessName: business.businessName,
+      businessEmail: business.businessEmail,
+      businessPhone: business.businessPhone,
+      customerName,
+      customerEmail: customerEmail || '',
+      bookingReference: inquiryId.substring(0, 8).toUpperCase(),
+      startDate: startDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+      endDate: endDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+      items,
+      amountDue: totalAmount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      currency: business.currency,
+    };
+
+    // Send email notification if customer has email
+    if (customerEmail) {
+      const emailContent = paymentConfirmedTemplate(templateData);
+      await this.send({
+        userId,
+        type: 'booking_confirmed',
+        channel: 'email',
+        recipient: customerEmail,
+        subject: emailContent.subject,
+        message: emailContent.text,
+        html: emailContent.html,
+      });
+    }
+
+    // Send SMS notification if customer has phone
+    if (customerPhone) {
+      const smsMessage = `Payment confirmed! Your booking with ${business.businessName} is fully confirmed. Ref: ${inquiryId.substring(0, 8).toUpperCase()}. ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}.`;
+      await this.send({
+        userId,
+        type: 'booking_confirmed',
+        channel: 'sms',
+        recipient: customerPhone,
+        message: smsMessage,
+      });
+    }
+  }
+
+  /**
+   * Send team invitation email
+   */
+  static async sendTeamInvitation(
+    inviterName: string,
+    businessName: string,
+    inviteeEmail: string,
+    role: string,
+    invitationUrl: string
+  ): Promise<boolean> {
+    const templateData = {
+      businessName,
+      businessEmail: undefined,
+      businessPhone: undefined,
+      customerName: '',
+      customerEmail: inviteeEmail,
+      inviterName,
+      role,
+      invitationUrl,
+    };
+
+    const emailContent = teamInvitationTemplate(templateData);
+
+    try {
+      const result = await this.sendEmail(
+        inviteeEmail,
+        emailContent.subject,
+        emailContent.text,
+        emailContent.html
+      );
+      return result.success;
+    } catch (error) {
+      console.error('Error sending team invitation:', error);
+      return false;
     }
   }
 }

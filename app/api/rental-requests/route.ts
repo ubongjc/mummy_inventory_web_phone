@@ -141,7 +141,7 @@ export async function PATCH(req: NextRequest) {
 
     if (action === 'approve') {
       // Approve request - change status to confirmed_without_payment
-      // TODO: Generate payment link here (greyed out for now)
+      // TODO: Generate payment link here (Paystack/Stripe integration)
 
       updatedRequest = await prisma.publicInquiry.update({
         where: { id: requestId },
@@ -151,8 +151,36 @@ export async function PATCH(req: NextRequest) {
         },
       });
 
-      // TODO: Send approval notification to customer
-      // await sendApprovalNotification(...)
+      // Send approval notification to customer
+      try {
+        const { NotificationService } = await import('@/app/lib/notifications');
+
+        // Extract item names from selectedItems if available
+        const items: string[] = [];
+        if (request.selectedItems && Array.isArray(request.selectedItems)) {
+          request.selectedItems.forEach((item: any) => {
+            if (item.name) {
+              items.push(`${item.name} (${item.quantity || 1})`);
+            }
+          });
+        }
+
+        await NotificationService.sendRentalRequestApproval(
+          user.id,
+          request.id,
+          request.name,
+          request.email,
+          request.phone,
+          request.startDate,
+          request.endDate,
+          items,
+          request.totalAmount ? Number(request.totalAmount) : undefined,
+          request.paymentLinkUrl || undefined
+        );
+      } catch (notificationError) {
+        console.error('Failed to send approval notification:', notificationError);
+        // Continue anyway - the approval is saved
+      }
 
     } else if (action === 'deny') {
       // Deny request - change status to cancelled
@@ -166,8 +194,24 @@ export async function PATCH(req: NextRequest) {
         },
       });
 
-      // TODO: Send denial notification to customer
-      // await sendDenialNotification(...)
+      // Send denial notification to customer
+      try {
+        const { NotificationService } = await import('@/app/lib/notifications');
+
+        await NotificationService.sendRentalRequestDenial(
+          user.id,
+          request.id,
+          request.name,
+          request.email,
+          request.phone,
+          request.startDate,
+          request.endDate,
+          reason
+        );
+      } catch (notificationError) {
+        console.error('Failed to send denial notification:', notificationError);
+        // Continue anyway - the denial is saved
+      }
 
     } else if (action === 'confirm_payment') {
       // Manual payment confirmation - change status to confirmed
@@ -185,8 +229,35 @@ export async function PATCH(req: NextRequest) {
         },
       });
 
-      // TODO: Send payment confirmed notification to customer
-      // await sendPaymentConfirmedNotification(...)
+      // Send payment confirmed notification to customer
+      try {
+        const { NotificationService } = await import('@/app/lib/notifications');
+
+        // Extract item names from selectedItems if available
+        const items: string[] = [];
+        if (request.selectedItems && Array.isArray(request.selectedItems)) {
+          request.selectedItems.forEach((item: any) => {
+            if (item.name) {
+              items.push(`${item.name} (${item.quantity || 1})`);
+            }
+          });
+        }
+
+        await NotificationService.sendPaymentConfirmed(
+          user.id,
+          request.id,
+          request.name,
+          request.email,
+          request.phone,
+          request.startDate,
+          request.endDate,
+          items,
+          request.totalAmount ? Number(request.totalAmount) : undefined
+        );
+      } catch (notificationError) {
+        console.error('Failed to send payment confirmed notification:', notificationError);
+        // Continue anyway - the confirmation is saved
+      }
     }
 
     return NextResponse.json({

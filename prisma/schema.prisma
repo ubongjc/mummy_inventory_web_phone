@@ -71,6 +71,7 @@ model Booking {
   payments        Payment[]     // track all payments made
 
   @@index([userId])
+  @@index([customerId]) // For filtering bookings by customer
   @@index([startDate])
   @@index([endDate])
   @@index([status])
@@ -103,6 +104,7 @@ model Payment {
   booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId], map: "Payment_rentalId_idx")
+  @@index([paymentDate]) // For financial reports and payment history filtering
 }
 
 model Settings {

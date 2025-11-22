@@ -443,3 +443,290 @@ Please respond to this inquiry as soon as possible to provide the best customer 
     text,
   };
 };
+
+/**
+ * Rental request approval email template (customer notification)
+ */
+export const rentalRequestApprovalTemplate = (data: EmailTemplateData & { paymentLinkUrl?: string }): { subject: string; html: string; text: string } => {
+  const content = `
+    <p>Hi ${data.customerName},</p>
+
+    <p>Great news! Your rental request has been <strong style="color: #28a745;">approved</strong>. 🎉</p>
+
+    ${data.bookingReference ? `
+      <div class="highlight-box" style="border-left-color: #28a745;">
+        <p style="margin: 0; font-weight: 600; color: #28a745;">
+          ✓ Request Reference: ${data.bookingReference}
+        </p>
+      </div>
+    ` : ''}
+
+    <p><strong>Rental Period:</strong></p>
+    <ul style="margin: 5px 0 15px 0; padding-left: 20px;">
+      <li>Start: ${data.startDate}</li>
+      <li>End: ${data.endDate}</li>
+    </ul>
+
+    ${data.items && data.items.length > 0 ? `
+      <div class="items-list">
+        <p style="margin: 0 0 10px 0; font-weight: 600;">Approved Items:</p>
+        <ul>
+          ${data.items.map(item => `<li>${item}</li>`).join('')}
+        </ul>
+      </div>
+    ` : ''}
+
+    ${data.amountDue ? `
+      <div class="highlight-box" style="border-left-color: #007bff;">
+        <p style="margin: 0; font-weight: 600; font-size: 18px; color: #007bff;">
+          💳 Total Amount: ${data.currency}${data.amountDue}
+        </p>
+      </div>
+    ` : ''}
+
+    ${data.paymentLinkUrl ? `
+      <p style="text-align: center; margin: 25px 0;">
+        <a href="${data.paymentLinkUrl}" class="button">Complete Payment</a>
+      </p>
+    ` : ''}
+
+    <p>${data.businessName} will contact you shortly to finalize the details. If you have any questions, please don't hesitate to reach out.</p>
+
+    <p style="margin-top: 25px;">We look forward to serving you!</p>
+    <p style="margin: 5px 0; color: #666;">— The ${data.businessName} Team</p>
+  `;
+
+  const text = `
+Hi ${data.customerName},
+
+Great news! Your rental request has been approved.
+
+${data.bookingReference ? `Request Reference: ${data.bookingReference}` : ''}
+
+Rental Period:
+- Start: ${data.startDate}
+- End: ${data.endDate}
+
+${data.items && data.items.length > 0 ? `Approved Items:\n${data.items.map(item => `- ${item}`).join('\n')}\n` : ''}
+
+${data.amountDue ? `Total Amount: ${data.currency}${data.amountDue}` : ''}
+
+${data.paymentLinkUrl ? `Complete your payment here: ${data.paymentLinkUrl}\n` : ''}
+
+${data.businessName} will contact you shortly to finalize the details. If you have any questions, please don't hesitate to reach out.
+
+We look forward to serving you!
+— The ${data.businessName} Team
+
+${data.businessEmail ? `Email: ${data.businessEmail}` : ''}
+${data.businessPhone ? `Phone: ${data.businessPhone}` : ''}
+  `.trim();
+
+  return {
+    subject: `Request Approved - ${data.bookingReference || 'Your Rental Request'}`,
+    html: baseTemplate(content, data),
+    text,
+  };
+};
+
+/**
+ * Rental request denial email template (customer notification)
+ */
+export const rentalRequestDenialTemplate = (data: EmailTemplateData & { denialReason?: string }): { subject: string; html: string; text: string } => {
+  const content = `
+    <p>Hi ${data.customerName},</p>
+
+    <p>Thank you for your interest in renting with ${data.businessName}. Unfortunately, we are unable to fulfill your rental request at this time.</p>
+
+    ${data.bookingReference ? `
+      <div class="highlight-box" style="border-left-color: #dc3545;">
+        <p style="margin: 0; font-weight: 600;">Request Reference: ${data.bookingReference}</p>
+      </div>
+    ` : ''}
+
+    <p><strong>Requested Rental Period:</strong></p>
+    <ul style="margin: 5px 0 15px 0; padding-left: 20px;">
+      <li>Start: ${data.startDate}</li>
+      <li>End: ${data.endDate}</li>
+    </ul>
+
+    ${data.denialReason ? `
+      <div class="highlight-box" style="border-left-color: #ffc107; background-color: #fff3cd;">
+        <p style="margin: 0; font-weight: 600; color: #856404;">Reason:</p>
+        <p style="margin: 5px 0 0 0; color: #856404;">${data.denialReason}</p>
+      </div>
+    ` : ''}
+
+    <p>If you have any questions or would like to discuss alternative options, please feel free to contact us. We appreciate your understanding and hope to serve you in the future.</p>
+
+    <p style="margin-top: 25px;">Thank you for considering ${data.businessName}.</p>
+    <p style="margin: 5px 0; color: #666;">— The ${data.businessName} Team</p>
+  `;
+
+  const text = `
+Hi ${data.customerName},
+
+Thank you for your interest in renting with ${data.businessName}. Unfortunately, we are unable to fulfill your rental request at this time.
+
+${data.bookingReference ? `Request Reference: ${data.bookingReference}` : ''}
+
+Requested Rental Period:
+- Start: ${data.startDate}
+- End: ${data.endDate}
+
+${data.denialReason ? `Reason:\n${data.denialReason}\n` : ''}
+
+If you have any questions or would like to discuss alternative options, please feel free to contact us. We appreciate your understanding and hope to serve you in the future.
+
+Thank you for considering ${data.businessName}.
+— The ${data.businessName} Team
+
+${data.businessEmail ? `Email: ${data.businessEmail}` : ''}
+${data.businessPhone ? `Phone: ${data.businessPhone}` : ''}
+  `.trim();
+
+  return {
+    subject: `Rental Request Update - ${data.businessName}`,
+    html: baseTemplate(content, data),
+    text,
+  };
+};
+
+/**
+ * Payment confirmed email template (customer notification)
+ */
+export const paymentConfirmedTemplate = (data: EmailTemplateData): { subject: string; html: string; text: string } => {
+  const content = `
+    <p>Hi ${data.customerName},</p>
+
+    <p>Thank you! We have received your payment and your booking is now <strong style="color: #28a745;">fully confirmed</strong>. 🎉</p>
+
+    ${data.bookingReference ? `
+      <div class="highlight-box" style="border-left-color: #28a745;">
+        <p style="margin: 0; font-weight: 600; color: #28a745;">
+          ✓ Booking Reference: ${data.bookingReference}
+        </p>
+      </div>
+    ` : ''}
+
+    ${data.amountDue ? `
+      <div class="highlight-box" style="border-left-color: #28a745; background-color: #d4edda;">
+        <p style="margin: 0; font-weight: 600; font-size: 18px; color: #155724;">
+          ✓ Payment Confirmed: ${data.currency}${data.amountDue}
+        </p>
+      </div>
+    ` : ''}
+
+    <p><strong>Rental Period:</strong></p>
+    <ul style="margin: 5px 0 15px 0; padding-left: 20px;">
+      <li>Start: ${data.startDate}</li>
+      <li>End: ${data.endDate}</li>
+    </ul>
+
+    ${data.items && data.items.length > 0 ? `
+      <div class="items-list">
+        <p style="margin: 0 0 10px 0; font-weight: 600;">Confirmed Items:</p>
+        <ul>
+          ${data.items.map(item => `<li>${item}</li>`).join('')}
+        </ul>
+      </div>
+    ` : ''}
+
+    <p>We'll send you a reminder before your rental starts. If you have any questions or need to make changes, please contact us.</p>
+
+    <p style="margin-top: 25px;">We look forward to serving you!</p>
+    <p style="margin: 5px 0; color: #666;">— The ${data.businessName} Team</p>
+  `;
+
+  const text = `
+Hi ${data.customerName},
+
+Thank you! We have received your payment and your booking is now fully confirmed.
+
+${data.bookingReference ? `Booking Reference: ${data.bookingReference}` : ''}
+
+${data.amountDue ? `Payment Confirmed: ${data.currency}${data.amountDue}` : ''}
+
+Rental Period:
+- Start: ${data.startDate}
+- End: ${data.endDate}
+
+${data.items && data.items.length > 0 ? `Confirmed Items:\n${data.items.map(item => `- ${item}`).join('\n')}\n` : ''}
+
+We'll send you a reminder before your rental starts. If you have any questions or need to make changes, please contact us.
+
+We look forward to serving you!
+— The ${data.businessName} Team
+
+${data.businessEmail ? `Email: ${data.businessEmail}` : ''}
+${data.businessPhone ? `Phone: ${data.businessPhone}` : ''}
+  `.trim();
+
+  return {
+    subject: `Payment Confirmed - ${data.bookingReference || 'Your Booking'}`,
+    html: baseTemplate(content, data),
+    text,
+  };
+};
+
+/**
+ * Team invitation email template
+ */
+export const teamInvitationTemplate = (data: EmailTemplateData & { invitationUrl: string; role: string; inviterName: string }): { subject: string; html: string; text: string } => {
+  const roleDescriptions = {
+    admin: 'Full access to all features and settings',
+    manager: 'Manage bookings, items, customers, and view reports',
+    staff: 'Manage bookings and customers',
+    viewer: 'View dashboard and reports only',
+  };
+
+  const roleDescription = roleDescriptions[data.role as keyof typeof roleDescriptions] || 'Team member access';
+
+  const content = `
+    <p>Hi there,</p>
+
+    <p><strong>${data.inviterName}</strong> has invited you to join their team at <strong>${data.businessName}</strong>!</p>
+
+    <div class="highlight-box" style="border-left-color: #667eea;">
+      <p style="margin: 0 0 5px 0; font-weight: 600; color: #667eea;">Your Role: ${data.role.charAt(0).toUpperCase() + data.role.slice(1)}</p>
+      <p style="margin: 0; color: #666; font-size: 14px;">${roleDescription}</p>
+    </div>
+
+    <p>As a team member, you'll be able to help manage the business and collaborate with the team.</p>
+
+    <p style="text-align: center; margin: 30px 0;">
+      <a href="${data.invitationUrl}" class="button">Accept Invitation</a>
+    </p>
+
+    <p style="font-size: 13px; color: #666;">
+      This invitation will expire in 7 days. If you didn't expect this invitation, you can safely ignore this email.
+    </p>
+
+    <p style="margin-top: 25px; font-size: 13px; color: #999;">
+      Or copy and paste this link into your browser:<br>
+      <a href="${data.invitationUrl}" style="color: #667eea; word-break: break-all;">${data.invitationUrl}</a>
+    </p>
+  `;
+
+  const text = `
+Team Invitation
+
+${data.inviterName} has invited you to join their team at ${data.businessName}!
+
+Your Role: ${data.role.charAt(0).toUpperCase() + data.role.slice(1)}
+${roleDescription}
+
+As a team member, you'll be able to help manage the business and collaborate with the team.
+
+Accept the invitation by visiting:
+${data.invitationUrl}
+
+This invitation will expire in 7 days. If you didn't expect this invitation, you can safely ignore this email.
+  `.trim();
+
+  return {
+    subject: `You've been invited to join ${data.businessName}`,
+    html: baseTemplate(content, data),
+    text,
+  };
+};

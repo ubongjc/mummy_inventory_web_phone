@@ -221,18 +221,25 @@ export async function POST(req: NextRequest) {
     });
 
     // Send invitation email
-    const invitationUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/team/accept/${token}`;
+    const invitationUrl = `${process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000'}/team/accept/${token}`;
 
     try {
-      // TODO: Create team invitation email template
-      // For now, we'll use a simple notification
-      console.log(`Team invitation sent to ${email}: ${invitationUrl}`);
+      const { NotificationService } = await import('@/app/lib/notifications');
 
-      // You can use the NotificationService here once an invitation email template is created
-      // await NotificationService.sendTeamInvitation(...)
+      const inviterName = `${session.user.name || user.businessName || user.email}`;
+
+      await NotificationService.sendTeamInvitation(
+        inviterName,
+        user.businessName || 'Your Business',
+        email.toLowerCase(),
+        role,
+        invitationUrl
+      );
+
+      console.log(`Team invitation email sent to ${email}`);
     } catch (emailError) {
       console.error('Failed to send invitation email:', emailError);
-      // Continue anyway - the invitation is created
+      // Continue anyway - the invitation is created, user can still share the URL manually
     }
 
     return NextResponse.json({
