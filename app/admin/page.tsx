@@ -14,6 +14,10 @@ import {
   BarChart3,
   DollarSign,
   Sparkles,
+  RefreshCw,
+  MapPin,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 
 interface AdminStats {
@@ -39,6 +43,9 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [scrapeLoading, setScrapeLoading] = useState(false);
+  const [scrapeResult, setScrapeResult] = useState<any>(null);
+  const [scrapeError, setScrapeError] = useState("");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -70,6 +77,39 @@ export default function AdminDashboard() {
       setError(err.message || "Failed to load statistics");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRefreshEvents = async () => {
+    setScrapeLoading(true);
+    setScrapeError("");
+    setScrapeResult(null);
+
+    try {
+      const response = await fetch("/api/events/scrape", {
+        method: "POST",
+      });
+
+      if (response.status === 403) {
+        setScrapeError("Access denied. Admin privileges required.");
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error("Failed to refresh events data");
+      }
+
+      const data = await response.json();
+      setScrapeResult(data.result);
+
+      // Auto-clear success message after 10 seconds
+      setTimeout(() => {
+        setScrapeResult(null);
+      }, 10000);
+    } catch (err: any) {
+      setScrapeError(err.message || "Failed to refresh events");
+    } finally {
+      setScrapeLoading(false);
     }
   };
 
@@ -232,6 +272,98 @@ export default function AdminDashboard() {
                   }}
                 ></div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Events Data Refresh */}
+        <div className="bg-white rounded-lg md:rounded-2xl shadow-lg p-2 md:p-6 border border-gray-200 mb-2 md:mb-8">
+          <h3 className="text-sm md:text-xl font-bold text-black mb-2 md:mb-4 flex items-center gap-1 md:gap-2">
+            <MapPin className="w-4 h-4 md:w-6 md:h-6 text-purple-600" />
+            Events Near You - Data Refresh
+          </h3>
+
+          <div className="space-y-4">
+            <p className="text-xs md:text-sm text-gray-600">
+              Manually trigger a refresh of Nigerian events data from all sources. This normally runs automatically daily at 4:00 AM WAT.
+            </p>
+
+            <button
+              onClick={handleRefreshEvents}
+              disabled={scrapeLoading}
+              className={`w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+                scrapeLoading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-md"
+              }`}
+            >
+              <RefreshCw className={`w-4 h-4 md:w-5 md:h-5 ${scrapeLoading ? "animate-spin" : ""}`} />
+              <span className="text-sm md:text-base">
+                {scrapeLoading ? "Refreshing Events Data..." : "Refresh Events Data Now"}
+              </span>
+            </button>
+
+            {/* Success Result */}
+            {scrapeResult && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-start gap-2 mb-3">
+                  <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-green-900 text-sm md:text-base">
+                      Events Data Refreshed Successfully!
+                    </h4>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 text-xs md:text-sm">
+                  <div className="bg-white rounded p-2 md:p-3">
+                    <p className="text-gray-600 text-[10px] md:text-xs">Added</p>
+                    <p className="text-lg md:text-2xl font-bold text-green-600">{scrapeResult.totalAdded}</p>
+                  </div>
+                  <div className="bg-white rounded p-2 md:p-3">
+                    <p className="text-gray-600 text-[10px] md:text-xs">Updated</p>
+                    <p className="text-lg md:text-2xl font-bold text-blue-600">{scrapeResult.totalUpdated}</p>
+                  </div>
+                  <div className="bg-white rounded p-2 md:p-3">
+                    <p className="text-gray-600 text-[10px] md:text-xs">Removed</p>
+                    <p className="text-lg md:text-2xl font-bold text-orange-600">{scrapeResult.totalRemoved}</p>
+                  </div>
+                  <div className="bg-white rounded p-2 md:p-3">
+                    <p className="text-gray-600 text-[10px] md:text-xs">Errors</p>
+                    <p className="text-lg md:text-2xl font-bold text-gray-600">{scrapeResult.errorCount || 0}</p>
+                  </div>
+                </div>
+
+                {scrapeResult.errors && scrapeResult.errors.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-xs font-semibold text-orange-700 mb-1">Recent Errors:</p>
+                    <ul className="text-xs text-orange-600 space-y-1">
+                      {scrapeResult.errors.slice(0, 3).map((error: string, idx: number) => (
+                        <li key={idx} className="truncate">• {error}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Error Message */}
+            {scrapeError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-start gap-2">
+                  <XCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-red-900 text-sm md:text-base">Error</h4>
+                    <p className="text-red-700 text-xs md:text-sm">{scrapeError}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="text-xs text-gray-500 space-y-1">
+              <p>• This process may take 1-2 minutes depending on source availability</p>
+              <p>• Events are scraped from churches, event platforms, and newspapers</p>
+              <p>• Data is automatically deduplicated and normalized</p>
             </div>
           </div>
         </div>

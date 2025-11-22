@@ -33,7 +33,7 @@ export function generateResetToken(): string {
  */
 export async function hasFeature(
   userId: string,
-  feature: "public_page" | "events" | "analytics" | "payments" | "notifications"
+  feature: "public_page" | "events" | "analytics" | "payments" | "notifications" | "events_near_you"
 ): Promise<boolean> {
   const subscription = await prisma.subscription.findUnique({
     where: { userId },

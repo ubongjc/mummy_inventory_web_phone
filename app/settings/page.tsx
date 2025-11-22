@@ -596,28 +596,60 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Currency */}
+        {/* Currency & Tax */}
         <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-200">
           <div className="flex items-center gap-2 mb-3 sm:mb-4">
             <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-            <h2 className="text-lg sm:text-xl font-bold text-black">Currency</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-black">Currency & Tax</h2>
           </div>
 
-          <div>
-            <label className="block text-sm font-bold text-black mb-2">
-              Currency <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={settings.currency}
-              onChange={(e) => updateCurrency(e.target.value)}
-              className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-bold text-sm sm:text-base"
-            >
-              {CURRENCY_OPTIONS.map((currency) => (
-                <option key={currency.code} value={currency.code}>
-                  {currency.symbol} - {currency.name} ({currency.code})
-                </option>
-              ))}
-            </select>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-bold text-black mb-2">
+                Currency <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={settings.currency}
+                onChange={(e) => updateCurrency(e.target.value)}
+                className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-bold text-sm sm:text-base"
+              >
+                {CURRENCY_OPTIONS.map((currency) => (
+                  <option key={currency.code} value={currency.code}>
+                    {currency.symbol} - {currency.name} ({currency.code})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-black mb-2">
+                Tax Rate (%) <span className="text-gray-500 font-normal">(Premium Feature)</span>
+              </label>
+              <input
+                type="number"
+                value={settings.taxRate ?? ""}
+                onChange={(e) => {
+                  const value = e.target.value ? parseFloat(e.target.value) : null;
+                  if (value !== null && (value < 0 || value > 100)) {
+                    return;
+                  }
+                  updateSetting("taxRate", value);
+                }}
+                className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium text-sm sm:text-base"
+                placeholder="0.00"
+                min="0"
+                max="100"
+                step="0.01"
+              />
+              <div className="mt-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-xs text-blue-800 font-medium">
+                  ℹ️ <strong>Important:</strong> Tax is calculated on your rental revenue, excluding the 1.5% platform fee from public bookings.
+                </p>
+                <p className="text-xs text-blue-700 mt-1">
+                  Example: ₦10,000 rental + ₦150 platform fee → Tax applies to ₦10,000 only
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 

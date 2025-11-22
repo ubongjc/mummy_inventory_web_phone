@@ -253,12 +253,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Premium Features - Coming Soon */}
+      {/* Premium Features - 3 Now Live! */}
       <section className="max-w-7xl mx-auto px-4 py-4 md:py-16 mb-4 md:mb-16">
         {/* Collapsible Header */}
         <button
           onClick={() => setIsPremiumOpen(!isPremiumOpen)}
-          className="w-full bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-500 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-600 rounded-2xl md:rounded-3xl shadow-2xl p-4 md:p-8 mb-4 transition-all duration-300 hover:shadow-yellow-500/50 border-4 border-yellow-300"
+          className="w-full bg-gradient-to-r from-green-400 via-emerald-500 to-green-500 hover:from-green-500 hover:via-emerald-600 hover:to-green-600 rounded-2xl md:rounded-3xl shadow-2xl p-4 md:p-8 mb-4 transition-all duration-300 hover:shadow-green-500/50 border-4 border-green-300"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 md:gap-4">
@@ -272,8 +272,8 @@ export default function HomePage() {
                   </h3>
                 </div>
                 <div className="inline-flex items-center gap-1 md:gap-2 bg-white/30 backdrop-blur-sm text-white px-2 py-0.5 md:px-3 md:py-1 rounded-full font-semibold text-xs md:text-sm">
-                  <Clock className="w-3 h-3 md:w-4 md:h-4" />
-                  Coming Soon
+                  <CheckCircle className="w-3 h-3 md:w-4 md:h-4" />
+                  3 Now Live!
                 </div>
               </div>
             </div>
@@ -298,8 +298,7 @@ export default function HomePage() {
         >
           <div className="text-center mb-4 md:mb-8">
             <p className="text-sm md:text-lg text-gray-600 max-w-3xl mx-auto">
-              We're working hard to bring you advanced features to take your rental business to the next level.
-              These features are currently in development and will be available soon.
+              <span className="font-bold text-green-600">3 premium features are now live!</span> Events Near You, Custom Analytics, and Online Payments are ready to use. More advanced features coming soon to take your rental business to the next level.
             </p>
           </div>
 
@@ -318,67 +317,63 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Premium Feature 2 - Events Near You */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg md:rounded-2xl border border-purple-200 md:border-2">
+            {/* Premium Feature 2 - Events Near You - LIVE */}
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg md:rounded-2xl border-2 border-green-400 md:border-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-green-500 text-white text-[8px] md:text-xs font-bold px-2 py-0.5 md:px-3 md:py-1 rounded-bl-lg shadow-lg z-10">
+                LIVE ✓
+              </div>
               <div className="p-1.5 md:p-3 bg-purple-600 rounded-lg md:rounded-xl flex-shrink-0">
                 <MapPin className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Events Near You</h4>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Events Near You ⭐</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
                   Get notified about local events like weddings, festivals, and conferences that could need your rentals
                 </p>
               </div>
             </div>
 
-            {/* Premium Feature 3 - Custom Analytics */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-lg md:rounded-2xl border border-green-200 md:border-2">
+            {/* Premium Feature 3 - Custom Analytics - LIVE */}
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-lg md:rounded-2xl border-2 border-green-400 md:border-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-green-500 text-white text-[8px] md:text-xs font-bold px-2 py-0.5 md:px-3 md:py-1 rounded-bl-lg shadow-lg z-10">
+                LIVE ✓
+              </div>
               <div className="p-1.5 md:p-3 bg-green-600 rounded-lg md:rounded-xl flex-shrink-0">
                 <BarChart3 className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Custom Analytics</h4>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Custom Analytics ⭐</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
                   Track utilization rates, revenue trends, conversion rates, and identify your most profitable items
                 </p>
               </div>
             </div>
 
-            {/* Premium Feature 4 - Online Payments */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg md:rounded-2xl border border-orange-200 md:border-2">
+            {/* Premium Feature 4 - Online Payments - LIVE */}
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg md:rounded-2xl border-2 border-green-400 md:border-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-green-500 text-white text-[8px] md:text-xs font-bold px-2 py-0.5 md:px-3 md:py-1 rounded-bl-lg shadow-lg z-10">
+                LIVE ✓
+              </div>
               <div className="p-1.5 md:p-3 bg-orange-600 rounded-lg md:rounded-xl flex-shrink-0">
                 <CreditCard className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Online Payments</h4>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Online Payments ⭐</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
-                  Let customers pay securely through the app with Stripe. Automatic payment tracking and receipts
+                  Let customers pay securely through the app with Stripe or Paystack. Automatic payment tracking and receipts
                 </p>
               </div>
             </div>
 
-            {/* Premium Feature 5 - Customer Reminders */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg md:rounded-2xl border border-pink-200 md:border-2">
-              <div className="p-1.5 md:p-3 bg-pink-600 rounded-lg md:rounded-xl flex-shrink-0">
+            {/* Premium Feature 5 - Smart Notifications & Reminders */}
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-violet-50 to-purple-100 rounded-lg md:rounded-2xl border border-violet-200 md:border-2">
+              <div className="p-1.5 md:p-3 bg-gradient-to-br from-violet-600 to-purple-600 rounded-lg md:rounded-xl flex-shrink-0">
                 <BellRing className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Customer Reminders</h4>
+                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Smart Notifications & Reminders</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
-                  Send automated reminders to customers for upcoming rentals, returns, and outstanding payments
-                </p>
-              </div>
-            </div>
-
-            {/* Premium Feature 6 - Automated Notifications */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg md:rounded-2xl border border-indigo-200 md:border-2">
-              <div className="p-1.5 md:p-3 bg-indigo-600 rounded-lg md:rounded-xl flex-shrink-0">
-                <Bell className="w-3 h-3 md:w-6 md:h-6 text-white" />
-              </div>
-              <div>
-                <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Automated Notifications</h4>
-                <p className="text-[10px] md:text-base text-gray-600">
-                  Email and SMS alerts for new inquiries, overdue payments, low stock, and upcoming bookings
+                  Automated email & SMS for customer reminders (upcoming rentals, returns, payments) and business alerts (new inquiries, overdue payments, low stock, bookings)
                 </p>
               </div>
             </div>
