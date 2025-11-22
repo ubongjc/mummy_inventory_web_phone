@@ -433,6 +433,7 @@ export default function PublicBookingPage() {
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       rows={4}
+                      maxLength={1000}
                       className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                       placeholder="Tell us about your rental needs..."
                     />

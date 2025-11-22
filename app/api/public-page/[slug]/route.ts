@@ -149,6 +149,11 @@ export async function POST(
       return NextResponse.json({ error: 'Start date cannot be in the past' }, { status: 400 });
     }
 
+    // Validate message length (if provided)
+    if (message && message.length > 1000) {
+      return NextResponse.json({ error: 'Message is too long (max 1000 characters)' }, { status: 400 });
+    }
+
     // Create inquiry
     const inquiry = await prisma.publicInquiry.create({
       data: {
