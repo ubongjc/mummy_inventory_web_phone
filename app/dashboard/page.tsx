@@ -23,6 +23,7 @@ import {
   Shield,
   LogOut,
   MapPin,
+  BarChart3,
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { useInactivityTimeout } from '../hooks/useInactivityTimeout';
@@ -402,6 +403,15 @@ export default function Home() {
               >
                 <MapPin className="w-5 h-5" />
                 Events Near You ⭐
+              </Link>
+
+              <Link
+                href="/analytics"
+                onClick={() => setIsMenuOpen(false)}
+                className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 font-semibold shadow-lg transition-all"
+              >
+                <BarChart3 className="w-5 h-5" />
+                Custom Analytics ⭐
               </Link>
 
               {/* Admin Panel - Only visible to admin users */}

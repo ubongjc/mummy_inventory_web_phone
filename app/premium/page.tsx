@@ -28,6 +28,7 @@ export default function PremiumPage() {
       description:
         'Automatically calculate taxes on rentals based on your location and apply them to invoices and receipts',
       color: 'from-blue-500 to-indigo-600',
+      status: 'coming-soon',
     },
     {
       icon: <MapPin className="w-5 h-5 md:w-8 md:h-8" />,
@@ -35,6 +36,7 @@ export default function PremiumPage() {
       description:
         'Get notified about local events like weddings, festivals, and conferences that could need your rentals',
       color: 'from-purple-500 to-pink-600',
+      status: 'live',
     },
     {
       icon: <BarChart3 className="w-5 h-5 md:w-8 md:h-8" />,
@@ -42,13 +44,15 @@ export default function PremiumPage() {
       description:
         'Track utilization rates, revenue trends, conversion rates, and identify your most profitable items',
       color: 'from-green-500 to-emerald-600',
+      status: 'live',
     },
     {
       icon: <CreditCard className="w-5 h-5 md:w-8 md:h-8" />,
       title: 'Online Payments',
       description:
-        'Let customers pay securely through the app with Stripe. Automatic payment tracking and receipts',
+        'Let customers pay securely with Stripe or Paystack. Automatic payment tracking, receipts, and collection analytics',
       color: 'from-orange-500 to-red-600',
+      status: 'live',
     },
     {
       icon: <BellRing className="w-5 h-5 md:w-8 md:h-8" />,
@@ -56,12 +60,14 @@ export default function PremiumPage() {
       description:
         'Send automated reminders to customers for upcoming rentals, returns, and outstanding payments',
       color: 'from-cyan-500 to-blue-600',
+      status: 'coming-soon',
     },
     {
       icon: <Bell className="w-5 h-5 md:w-8 md:h-8" />,
       title: 'Automated Notifications',
       description: 'Email and SMS alerts for new inquiries, overdue payments, low stock, and upcoming bookings',
       color: 'from-violet-500 to-purple-600',
+      status: 'coming-soon',
     },
     {
       icon: <Globe className="w-5 h-5 md:w-8 md:h-8" />,
@@ -69,24 +75,28 @@ export default function PremiumPage() {
       description:
         'Share a custom link so customers can check availability and inquire about rentals directly on your branded page',
       color: 'from-pink-500 to-rose-600',
+      status: 'coming-soon',
     },
     {
       icon: <Users className="w-5 h-5 md:w-8 md:h-8" />,
       title: 'Team Collaboration',
       description: 'Add team members with custom roles and permissions to manage your rental business together',
       color: 'from-indigo-500 to-blue-600',
+      status: 'coming-soon',
     },
     {
       icon: <Truck className="w-5 h-5 md:w-8 md:h-8" />,
       title: 'Wholesale Supplier Connection',
       description: 'Connect with wholesale suppliers to easily restock inventory and manage purchase orders',
       color: 'from-amber-500 to-orange-600',
+      status: 'coming-soon',
     },
     {
       icon: <FileDown className="w-5 h-5 md:w-8 md:h-8" />,
       title: 'Data Export & Reports',
       description: 'Export your data in multiple formats (CSV, Excel, PDF) and generate detailed business reports',
       color: 'from-emerald-500 to-green-600',
+      status: 'coming-soon',
     },
   ];
 
@@ -167,10 +177,10 @@ export default function PremiumPage() {
         {/* Hero Section */}
         <div className="text-center max-w-3xl mx-auto">
           <h2 className="text-lg md:text-4xl font-bold text-black mb-2 md:mb-4">
-            Premium Features Coming Soon
+            Premium Features - <span className="text-green-600">3 Now Live!</span>
           </h2>
           <p className="text-xs md:text-lg text-gray-700">
-            These powerful features are currently in development and will be available soon to help you grow your rental business
+            Events Near You, Custom Analytics, and Online Payments are now available! More powerful features coming soon.
           </p>
         </div>
 
@@ -191,7 +201,10 @@ export default function PremiumPage() {
             </div>
 
             {/* Premium Feature 2 - Events Near You */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg md:rounded-2xl border border-purple-200 md:border-2">
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg md:rounded-2xl border-2 border-green-400 md:border-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-green-500 text-white text-[8px] md:text-xs font-bold px-2 py-0.5 md:px-3 md:py-1 rounded-bl-lg">
+                LIVE ✓
+              </div>
               <div className="p-1.5 md:p-3 bg-purple-600 rounded-lg md:rounded-xl flex-shrink-0">
                 <MapPin className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
@@ -204,7 +217,10 @@ export default function PremiumPage() {
             </div>
 
             {/* Premium Feature 3 - Custom Analytics */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-lg md:rounded-2xl border border-green-200 md:border-2">
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-lg md:rounded-2xl border-2 border-green-400 md:border-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-green-500 text-white text-[8px] md:text-xs font-bold px-2 py-0.5 md:px-3 md:py-1 rounded-bl-lg">
+                LIVE ✓
+              </div>
               <div className="p-1.5 md:p-3 bg-green-600 rounded-lg md:rounded-xl flex-shrink-0">
                 <BarChart3 className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
@@ -217,14 +233,17 @@ export default function PremiumPage() {
             </div>
 
             {/* Premium Feature 4 - Online Payments */}
-            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg md:rounded-2xl border border-orange-200 md:border-2">
+            <div className="flex items-start gap-2 md:gap-4 p-2 md:p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg md:rounded-2xl border-2 border-green-400 md:border-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-green-500 text-white text-[8px] md:text-xs font-bold px-2 py-0.5 md:px-3 md:py-1 rounded-bl-lg">
+                LIVE ✓
+              </div>
               <div className="p-1.5 md:p-3 bg-orange-600 rounded-lg md:rounded-xl flex-shrink-0">
                 <CreditCard className="w-3 h-3 md:w-6 md:h-6 text-white" />
               </div>
               <div>
                 <h4 className="text-xs md:text-lg font-bold text-gray-900 mb-0.5 md:mb-2">Online Payments</h4>
                 <p className="text-[10px] md:text-base text-gray-600">
-                  Let customers pay securely through the app with Stripe. Automatic payment tracking and receipts
+                  Let customers pay securely with Stripe or Paystack. Automatic payment tracking, receipts, and collection analytics
                 </p>
               </div>
             </div>
