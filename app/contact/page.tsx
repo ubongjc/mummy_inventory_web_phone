@@ -3,14 +3,14 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import {
-  Package,
+  ArrowLeft,
   Send,
   CheckCircle,
   AlertCircle,
   Mail,
 } from 'lucide-react';
 
-export default function ContactPage() {
+export default function LoggedInContactPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -117,36 +117,18 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex flex-col">
-      {/* Navigation */}
-      <nav className="bg-white shadow-md border-b-2 border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <div className="p-1.5 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
-                <Package className="w-4 h-4 text-white" />
-              </div>
-              <h1 className="text-base font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
-                Very Simple Inventory
-              </h1>
-            </Link>
-            <div className="flex items-center gap-2 ml-4">
-              <Link
-                href="/auth/sign-in"
-                className="px-2.5 py-1 md:px-4 md:py-1.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md text-xs md:text-base whitespace-nowrap"
-              >
-                Log In
-              </Link>
-              <Link
-                href="/auth/sign-up"
-                className="px-2.5 py-1 md:px-4 md:py-1.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md text-xs md:text-base whitespace-nowrap"
-              >
-                <span className="md:hidden">Sign Up</span>
-                <span className="hidden md:inline">Sign Up Free</span>
-              </Link>
-            </div>
-          </div>
+      {/* Back to Dashboard Button */}
+      <div className="bg-white shadow-sm border-b border-gray-200 p-4">
+        <div className="max-w-7xl mx-auto">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors border-2 border-gray-300 shadow-sm"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </Link>
         </div>
-      </nav>
+      </div>
 
       {/* Contact Section - Centered and Compact */}
       <div className="flex-1 flex items-center justify-center p-4">
@@ -291,46 +273,6 @@ export default function ContactPage() {
           </div>
         </section>
       </div>
-
-      {/* Footer */}
-      <footer className="bg-white border-t-2 border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
-              <Package className="w-5 h-5 text-white" />
-            </div>
-            <h4 className="font-bold text-gray-900">Very Simple Inventory</h4>
-          </div>
-          <p className="text-gray-600 text-sm text-center mb-3">
-            Simple rental inventory management for businesses of all sizes.
-          </p>
-          <div className="border-t border-gray-200 pt-3">
-            <div className="flex justify-center gap-6 mb-3">
-              <Link
-                href="/"
-                className="text-gray-600 hover:text-blue-600 transition-colors text-sm font-semibold"
-              >
-                Home
-              </Link>
-              <Link
-                href="/faq"
-                className="text-gray-600 hover:text-blue-600 transition-colors text-sm font-semibold"
-              >
-                Frequently Asked Questions
-              </Link>
-              <Link
-                href="/contact"
-                className="text-gray-600 hover:text-blue-600 transition-colors text-sm font-semibold"
-              >
-                Contact Us
-              </Link>
-            </div>
-            <p className="text-gray-600 text-sm text-center">
-              © 2025 Very Simple Inventory. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

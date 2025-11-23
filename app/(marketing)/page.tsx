@@ -27,10 +27,6 @@ import {
   FileDown,
   ChevronDown,
   ChevronUp,
-  HelpCircle,
-  Mail,
-  Send,
-  AlertCircle,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -38,15 +34,6 @@ export default function HomePage() {
   const router = useRouter();
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
   const [isComparisonOpen, setIsComparisonOpen] = useState(false);
-  const [contactFormData, setContactFormData] = useState({
-    name: '',
-    email: '',
-    message: '',
-    website: '', // Honeypot field
-  });
-  const [contactStatus, setContactStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [contactErrorMessage, setContactErrorMessage] = useState('');
-  const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -54,113 +41,6 @@ export default function HomePage() {
       router.push('/dashboard');
     }
   }, [status, router]);
-
-  const handleContactFormChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setContactFormData({
-      ...contactFormData,
-      [name]: value,
-    });
-    // Clear error for this field when user starts typing
-    if (fieldErrors[name]) {
-      setFieldErrors({
-        ...fieldErrors,
-        [name]: '',
-      });
-    }
-  };
-
-  const validateContactForm = () => {
-    const errors: {[key: string]: string} = {};
-
-    // Name validation
-    if (!contactFormData.name.trim()) {
-      errors.name = 'Name is required';
-    } else if (contactFormData.name.length < 2) {
-      errors.name = 'Name must be at least 2 characters';
-    } else if (contactFormData.name.length > 100) {
-      errors.name = 'Name must be less than 100 characters';
-    } else if (!/^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/.test(contactFormData.name)) {
-      errors.name = 'Name can only contain letters, spaces, hyphens, and apostrophes';
-    }
-
-    // Email validation
-    if (!contactFormData.email.trim()) {
-      errors.email = 'Email is required';
-    } else if (contactFormData.email.length > 254) {
-      errors.email = 'Email must be less than 254 characters';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactFormData.email)) {
-      errors.email = 'Please enter a valid email address';
-    }
-
-    // Message validation
-    if (!contactFormData.message.trim()) {
-      errors.message = 'Message is required';
-    } else if (contactFormData.message.length < 10) {
-      errors.message = 'Message must be at least 10 characters';
-    } else if (contactFormData.message.length > 2000) {
-      errors.message = 'Message must be less than 2000 characters';
-    }
-
-    return errors;
-  };
-
-  const handleContactSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate form
-    const errors = validateContactForm();
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      return;
-    }
-
-    setContactStatus('loading');
-    setContactErrorMessage('');
-    setFieldErrors({});
-
-    try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: contactFormData.name.trim(),
-          email: contactFormData.email.trim(),
-          message: contactFormData.message.trim(),
-          subject: 'General Inquiry',
-          phone: '',
-          website: contactFormData.website, // Honeypot
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to send message');
-      }
-
-      setContactStatus('success');
-      setContactFormData({
-        name: '',
-        email: '',
-        message: '',
-        website: '',
-      });
-
-      // Reset success message after 8 seconds
-      setTimeout(() => setContactStatus('idle'), 8000);
-    } catch (error) {
-      setContactStatus('error');
-      const errorMessage = error instanceof Error ? error.message : 'Failed to send message';
-      setContactErrorMessage(
-        errorMessage.includes('rate limit')
-          ? errorMessage
-          : 'Failed to send message. Please try again or email us directly at support@verysimpleinventory.com'
-      );
-    }
-  };
 
   // Show loading spinner while checking authentication or redirecting
   if (status === 'loading' || status === 'authenticated') {
@@ -893,263 +773,40 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Get Help - Q&A Section */}
-      <section id="faq" className="max-w-7xl mx-auto px-4 py-8 md:py-16 mb-4 md:mb-16">
-        <div className="text-center mb-8 md:mb-12">
-          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full font-semibold text-xs mb-4">
-            <HelpCircle className="w-4 h-4" />
-            Get Help
-          </div>
-          <h3 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2 md:mb-4">
-            Frequently Asked Questions
-          </h3>
-          <p className="text-sm md:text-lg text-gray-600">
-            Find answers to common questions about Very Simple Inventory
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-4 md:gap-6 mb-8">
-          {/* Q&A 1 */}
-          <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6 border-2 border-blue-100">
-            <h4 className="text-base md:text-lg font-bold text-gray-900 mb-2 flex items-start gap-2">
-              <HelpCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              What is Very Simple Inventory?
-            </h4>
-            <p className="text-sm md:text-base text-gray-700">
-              Very Simple Inventory is a rental management platform that helps you track your
-              inventory, bookings, and customers all in one place. It's designed to be simple and
-              easy to use, with no complicated setup required.
-            </p>
-          </div>
-
-          {/* Q&A 2 */}
-          <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6 border-2 border-purple-100">
-            <h4 className="text-base md:text-lg font-bold text-gray-900 mb-2 flex items-start gap-2">
-              <HelpCircle className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
-              Is it really free?
-            </h4>
-            <p className="text-sm md:text-base text-gray-700">
-              Yes! We offer a free forever plan with essential features including up to 15 items,
-              50 customers, and 25 bookings per month. No credit card required to get started.
-            </p>
-          </div>
-
-          {/* Q&A 3 */}
-          <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6 border-2 border-green-100">
-            <h4 className="text-base md:text-lg font-bold text-gray-900 mb-2 flex items-start gap-2">
-              <HelpCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-              How do I track my inventory?
-            </h4>
-            <p className="text-sm md:text-base text-gray-700">
-              Simply add your rental items with quantities and details. The system automatically
-              tracks availability, reservations, and sends low stock alerts when needed.
-            </p>
-          </div>
-
-          {/* Q&A 4 */}
-          <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6 border-2 border-orange-100">
-            <h4 className="text-base md:text-lg font-bold text-gray-900 mb-2 flex items-start gap-2">
-              <HelpCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-              Can I use it on my phone?
-            </h4>
-            <p className="text-sm md:text-base text-gray-700">
-              Absolutely! Very Simple Inventory is fully responsive and works perfectly on all
-              devices - phones, tablets, and desktops. Manage your business from anywhere.
-            </p>
-          </div>
-
-          {/* Q&A 5 */}
-          <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6 border-2 border-pink-100">
-            <h4 className="text-base md:text-lg font-bold text-gray-900 mb-2 flex items-start gap-2">
-              <HelpCircle className="w-5 h-5 text-pink-600 flex-shrink-0 mt-0.5" />
-              What about premium features?
-            </h4>
-            <p className="text-sm md:text-base text-gray-700">
-              Premium features like tax calculators, online payments, automated notifications, and
-              unlimited items are coming soon. Sign up for free now and we'll notify you when
-              they're available.
-            </p>
-          </div>
-
-          {/* Q&A 6 */}
-          <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6 border-2 border-indigo-100">
-            <h4 className="text-base md:text-lg font-bold text-gray-900 mb-2 flex items-start gap-2">
-              <HelpCircle className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
-              How do I get support?
-            </h4>
-            <p className="text-sm md:text-base text-gray-700">
-              We provide email support at support@verysimpleinventory.com. Use the contact form
-              below to send us a message, and we'll respond within 24 hours.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Us Section */}
-      <section className="max-w-7xl mx-auto px-4 py-8 md:py-16 mb-8 md:mb-16">
-        <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-12 border-4 border-blue-200">
-          <div className="text-center mb-6 md:mb-8">
-            <div className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full font-semibold text-sm mb-4">
-              <Mail className="w-4 h-4" />
-              Contact Us
-            </div>
-            <h3 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2 md:mb-4">
-              Get in Touch
-            </h3>
-            <p className="text-sm md:text-lg text-gray-700 max-w-2xl mx-auto mb-4">
-              Have a question, feedback, or need help? We're here to assist you!
-            </p>
-            <div className="flex items-center justify-center gap-2 text-blue-600 font-bold text-base md:text-lg">
-              <Mail className="w-5 h-5" />
-              <a
-                href="mailto:support@verysimpleinventory.com"
-                className="hover:text-blue-800 transition-colors"
-              >
-                support@verysimpleinventory.com
-              </a>
-            </div>
-          </div>
-
-          <div className="max-w-2xl mx-auto">
-            {contactStatus === 'success' && (
-              <div className="mb-6 p-4 bg-green-50 border-2 border-green-200 rounded-xl flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-green-800 font-bold">Message sent successfully!</p>
-                  <p className="text-green-700 text-sm">
-                    We'll get back to you as soon as possible.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {contactStatus === 'error' && (
-              <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-xl flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-red-700 text-sm">{contactErrorMessage}</p>
-              </div>
-            )}
-
-            <form onSubmit={handleContactSubmit} className="space-y-4">
-              {/* Honeypot field - hidden from users, catches bots */}
-              <input
-                type="text"
-                name="website"
-                value={contactFormData.website}
-                onChange={handleContactFormChange}
-                style={{ position: 'absolute', left: '-9999px', opacity: 0, pointerEvents: 'none' }}
-                tabIndex={-1}
-                autoComplete="off"
-                aria-hidden="true"
-              />
-
-              <div>
-                <label className="block text-sm font-bold text-gray-900 mb-2">
-                  Your Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={contactFormData.name}
-                  onChange={handleContactFormChange}
-                  maxLength={100}
-                  className={`w-full px-4 py-3 border-2 ${
-                    fieldErrors.name ? 'border-red-500' : 'border-gray-300'
-                  } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 font-medium transition-all bg-white`}
-                  placeholder="John Doe"
-                  disabled={contactStatus === 'loading'}
-                />
-                {fieldErrors.name && (
-                  <p className="text-red-600 text-xs mt-1 font-semibold">{fieldErrors.name}</p>
-                )}
-                <p className="text-gray-500 text-xs mt-1">{contactFormData.name.length}/100</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-900 mb-2">
-                  Email Address <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={contactFormData.email}
-                  onChange={handleContactFormChange}
-                  maxLength={254}
-                  className={`w-full px-4 py-3 border-2 ${
-                    fieldErrors.email ? 'border-red-500' : 'border-gray-300'
-                  } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 font-medium transition-all bg-white`}
-                  placeholder="john@example.com"
-                  disabled={contactStatus === 'loading'}
-                />
-                {fieldErrors.email && (
-                  <p className="text-red-600 text-xs mt-1 font-semibold">{fieldErrors.email}</p>
-                )}
-                <p className="text-gray-500 text-xs mt-1">{contactFormData.email.length}/254</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-900 mb-2">
-                  Your Message <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  name="message"
-                  value={contactFormData.message}
-                  onChange={handleContactFormChange}
-                  maxLength={2000}
-                  rows={5}
-                  className={`w-full px-4 py-3 border-2 ${
-                    fieldErrors.message ? 'border-red-500' : 'border-gray-300'
-                  } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 font-medium transition-all resize-none bg-white`}
-                  placeholder="Tell us how we can help you..."
-                  disabled={contactStatus === 'loading'}
-                />
-                {fieldErrors.message && (
-                  <p className="text-red-600 text-xs mt-1 font-semibold">{fieldErrors.message}</p>
-                )}
-                <p className={`text-xs mt-1 ${
-                  contactFormData.message.length >= 2000 ? 'text-red-600 font-bold' : 'text-gray-500'
-                }`}>
-                  {contactFormData.message.length}/2000 characters
-                  {contactFormData.message.length < 10 && contactFormData.message.length > 0 && ' (minimum 10)'}
-                </p>
-              </div>
-
-              <button
-                type="submit"
-                disabled={contactStatus === 'loading'}
-                className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base md:text-lg"
-              >
-                {contactStatus === 'loading' ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-5 h-5" />
-                    Send Message
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
-
       {/* Footer */}
-      <footer className="bg-white border-t-2 border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
+      <footer className="bg-white border-t-2 border-gray-200 mt-8 md:mt-12">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="flex items-center justify-center gap-2 mb-3">
             <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
               <Package className="w-5 h-5 text-white" />
             </div>
             <h4 className="font-bold text-gray-900">Very Simple Inventory</h4>
           </div>
-          <p className="text-gray-600 text-sm text-center mb-4">
+          <p className="text-gray-600 text-sm text-center mb-3">
             Simple rental inventory management for businesses of all sizes.
           </p>
-          <div className="border-t border-gray-200 pt-4 text-center">
-            <p className="text-gray-600 text-sm">
+          <div className="border-t border-gray-200 pt-3">
+            <div className="flex justify-center gap-6 mb-3">
+              <Link
+                href="/"
+                className="text-gray-600 hover:text-blue-600 transition-colors text-sm font-semibold"
+              >
+                Home
+              </Link>
+              <Link
+                href="/faq"
+                className="text-gray-600 hover:text-blue-600 transition-colors text-sm font-semibold"
+              >
+                Frequently Asked Questions
+              </Link>
+              <Link
+                href="/contact"
+                className="text-gray-600 hover:text-blue-600 transition-colors text-sm font-semibold"
+              >
+                Contact Us
+              </Link>
+            </div>
+            <p className="text-gray-600 text-sm text-center">
               © 2025 Very Simple Inventory. All rights reserved.
             </p>
           </div>

@@ -15,7 +15,7 @@ export interface SendEmailOptions {
 export async function sendEmail({ to, subject, html, text }: SendEmailOptions) {
   try {
     const { data, error } = await resend.emails.send({
-      from: `${process.env.EMAIL_FROM_NAME || 'VerySimple Inventory'} <${process.env.EMAIL_FROM_ADDRESS}>`,
+      from: `${process.env.EMAIL_FROM_NAME || 'Very Simple Inventory'} <${process.env.EMAIL_FROM_ADDRESS}>`,
       to,
       subject,
       html,
@@ -137,14 +137,13 @@ export async function sendEmailVerification(email: string, verificationToken: st
       <body>
         <div class="container">
           <div class="header">
-            <div class="logo">VSI</div>
             <h1>Verify Your Email</h1>
-            <p>Welcome to VerySimple Inventory!</p>
+            <p>Welcome to Very Simple Inventory!</p>
           </div>
 
           <p>Hello,</p>
 
-          <p>Thank you for signing up! To get started with VerySimple Inventory, please verify your email address by clicking the button below:</p>
+          <p>Thank you for signing up! To get started with Very Simple Inventory, please verify your email address by clicking the button below:</p>
 
           <div style="text-align: center;">
             <a href="${verificationUrl}" class="button">Verify Email Address</a>
@@ -165,7 +164,7 @@ export async function sendEmailVerification(email: string, verificationToken: st
 
           <div class="footer">
             <p>This is an automated email, please do not reply.</p>
-            <p>&copy; ${new Date().getFullYear()} VerySimple Inventory. All rights reserved.</p>
+            <p>&copy; ${new Date().getFullYear()} Very Simple Inventory. All rights reserved.</p>
           </div>
         </div>
       </body>
@@ -177,7 +176,7 @@ Verify Your Email
 
 Hello,
 
-Thank you for signing up for VerySimple Inventory! To get started, please verify your email address by clicking the link below:
+Thank you for signing up for Very Simple Inventory! To get started, please verify your email address by clicking the link below:
 
 ${verificationUrl}
 
@@ -192,7 +191,7 @@ This is an automated email, please do not reply.
 
   return sendEmail({
     to: email,
-    subject: 'Verify Your Email - VerySimple Inventory',
+    subject: 'Verify Your Email - Very Simple Inventory',
     html,
     text,
   });
@@ -300,14 +299,13 @@ export async function sendPasswordResetEmail(email: string, resetToken: string) 
       <body>
         <div class="container">
           <div class="header">
-            <div class="logo">VSI</div>
             <h1>Reset Your Password</h1>
             <p>We received a request to reset your password</p>
           </div>
 
           <p>Hello,</p>
 
-          <p>You recently requested to reset your password for your VerySimple Inventory account. Click the button below to reset it:</p>
+          <p>You recently requested to reset your password for your Very Simple Inventory account. Click the button below to reset it:</p>
 
           <div style="text-align: center;">
             <a href="${resetUrl}" class="button">Reset Password</a>
@@ -326,7 +324,7 @@ export async function sendPasswordResetEmail(email: string, resetToken: string) 
 
           <div class="footer">
             <p>This is an automated email, please do not reply.</p>
-            <p>&copy; ${new Date().getFullYear()} VerySimple Inventory. All rights reserved.</p>
+            <p>&copy; ${new Date().getFullYear()} Very Simple Inventory. All rights reserved.</p>
           </div>
         </div>
       </body>
@@ -338,7 +336,7 @@ Reset Your Password
 
 Hello,
 
-You recently requested to reset your password for your VerySimple Inventory account.
+You recently requested to reset your password for your Very Simple Inventory account.
 
 Click this link to reset it (expires in 1 hour):
 ${resetUrl}
@@ -350,7 +348,7 @@ This is an automated email, please do not reply.
 
   return sendEmail({
     to: email,
-    subject: 'Reset Your Password - VerySimple Inventory',
+    subject: 'Reset Your Password - Very Simple Inventory',
     html,
     text,
   });
