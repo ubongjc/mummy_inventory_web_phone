@@ -433,29 +433,27 @@ export default function SettingsPage() {
         {/* Navigation Header */}
         <div className="bg-white rounded-lg shadow-md p-2 mb-2 border border-gray-200">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white rounded-lg font-semibold transition-all duration-200 shadow-md text-xs"
+            >
+              <ArrowLeft className="w-3 h-3" />
+              Back
+            </Link>
+            <div className="flex items-center gap-1.5 absolute left-1/2 transform -translate-x-1/2">
               <div className="p-1 bg-gradient-to-br from-orange-500 to-red-600 rounded-md flex-shrink-0">
                 <SettingsIcon className="w-4 h-4 text-white" />
               </div>
               <h1 className="text-sm sm:text-lg font-bold text-black">Settings</h1>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white rounded-lg font-semibold transition-all duration-200 shadow-md text-xs"
-              >
-                <ArrowLeft className="w-3 h-3" />
-                Back
-              </Link>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-md font-semibold transition-all text-[10px] sm:text-xs disabled:opacity-50"
-              >
-                <Save className="w-3 h-3" />
-                {saving ? "Saving..." : "Save"}
-              </button>
-            </div>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-md font-semibold transition-all text-[10px] sm:text-xs disabled:opacity-50"
+            >
+              <Save className="w-3 h-3" />
+              {saving ? "Saving..." : "Save"}
+            </button>
           </div>
         </div>
 
