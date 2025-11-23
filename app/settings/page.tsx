@@ -503,7 +503,7 @@ export default function SettingsPage() {
             <div className="flex items-start gap-1">
               <AlertTriangle className="w-3 h-3 text-blue-600 flex-shrink-0 mt-0.5" />
               <p className="text-[10px] text-blue-800">
-                <span className="font-bold">Note:</span> Name can't be changed.{' '}
+                <span className="font-bold">Note:</span> Name cannot be changed.{' '}
                 <Link href="/contact" className="font-bold underline hover:text-blue-900">
                   Contact support
                 </Link> if needed.
