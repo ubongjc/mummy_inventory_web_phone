@@ -20,16 +20,24 @@ export async function GET() {
 
     if (!settings) {
       // Create default settings for this user
-      // Copy businessName from User if it exists
+      // First verify user exists to avoid foreign key constraint error
       const user = await prisma.user.findUnique({
         where: { id: session.user.id },
         select: { businessName: true }
       });
 
+      if (!user) {
+        secureLog("[ERROR] User not found when creating settings", { userId: session.user.id });
+        return NextResponse.json(
+          { error: "User not found. Please log out and log in again." },
+          { status: 404 }
+        );
+      }
+
       settings = await prisma.settings.create({
         data: {
           userId: session.user.id,
-          businessName: user?.businessName || null
+          businessName: user.businessName || null
         },
       });
     }

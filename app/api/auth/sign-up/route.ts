@@ -31,8 +31,7 @@ const signUpSchema = z.object({
   firstName: z
     .string()
     .min(1, "First name is required")
-    .max(50, "First name must be 50 characters or less")
-    .optional(),
+    .max(50, "First name must be 50 characters or less"),
   lastName: z
     .string()
     .max(50, "Last name must be 50 characters or less")
@@ -61,9 +60,7 @@ export async function POST(request: NextRequest) {
 
     // Sanitize inputs
     const email = sanitizeEmail(validated.email);
-    const firstName = validated.firstName
-      ? sanitizeString(validated.firstName)
-      : undefined;
+    const firstName = sanitizeString(validated.firstName);
     const lastName = validated.lastName
       ? sanitizeString(validated.lastName)
       : undefined;
