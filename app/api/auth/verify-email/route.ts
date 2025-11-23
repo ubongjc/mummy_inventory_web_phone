@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { applyRateLimit, RateLimitPresets, secureLog } from '@/app/lib/security';
+import { sendWelcomeEmail } from '@/app/lib/email';
 import { z } from 'zod';
 
 const verifyEmailSchema = z.object({
@@ -64,11 +65,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Update user email verification status and mark token as used in a transaction
-    await prisma.$transaction([
+    const [updatedUser] = await prisma.$transaction([
       // Mark email as verified
       prisma.user.update({
         where: { id: emailVerification.userId },
         data: { emailVerified: true },
+        select: { id: true, email: true, name: true },
       }),
       // Mark token as used
       prisma.emailVerification.update({
@@ -81,6 +83,13 @@ export async function POST(request: NextRequest) {
       userId: emailVerification.userId,
       email: emailVerification.user.email,
     });
+
+    // Send welcome email (don't wait for it - send async)
+    sendWelcomeEmail(updatedUser.email, updatedUser.name || undefined)
+      .catch((error) => {
+        console.error('[EMAIL] Failed to send welcome email:', error);
+        // Don't fail the verification if welcome email fails
+      });
 
     return NextResponse.json({
       message: 'Email verified successfully',
@@ -141,11 +150,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Update user email verification status and mark token as used in a transaction
-    await prisma.$transaction([
+    const [updatedUser] = await prisma.$transaction([
       // Mark email as verified
       prisma.user.update({
         where: { id: emailVerification.userId },
         data: { emailVerified: true },
+        select: { id: true, email: true, name: true },
       }),
       // Mark token as used
       prisma.emailVerification.update({
@@ -158,6 +168,13 @@ export async function GET(request: NextRequest) {
       userId: emailVerification.userId,
       email: emailVerification.user.email,
     });
+
+    // Send welcome email (don't wait for it - send async)
+    sendWelcomeEmail(updatedUser.email, updatedUser.name || undefined)
+      .catch((error) => {
+        console.error('[EMAIL] Failed to send welcome email:', error);
+        // Don't fail the verification if welcome email fails
+      });
 
     // Redirect to success page
     return NextResponse.redirect(new URL('/auth/verify-email-success', request.url));

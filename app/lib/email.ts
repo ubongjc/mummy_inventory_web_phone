@@ -226,6 +226,159 @@ This is an automated email, please do not reply.
 }
 
 /**
+ * Send welcome email after successful email verification
+ */
+export async function sendWelcomeEmail(email: string, userName?: string) {
+  const signInUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/sign-in`;
+  const faqUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/faq`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body {
+            font-family: Arial, Helvetica, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+          }
+          .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 30px;
+          }
+          h1 {
+            color: #1f2937;
+            margin: 0 0 10px 0;
+            font-size: 24px;
+          }
+          p {
+            color: #4b5563;
+            margin: 0 0 20px 0;
+          }
+          .button {
+            display: inline-block;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 10px 0;
+          }
+          .button:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #653a8a 100%);
+          }
+          .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+          }
+          .success {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            padding: 12px;
+            margin: 20px 0;
+            border-radius: 4px;
+          }
+          .success p {
+            margin: 0;
+            color: #065f46;
+            font-size: 14px;
+          }
+          .link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🎉 Welcome to Very Simple Inventory!</h1>
+            <p>Your email has been verified successfully</p>
+          </div>
+
+          <div class="success">
+            <p><strong>✓ Email Verified!</strong> You're all set to start managing your rental business.</p>
+          </div>
+
+          <p>Hello${userName ? ` ${userName}` : ''},</p>
+
+          <p>Thank you for verifying your email! You now have full access to all features:</p>
+
+          <p style="margin-left: 20px; margin-bottom: 15px;">
+            ✓ Track up to 15 items<br>
+            ✓ Manage 50 customers<br>
+            ✓ Create 25 bookings per month<br>
+            ✓ Calendar booking management
+          </p>
+
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${signInUrl}" class="button">Sign In Now</a>
+          </div>
+
+          <p style="text-align: center; font-size: 14px;">
+            Need help getting started? <a href="${faqUrl}" class="link">Check our FAQ</a>
+          </p>
+
+          <div class="footer">
+            <p>This is an automated email, please do not reply.</p>
+            <p>&copy; ${new Date().getFullYear()} Very Simple Inventory. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  const text = `
+Welcome to Very Simple Inventory!
+
+Email Verified Successfully
+
+Hello${userName ? ` ${userName}` : ''},
+
+Thank you for verifying your email! You now have full access to all features:
+
+- Track up to 15 items
+- Manage 50 customers
+- Create 25 bookings per month
+- Calendar booking management
+
+Sign in now: ${signInUrl}
+
+Need help getting started? Visit our FAQ: ${faqUrl}
+
+This is an automated email, please do not reply.
+
+© ${new Date().getFullYear()} Very Simple Inventory. All rights reserved.
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: 'Welcome to Very Simple Inventory! 🎉',
+    html,
+    text,
+  });
+}
+
+/**
  * Send password reset email
  */
 export async function sendPasswordResetEmail(email: string, resetToken: string) {
