@@ -21,62 +21,50 @@ export default function FAQPage() {
     {
       question: "What is Very Simple Inventory?",
       answer: "Very Simple Inventory is a rental management platform that helps you track your inventory, bookings, and customers all in one place. It's designed to be simple and easy to use, with no complicated setup required.",
-      color: "blue"
     },
     {
       question: "Is Very Simple Inventory really free?",
       answer: "Yes! We offer a free forever plan with essential features including up to 15 items, 50 customers, and 25 bookings per month. No credit card required to get started.",
-      color: "purple"
     },
     {
       question: "Do I need a credit card to sign up?",
       answer: "No! You can sign up and start using Very Simple Inventory without providing any payment information. Our free plan is truly free forever.",
-      color: "green"
     },
     {
       question: "What kind of businesses can use Very Simple Inventory?",
       answer: "Any business that rents out items! Party equipment rentals, event venues, tool rentals, costume rentals, camera equipment rentals, and more. If you rent things to customers, Very Simple Inventory can help you manage it.",
-      color: "orange"
     },
     {
       question: "Can I track multiple items in a single booking?",
       answer: "Yes! You can add multiple items to a single booking. This makes it easy to track complex rentals where a customer is renting several items at once.",
-      color: "pink"
     },
     {
       question: "How does the availability checker work?",
       answer: "The availability checker shows you which items are available for a specific date range. It automatically accounts for existing bookings and item quantities, so you always know what's available to rent.",
-      color: "indigo"
     },
     {
       question: "What are the limits on the free plan?",
       answer: "The free plan includes up to 15 items, 50 customers, 15 active bookings, and 25 bookings per month. Your booking history is kept for the last 3 months. These limits are perfect for small businesses getting started.",
-      color: "cyan"
     },
     {
       question: "Can I export my data?",
       answer: "Data export will be available in the premium plan (coming soon). You'll be able to export your data in CSV, Excel, and PDF formats.",
-      color: "amber"
     },
     {
       question: "Is my data secure?",
       answer: "Yes! We take security seriously. All data is encrypted in transit and at rest. We use industry-standard security practices and are hosted on secure infrastructure. Your business data is safe with us.",
-      color: "emerald"
     },
     {
       question: "Can I use this on my mobile phone?",
       answer: "Absolutely! Very Simple Inventory is fully responsive and works perfectly on all devices - phones, tablets, and desktops. Manage your business from anywhere.",
-      color: "rose"
     },
     {
       question: "What premium features are coming?",
       answer: "Premium features include unlimited items and bookings, tax calculator, events near you, custom analytics, online payments, customer reminders, automated notifications, public booking page, team collaboration, wholesale supplier connections, and data export.",
-      color: "violet"
     },
     {
       question: "How do I get support?",
       answer: "You can reach us via email at support@verysimpleinventory.com. We aim to respond to all inquiries as soon as possible.",
-      color: "teal"
     }
   ];
 
@@ -129,36 +117,50 @@ export default function FAQPage() {
         </div>
 
         <div className="space-y-3 mb-6">
-          {faqs.map((faq, index) => (
-            <div
-              key={index}
-              className={`bg-white rounded-lg md:rounded-xl shadow-lg border-2 border-${faq.color}-100 overflow-hidden transition-all`}
-            >
-              <button
-                onClick={() => toggleQuestion(index)}
-                className="w-full flex items-center justify-between p-3 md:p-4 hover:bg-gray-50 transition-colors"
+          {faqs.map((faq, index) => {
+            // Alternate colors: even index = blue, odd index = purple
+            const isBlue = index % 2 === 0;
+            return (
+              <div
+                key={index}
+                className={`bg-white rounded-lg md:rounded-xl shadow-lg border-2 ${
+                  isBlue ? 'border-blue-100' : 'border-purple-100'
+                } overflow-hidden transition-all`}
               >
-                <div className="flex items-start gap-2 flex-1 text-left">
-                  <HelpCircle className={`w-4 h-4 text-${faq.color}-600 flex-shrink-0 mt-0.5`} />
-                  <h4 className="text-sm md:text-base font-bold text-gray-900">
-                    {faq.question}
-                  </h4>
-                </div>
-                {openIndex === index ? (
-                  <ChevronUp className={`w-5 h-5 text-${faq.color}-600 flex-shrink-0`} />
-                ) : (
-                  <ChevronDown className={`w-5 h-5 text-${faq.color}-600 flex-shrink-0`} />
+                <button
+                  onClick={() => toggleQuestion(index)}
+                  className="w-full flex items-center justify-between p-3 md:p-4 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-start gap-2 flex-1 text-left">
+                    {/* Question mark icon - alternates blue/purple */}
+                    <HelpCircle className={`w-4 h-4 ${
+                      isBlue ? 'text-blue-600' : 'text-purple-600'
+                    } flex-shrink-0 mt-0.5`} />
+                    <h4 className="text-sm md:text-base font-bold text-gray-900">
+                      {faq.question}
+                    </h4>
+                  </div>
+                  {/* Chevron icons - alternates blue/purple */}
+                  {openIndex === index ? (
+                    <ChevronUp className={`w-5 h-5 ${
+                      isBlue ? 'text-blue-600' : 'text-purple-600'
+                    } flex-shrink-0`} />
+                  ) : (
+                    <ChevronDown className={`w-5 h-5 ${
+                      isBlue ? 'text-blue-600' : 'text-purple-600'
+                    } flex-shrink-0`} />
+                  )}
+                </button>
+                {openIndex === index && (
+                  <div className="px-3 md:px-4 pb-3 md:pb-4 pt-0">
+                    <p className="text-xs md:text-sm text-gray-700 pl-6">
+                      {faq.answer}
+                    </p>
+                  </div>
                 )}
-              </button>
-              {openIndex === index && (
-                <div className="px-3 md:px-4 pb-3 md:pb-4 pt-0">
-                  <p className="text-xs md:text-sm text-gray-700 pl-6">
-                    {faq.answer}
-                  </p>
-                </div>
-              )}
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
 
         {/* Call to Action */}
