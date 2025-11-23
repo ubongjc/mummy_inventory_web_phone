@@ -208,7 +208,7 @@ export default function SignUpPage() {
 
               <div>
                 <label className="block text-xs md:text-sm font-bold text-black mb-1 md:mb-2">
-                  Last Name
+                  Last Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -225,6 +225,21 @@ export default function SignUpPage() {
                     </p>
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* Name Permanence Warning */}
+            <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs md:text-sm text-amber-900 font-bold">
+                    Important: Your name cannot be changed after signing up
+                  </p>
+                  <p className="text-[10px] md:text-xs text-amber-800 mt-1">
+                    Please double-check your first and last name before continuing. These details will be permanent.
+                  </p>
+                </div>
               </div>
             </div>
 

@@ -499,6 +499,16 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
+
+          {/* Name Permanence Notice */}
+          <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-blue-800">
+                <span className="font-bold">Note:</span> Your first and last name cannot be changed. If you need to update this information, please contact support.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Business Information */}
