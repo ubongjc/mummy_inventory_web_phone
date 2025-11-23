@@ -442,10 +442,10 @@ export default function SettingsPage() {
             <div className="flex items-center gap-1.5">
               <Link
                 href="/dashboard"
-                className="flex items-center gap-1 px-2 py-1 bg-gray-700 hover:bg-gray-800 text-white rounded-md font-semibold transition-all text-[10px] sm:text-xs"
+                className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white rounded-lg font-semibold transition-all duration-200 shadow-md text-xs"
               >
                 <ArrowLeft className="w-3 h-3" />
-                <span className="hidden sm:inline">Back</span>
+                Back
               </Link>
               <button
                 onClick={handleSave}

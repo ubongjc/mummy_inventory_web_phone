@@ -179,15 +179,15 @@ export default function ContactPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex flex-col">
       {/* Navigation - Conditional based on auth status */}
       {session ? (
-        // Logged in users see Back to Dashboard button
+        // Logged in users see Back button
         <div className="bg-white shadow-sm border-b border-gray-200 p-4">
           <div className="max-w-7xl mx-auto">
             <Link
               href="/dashboard"
-              className="flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 bg-gradient-to-r from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white rounded-lg sm:rounded-xl font-semibold transition-all duration-200 shadow-md sm:shadow-lg text-xs sm:text-sm inline-flex"
+              className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white rounded-lg font-semibold transition-all duration-200 shadow-md text-xs inline-flex"
             >
-              <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
-              Back to Dashboard
+              <ArrowLeft className="w-3 h-3" />
+              Back
             </Link>
           </div>
         </div>

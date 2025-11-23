@@ -142,10 +142,10 @@ export default function PremiumPage() {
           <div className="flex items-center gap-2 md:gap-4">
             <Link
               href="/"
-              className="flex items-center gap-1 md:gap-2 px-2 py-1 md:px-4 md:py-2 bg-gradient-to-r from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white rounded-lg font-semibold transition-all duration-200 shadow-md text-xs md:text-sm"
+              className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white rounded-lg font-semibold transition-all duration-200 shadow-md text-xs"
             >
-              <ArrowLeft className="w-3 h-3 md:w-4 md:h-4" />
-              <span className="hidden sm:inline">Back to Home</span>
+              <ArrowLeft className="w-3 h-3" />
+              Back
             </Link>
             <div className="flex-1">
               <h1 className="text-sm md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-1 md:gap-2">
