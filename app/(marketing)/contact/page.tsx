@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import {
   Package,
@@ -22,6 +22,20 @@ export default function ContactPage() {
     message: '',
     website: '', // Honeypot field for spam protection
   });
+
+  // Pre-populate name and email for logged-in users
+  useEffect(() => {
+    if (session?.user) {
+      const fullName = [session.user.firstName, session.user.lastName]
+        .filter(Boolean)
+        .join(' ');
+      setFormData((prev) => ({
+        ...prev,
+        name: fullName || '',
+        email: session.user.email || '',
+      }));
+    }
+  }, [session]);
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [validationErrors, setValidationErrors] = useState({

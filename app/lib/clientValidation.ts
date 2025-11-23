@@ -69,9 +69,10 @@ export const signUpFormSchema = z
     firstName: firstNameValidation,
     lastName: z
       .string()
+      .min(1, "Last name is required")
       .max(50, "Last name must be less than 50 characters")
-      .regex(/^[A-Za-zÀ-ÖØ-öø-ÿ' -]*$/, "Last name can only contain letters, spaces, hyphens, and apostrophes")
-      .transform((val) => (val ? sanitizeInput(val) : "")),
+      .regex(/^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/, "Last name can only contain letters, spaces, hyphens, and apostrophes")
+      .transform(sanitizeInput),
     businessName: z
       .string()
       .max(25, "Business name must be less than 25 characters")

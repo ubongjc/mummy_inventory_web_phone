@@ -474,16 +474,43 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {/* Business Information */}
-        <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-200">
-          <div className="flex items-center gap-2 mb-3 sm:mb-4">
-            <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
-            <h2 className="text-lg sm:text-xl font-bold text-black">Business Information</h2>
+        {/* Personal Information */}
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-5 mb-4 border border-gray-200">
+          <div className="flex items-center gap-2 mb-3">
+            <User className="w-5 h-5 text-indigo-600" />
+            <h2 className="text-base sm:text-lg font-bold text-black">Personal Information</h2>
           </div>
 
-          <div className="space-y-3 sm:space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-bold text-black mb-2">
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">
+                First Name
+              </label>
+              <div className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-black font-medium text-sm">
+                {userProfile?.firstName || 'Not set'}
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">
+                Last Name
+              </label>
+              <div className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-black font-medium text-sm">
+                {userProfile?.lastName || 'Not set'}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Business Information */}
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-5 mb-4 border border-gray-200">
+          <div className="flex items-center gap-2 mb-3">
+            <Building2 className="w-5 h-5 text-blue-600" />
+            <h2 className="text-base sm:text-lg font-bold text-black">Business Information</h2>
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">
                 Business Name <span className="text-gray-500 font-normal">(Optional)</span>
               </label>
               <input
@@ -514,7 +541,7 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-black mb-2">Business Phone</label>
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Business Phone</label>
               <input
                 type="tel"
                 value={settings.businessPhone || ""}
@@ -546,7 +573,7 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-black mb-2">Business Email</label>
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Business Email</label>
               <input
                 type="email"
                 value={settings.businessEmail || ""}
@@ -578,7 +605,7 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-black mb-2">Business Address</label>
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Business Address</label>
               <textarea
                 value={settings.businessAddress || ""}
                 onChange={(e) => updateSetting("businessAddress", e.target.value || null)}
@@ -592,14 +619,14 @@ export default function SettingsPage() {
         </div>
 
         {/* Currency */}
-        <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-200">
-          <div className="flex items-center gap-2 mb-3 sm:mb-4">
-            <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-            <h2 className="text-lg sm:text-xl font-bold text-black">Currency</h2>
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-5 mb-4 border border-gray-200">
+          <div className="flex items-center gap-2 mb-3">
+            <DollarSign className="w-5 h-5 text-green-600" />
+            <h2 className="text-base sm:text-lg font-bold text-black">Currency</h2>
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-black mb-2">
+            <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">
               Currency <span className="text-red-500">*</span>
             </label>
             <select
@@ -617,14 +644,14 @@ export default function SettingsPage() {
         </div>
 
         {/* Timezone */}
-        <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-200">
-          <div className="flex items-center gap-2 mb-3 sm:mb-4">
-            <Globe className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
-            <h2 className="text-lg sm:text-xl font-bold text-black">Timezone</h2>
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-5 mb-4 border border-gray-200">
+          <div className="flex items-center gap-2 mb-3">
+            <Globe className="w-5 h-5 text-purple-600" />
+            <h2 className="text-base sm:text-lg font-bold text-black">Timezone</h2>
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-black mb-2">
+            <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">
               Timezone <span className="text-red-500">*</span>
             </label>
             <select

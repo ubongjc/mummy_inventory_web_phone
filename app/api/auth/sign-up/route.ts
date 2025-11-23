@@ -34,8 +34,8 @@ const signUpSchema = z.object({
     .max(50, "First name must be 50 characters or less"),
   lastName: z
     .string()
-    .max(50, "Last name must be 50 characters or less")
-    .optional(),
+    .min(1, "Last name is required")
+    .max(50, "Last name must be 50 characters or less"),
   businessName: z
     .string()
     .max(25, "Business name must be 25 characters or less")
