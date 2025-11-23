@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 export interface SendEmailOptions {
   to: string;
@@ -8,11 +9,33 @@ export interface SendEmailOptions {
 }
 
 /**
- * Send an email using SMTP (Gmail)
+ * Send an email using Resend (preferred) or fallback to SMTP
  */
 export async function sendEmail({ to, subject, html, text }: SendEmailOptions) {
   try {
-    // Create transporter using Gmail SMTP
+    const fromAddress = process.env.EMAIL_FROM_ADDRESS || process.env.SMTP_USER;
+    const fromName = process.env.EMAIL_FROM_NAME || 'Very Simple Inventory';
+    const from = `${fromName} <${fromAddress}>`;
+
+    // Try Resend first (better deliverability)
+    if (process.env.RESEND_API_KEY) {
+      console.log('[EMAIL] Using Resend for better deliverability');
+      const resend = new Resend(process.env.RESEND_API_KEY);
+
+      const result = await resend.emails.send({
+        from,
+        to,
+        subject,
+        html,
+        text,
+      });
+
+      console.log('[EMAIL] Resend message sent:', result.data?.id);
+      return { success: true, messageId: result.data?.id };
+    }
+
+    // Fallback to SMTP (Gmail)
+    console.log('[EMAIL] Using SMTP fallback');
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.SMTP_PORT || '587'),
@@ -25,14 +48,14 @@ export async function sendEmail({ to, subject, html, text }: SendEmailOptions) {
 
     // Send email
     const info = await transporter.sendMail({
-      from: `${process.env.EMAIL_FROM_NAME || 'Very Simple Inventory'} <${process.env.EMAIL_FROM_ADDRESS || process.env.SMTP_USER}>`,
+      from,
       to,
       subject,
       html,
       text,
     });
 
-    console.log('[EMAIL] Message sent:', info.messageId);
+    console.log('[EMAIL] SMTP message sent:', info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('[EMAIL] Send error:', error);
