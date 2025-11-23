@@ -101,8 +101,14 @@ export async function POST(request: NextRequest) {
     const supportEmail = process.env.SUPPORT_EMAIL || 'support@verysimpleinventory.com';
 
     try {
-      // Only send email if Resend is configured
-      if (process.env.RESEND_API_KEY && process.env.EMAIL_FROM_ADDRESS) {
+      // Check if SMTP is configured
+      const smtpConfigured = !!(process.env.SMTP_USER && process.env.SMTP_PASSWORD);
+      console.log('[CONTACT] SMTP configured:', smtpConfigured);
+      console.log('[CONTACT] SMTP_USER exists:', !!process.env.SMTP_USER);
+      console.log('[CONTACT] SMTP_PASSWORD exists:', !!process.env.SMTP_PASSWORD);
+
+      // Only send email if SMTP is configured
+      if (smtpConfigured) {
         const emailHtml = `
           <!DOCTYPE html>
           <html>
@@ -198,8 +204,12 @@ Reply to: ${sanitizedData.email}
         });
       }
     } catch (emailError) {
-      // Log email error but still return success to user
+      // Log detailed email error
       console.error('[CONTACT] Failed to send email notification:', emailError);
+      if (emailError instanceof Error) {
+        console.error('[CONTACT] Error message:', emailError.message);
+        console.error('[CONTACT] Error stack:', emailError.stack);
+      }
       // We don't want to fail the request just because email failed
       // The support team should monitor logs
     }
