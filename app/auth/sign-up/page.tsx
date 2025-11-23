@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { UserPlus, Mail, Lock, User, AlertCircle, CheckCircle, Home, Briefcase } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, AlertCircle, CheckCircle, Home, Briefcase, Eye, EyeOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signUpFormSchema, calculatePasswordStrength } from '@/app/lib/clientValidation';
@@ -19,6 +19,8 @@ export default function SignUpPage() {
   const [success, setSuccess] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const [passwordStrength, setPasswordStrength] = useState({ score: 0, label: '', color: '' });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
@@ -285,15 +287,27 @@ export default function SignUpPage() {
               <div className="relative">
                 <Lock className="absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   {...register('password', {
                     onChange: handlePasswordChange,
                   })}
                   placeholder="••••••••"
-                  className={`w-full pl-8 md:pl-11 pr-2 md:pr-4 py-2 md:py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base ${
+                  className={`w-full pl-8 md:pl-11 pr-10 md:pr-12 py-2 md:py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base ${
                     errors.password || serverErrors.password ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
                   }`}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2 md:right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4 md:w-5 md:h-5" />
+                  ) : (
+                    <Eye className="w-4 h-4 md:w-5 md:h-5" />
+                  )}
+                </button>
               </div>
 
               {/* Password Strength Indicator */}
@@ -347,13 +361,25 @@ export default function SignUpPage() {
               <div className="relative">
                 <Lock className="absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
                 <input
-                  type="password"
+                  type={showConfirmPassword ? 'text' : 'password'}
                   {...register('confirmPassword')}
                   placeholder="••••••••"
-                  className={`w-full pl-8 md:pl-11 pr-2 md:pr-4 py-2 md:py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base ${
+                  className={`w-full pl-8 md:pl-11 pr-10 md:pr-12 py-2 md:py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all text-sm md:text-base ${
                     errors.confirmPassword || serverErrors.confirmPassword ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
                   }`}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-2 md:right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="w-4 h-4 md:w-5 md:h-5" />
+                  ) : (
+                    <Eye className="w-4 h-4 md:w-5 md:h-5" />
+                  )}
+                </button>
               </div>
               {(errors.confirmPassword || serverErrors.confirmPassword) && (
                 <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">

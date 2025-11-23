@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LogIn, Mail, Lock, AlertCircle, Home } from "lucide-react";
+import { LogIn, Mail, Lock, AlertCircle, Home, Eye, EyeOff } from "lucide-react";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -12,6 +12,7 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({
     email: "",
     password: "",
@@ -159,7 +160,7 @@ export default function SignInPage() {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
@@ -168,10 +169,22 @@ export default function SignInPage() {
                       setFieldErrors((prev) => ({ ...prev, password: "" }));
                     }
                   }}
-                  className={`w-full pl-11 pr-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all ${
+                  className={`w-full pl-11 pr-12 py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium transition-all ${
                     fieldErrors.password ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
                   }`}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
               </div>
               {fieldErrors.password && (
                 <div className="mt-1 bg-red-50 border border-red-200 rounded p-2">
