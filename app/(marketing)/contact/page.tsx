@@ -12,6 +12,8 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 
+// Contact Page - Handles both public and authenticated user contact forms
+// Uses SMTP (Gmail) for sending emails to support@verysimpleinventory.com
 export default function ContactPage() {
   const { data: session } = useSession();
   const [formData, setFormData] = useState({
