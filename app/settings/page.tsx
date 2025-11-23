@@ -428,35 +428,33 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-2 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-1 sm:p-4">
       <div className="max-w-4xl mx-auto">
         {/* Navigation Header */}
-        <div className="bg-white rounded-lg sm:rounded-2xl shadow-lg sm:shadow-2xl p-2 sm:p-4 mb-3 sm:mb-6 border border-gray-200">
-          <div className="flex items-center justify-between mb-2 sm:mb-4 gap-2">
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 bg-gradient-to-r from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white rounded-lg sm:rounded-xl font-semibold transition-all duration-200 shadow-md sm:shadow-lg text-xs sm:text-sm"
-            >
-              <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
-              Back to Dashboard
-            </Link>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-lg sm:rounded-xl font-semibold transition-all duration-200 shadow-md sm:shadow-lg text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Save className="w-3 h-3 sm:w-4 sm:h-4" />
-              {saving ? "Saving..." : "Save"}
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-2 sm:p-3 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg sm:rounded-xl flex-shrink-0">
-              <SettingsIcon className="w-5 h-5 sm:w-8 sm:h-8 text-white" />
+        <div className="bg-white rounded-lg shadow-md p-2 mb-2 border border-gray-200">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5">
+              <div className="p-1 bg-gradient-to-br from-orange-500 to-red-600 rounded-md flex-shrink-0">
+                <SettingsIcon className="w-4 h-4 text-white" />
+              </div>
+              <h1 className="text-sm sm:text-lg font-bold text-black">Settings</h1>
             </div>
-            <div>
-              <h1 className="text-lg sm:text-3xl font-bold text-black">Settings</h1>
-              <p className="text-gray-600 text-xs sm:text-sm font-medium">Configure your booking business preferences</p>
+            <div className="flex items-center gap-1.5">
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-1 px-2 py-1 bg-gray-700 hover:bg-gray-800 text-white rounded-md font-semibold transition-all text-[10px] sm:text-xs"
+              >
+                <ArrowLeft className="w-3 h-3" />
+                <span className="hidden sm:inline">Back</span>
+              </Link>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-md font-semibold transition-all text-[10px] sm:text-xs disabled:opacity-50"
+              >
+                <Save className="w-3 h-3" />
+                {saving ? "Saving..." : "Save"}
+              </button>
             </div>
           </div>
         </div>
@@ -464,7 +462,7 @@ export default function SettingsPage() {
         {/* Success/Error Message */}
         {message && (
           <div
-            className={`mb-6 p-4 rounded-xl font-bold ${
+            className={`mb-2 p-2 rounded-lg font-bold text-xs ${
               message.type === "success"
                 ? "bg-green-100 text-green-800 border border-green-300"
                 : "bg-red-100 text-red-800 border border-red-300"
@@ -475,56 +473,56 @@ export default function SettingsPage() {
         )}
 
         {/* Personal Information */}
-        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-5 mb-4 border border-gray-200">
-          <div className="flex items-center gap-2 mb-3">
-            <User className="w-5 h-5 text-indigo-600" />
-            <h2 className="text-base sm:text-lg font-bold text-black">Personal Information</h2>
+        <div className="bg-white rounded-lg shadow-md p-2 mb-2 border border-gray-200">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <User className="w-3.5 h-3.5 text-indigo-600" />
+            <h2 className="text-xs sm:text-sm font-bold text-black">Personal Info</h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2 mb-1.5">
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">
+              <label className="block text-[10px] font-semibold text-gray-600 mb-0.5">
                 First Name
               </label>
-              <div className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-black font-medium text-sm">
+              <div className="w-full px-2 py-1 bg-gray-50 border border-gray-300 rounded text-black font-medium text-xs">
                 {userProfile?.firstName || 'Not set'}
               </div>
             </div>
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">
+              <label className="block text-[10px] font-semibold text-gray-600 mb-0.5">
                 Last Name
               </label>
-              <div className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-black font-medium text-sm">
+              <div className="w-full px-2 py-1 bg-gray-50 border border-gray-300 rounded text-black font-medium text-xs">
                 {userProfile?.lastName || 'Not set'}
               </div>
             </div>
           </div>
 
           {/* Name Permanence Notice */}
-          <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <div className="flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-blue-800">
-                <span className="font-bold">Note:</span> Your name cannot be changed. If you need to update this information,{' '}
-                <Link href="/contact" className="font-bold underline hover:text-blue-900 transition-colors">
-                  please contact support
-                </Link>.
+          <div className="bg-blue-50 border border-blue-200 rounded p-1.5">
+            <div className="flex items-start gap-1">
+              <AlertTriangle className="w-3 h-3 text-blue-600 flex-shrink-0 mt-0.5" />
+              <p className="text-[10px] text-blue-800">
+                <span className="font-bold">Note:</span> Name can't be changed.{' '}
+                <Link href="/contact" className="font-bold underline hover:text-blue-900">
+                  Contact support
+                </Link> if needed.
               </p>
             </div>
           </div>
         </div>
 
         {/* Business Information */}
-        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-5 mb-4 border border-gray-200">
-          <div className="flex items-center gap-2 mb-3">
-            <Building2 className="w-5 h-5 text-blue-600" />
-            <h2 className="text-base sm:text-lg font-bold text-black">Business Information</h2>
+        <div className="bg-white rounded-lg shadow-md p-2 mb-2 border border-gray-200">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <Building2 className="w-3.5 h-3.5 text-blue-600" />
+            <h2 className="text-xs sm:text-sm font-bold text-black">Business Info</h2>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-1.5">
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">
-                Business Name <span className="text-gray-500 font-normal">(Optional)</span>
+              <label className="block text-[10px] font-semibold text-gray-600 mb-0.5">
+                Business Name <span className="text-gray-500 font-normal text-[9px]">(Optional)</span>
               </label>
               <input
                 type="text"
@@ -536,7 +534,7 @@ export default function SettingsPage() {
                     setErrors((prev) => ({ ...prev, businessName: "" }));
                   }
                 }}
-                className={`w-full px-3 sm:px-4 py-2 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium text-sm sm:text-base ${
+                className={`w-full px-2 py-1 border rounded focus:ring-1 focus:ring-blue-500 outline-none text-black font-medium text-xs ${
                   errors.businessName ? 'border-red-500' : 'border-gray-300'
                 }`}
                 maxLength={25}
@@ -618,11 +616,11 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Business Address</label>
+              <label className="block text-[10px] font-semibold text-gray-600 mb-0.5">Business Address</label>
               <textarea
                 value={settings.businessAddress || ""}
                 onChange={(e) => updateSetting("businessAddress", e.target.value || null)}
-                className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-medium resize-none text-sm sm:text-base"
+                className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-black font-medium resize-none text-xs"
                 rows={2}
                 maxLength={100}
               />
@@ -632,20 +630,20 @@ export default function SettingsPage() {
         </div>
 
         {/* Currency */}
-        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-5 mb-4 border border-gray-200">
-          <div className="flex items-center gap-2 mb-3">
-            <DollarSign className="w-5 h-5 text-green-600" />
-            <h2 className="text-base sm:text-lg font-bold text-black">Currency</h2>
+        <div className="bg-white rounded-lg shadow-md p-2 mb-2 border border-gray-200">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <DollarSign className="w-3.5 h-3.5 text-green-600" />
+            <h2 className="text-xs sm:text-sm font-bold text-black">Currency</h2>
           </div>
 
           <div>
-            <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">
+            <label className="block text-[10px] font-semibold text-gray-600 mb-0.5">
               Currency <span className="text-red-500">*</span>
             </label>
             <select
               value={settings.currency}
               onChange={(e) => updateCurrency(e.target.value)}
-              className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-bold text-sm sm:text-base"
+              className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-black font-bold text-xs"
             >
               {CURRENCY_OPTIONS.map((currency) => (
                 <option key={currency.code} value={currency.code}>
@@ -657,20 +655,20 @@ export default function SettingsPage() {
         </div>
 
         {/* Timezone */}
-        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-5 mb-4 border border-gray-200">
-          <div className="flex items-center gap-2 mb-3">
-            <Globe className="w-5 h-5 text-purple-600" />
-            <h2 className="text-base sm:text-lg font-bold text-black">Timezone</h2>
+        <div className="bg-white rounded-lg shadow-md p-2 mb-2 border border-gray-200">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <Globe className="w-3.5 h-3.5 text-purple-600" />
+            <h2 className="text-xs sm:text-sm font-bold text-black">Timezone</h2>
           </div>
 
           <div>
-            <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">
+            <label className="block text-[10px] font-semibold text-gray-600 mb-0.5">
               Timezone <span className="text-red-500">*</span>
             </label>
             <select
               value={settings.timezone}
               onChange={(e) => updateSetting("timezone", e.target.value)}
-              className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-black font-bold text-sm sm:text-base mb-2"
+              className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-black font-bold text-xs mb-1"
             >
               {TIMEZONE_OPTIONS.map((tz) => (
                 <option key={tz.value} value={tz.value}>
@@ -691,39 +689,28 @@ export default function SettingsPage() {
         </div>
 
         {/* Danger Zone - Delete Account */}
-        <div className="bg-red-50 rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 mb-4 sm:mb-6 border-2 border-red-300">
-          <div className="flex items-center gap-2 mb-3 sm:mb-4">
-            <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
-            <h2 className="text-lg sm:text-xl font-bold text-red-900">Danger Zone</h2>
+        <div className="bg-red-50 rounded-lg shadow-md p-2 mb-2 border border-red-300">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
+            <h2 className="text-xs sm:text-sm font-bold text-red-900">Danger Zone</h2>
           </div>
 
-          <div className="bg-white rounded-lg p-4 border border-red-200">
-            <h3 className="text-sm sm:text-base font-bold text-black mb-2">Delete Account</h3>
-            <p className="text-xs sm:text-sm text-gray-700 mb-3 sm:mb-4">
-              Once you delete your account, there is no going back. This will permanently delete your account and all associated data including items, customers, bookings, and settings.
+          <div className="bg-white rounded p-2 border border-red-200">
+            <h3 className="text-[10px] font-bold text-black mb-1">Delete Account</h3>
+            <p className="text-[9px] text-gray-700 mb-1.5">
+              Permanently deletes all your data.
             </p>
             <button
               onClick={() => setIsDeleteModalOpen(true)}
               disabled={isDeleting}
-              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
+              className="w-full px-2 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded transition-all disabled:opacity-50 flex items-center justify-center gap-1 text-[10px]"
             >
-              <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
-              {isDeleting ? "Deleting Account..." : "Delete My Account"}
+              <Trash2 className="w-3 h-3" />
+              {isDeleting ? "Deleting..." : "Delete Account"}
             </button>
           </div>
         </div>
 
-        {/* Save Button */}
-        <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border border-gray-200">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-lg sm:rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
-          >
-            <Save className="w-4 h-4 sm:w-5 sm:h-5" />
-            {saving ? "Saving..." : "Save Settings"}
-          </button>
-        </div>
       </div>
 
       {/* Delete Account Confirmation Modal */}
