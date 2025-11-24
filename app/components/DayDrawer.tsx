@@ -673,20 +673,20 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
                   Item Availability for {date ? format(date, "MMMM d, yyyy") : ""}
                 </h3>
 
-                <div className="w-full">
+                <div className="w-full overflow-hidden">
                   <table className="w-full table-fixed divide-y-2 divide-gray-300">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="w-[40%] px-3 py-3 text-left text-xs font-bold text-black uppercase tracking-wider border-r-2 border-gray-300">
+                        <th className="w-[30%] px-2 py-3 text-left text-xs font-bold text-black uppercase tracking-wider border-r-2 border-gray-400">
                           Item
                         </th>
-                        <th className="w-[20%] px-3 py-3 text-center text-xs font-bold text-black uppercase tracking-wider border-r-2 border-gray-300">
+                        <th className="w-[20%] px-2 py-3 text-center text-xs font-bold text-black uppercase tracking-wider border-r-2 border-gray-400">
                           Total
                         </th>
-                        <th className="w-[20%] px-3 py-3 text-center text-xs font-bold text-black uppercase tracking-wider border-r-2 border-gray-300">
+                        <th className="w-[22%] px-2 py-3 text-center text-xs font-bold text-black uppercase tracking-wider border-r-2 border-gray-400">
                           Booked
                         </th>
-                        <th className="w-[20%] px-3 py-3 text-center text-xs font-bold text-black uppercase tracking-wider">
+                        <th className="w-[28%] px-2 py-3 text-center text-xs font-bold text-black uppercase tracking-wider">
                           Remaining
                         </th>
                       </tr>
@@ -694,17 +694,17 @@ export default function DayDrawer({ date, isOpen, onClose, selectedItemIds, onDa
                     <tbody className="bg-white divide-y-2 divide-gray-400">
                       {itemAvailability.map((item, index) => (
                         <tr key={item.id} className={index % 2 === 0 ? "bg-blue-100" : "bg-purple-100"}>
-                          <td className="px-3 py-3 text-sm font-bold text-black border-r-2 border-gray-400 break-words">
+                          <td className="px-2 py-3 text-sm font-bold text-black border-r-2 border-gray-400 break-words">
                             {item.name}
                           </td>
-                          <td className="px-3 py-3 text-sm text-center text-black font-semibold border-r-2 border-gray-400">
+                          <td className="px-2 py-3 text-sm text-center text-black font-semibold border-r-2 border-gray-400">
                             {item.total}
                           </td>
-                          <td className="px-3 py-3 text-sm text-center text-black font-semibold border-r-2 border-gray-400">
+                          <td className="px-2 py-3 text-sm text-center text-black font-semibold border-r-2 border-gray-400">
                             {item.reserved}
                           </td>
                           <td
-                            className={`px-3 py-3 text-sm text-center font-semibold ${
+                            className={`px-2 py-3 text-sm text-center font-semibold ${
                               item.remaining === 0
                                 ? "text-red-600"
                                 : item.remaining < 5

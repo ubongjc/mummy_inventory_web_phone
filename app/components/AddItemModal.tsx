@@ -434,11 +434,20 @@ export default function AddItemModal({
                           Quantity *
                         </label>
                         <input
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
                           value={item.totalQuantity}
-                          onChange={(e) => handleFieldChange(index, 'totalQuantity', e.target.value)}
-                          min="0"
-                          max="100000"
+                          onChange={(e) => {
+                            // Only allow digits
+                            const value = e.target.value.replace(/[^0-9]/g, '');
+                            handleFieldChange(index, 'totalQuantity', value);
+                          }}
+                          onKeyPress={(e) => {
+                            // Prevent non-numeric characters from being typed
+                            if (!/[0-9]/.test(e.key)) {
+                              e.preventDefault();
+                            }
+                          }}
                           className={`w-full px-2 py-1.5 border-2 ${
                             item.errors.totalQuantity ? "border-red-500 ring-2 ring-red-500/40" : "border-gray-400"
                           } rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm`}
