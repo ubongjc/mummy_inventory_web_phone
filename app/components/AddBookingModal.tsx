@@ -34,6 +34,7 @@ interface Customer {
 interface BookingItem {
   itemId: string;
   quantity: number | "";
+  quantityError?: string;
 }
 
 export default function AddBookingModal({
@@ -926,75 +927,110 @@ export default function AddBookingModal({
               </label>
               <div className="space-y-2">
                 {bookingItems.map((bookingItem, index) => (
-                  <div key={index} className="flex gap-1 items-center">
-                    <select
-                      ref={(el) => {
-                        itemSelectRefs.current[index] = el;
-                        if (index === 0) {
-                          (firstItemSelectRef as React.MutableRefObject<HTMLSelectElement | null>).current = el;
-                        }
-                      }}
-                      value={bookingItem.itemId}
-                      onChange={(e) => {
-                        // Prevent selecting the "Select" option
-                        if (e.target.value !== "") {
-                          updateBookingItem(index, "itemId", e.target.value);
-                          setItemsError("");
-                        }
-                      }}
-                      className="flex-1 min-w-0 px-1 py-1 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-xs truncate"
-                      required
-                    >
-                      <option value="" disabled>Select Item</option>
-                      {items
-                        .filter((item) =>
-                          // Show current item OR items not already selected in other rows
-                          item.id === bookingItem.itemId ||
-                          !bookingItems.some((ri, i) => i !== index && ri.itemId === item.id)
-                        )
-                        .map((item) => {
-                          const available = item.available ?? item.totalQuantity;
-                          const isOverbooked = available < 0;
-                          return (
-                            <option key={item.id} value={item.id} disabled={isOverbooked || available === 0}>
-                              {item.name} ({available} remaining{isOverbooked ? ' ⚠️ OVERBOOKED' : available === 0 ? ' - NONE AVAILABLE' : ''})
-                            </option>
-                          );
-                        })
-                      }
-                    </select>
-                    <input
-                      type="number"
-                      value={bookingItem.quantity}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        // Allow empty string while typing
-                        if (val === "") {
-                          updateBookingItem(index, "quantity", "");
-                        } else {
-                          const numVal = parseInt(val);
-                          // Prevent negative numbers and 0
-                          if (numVal > 0) {
-                            updateBookingItem(index, "quantity", numVal);
+                  <div key={index} className="space-y-0.5">
+                    <div className="flex gap-1 items-center">
+                      <select
+                        ref={(el) => {
+                          itemSelectRefs.current[index] = el;
+                          if (index === 0) {
+                            (firstItemSelectRef as React.MutableRefObject<HTMLSelectElement | null>).current = el;
                           }
-                        }
-                      }}
-                      placeholder="Qty"
-                      className={`w-14 flex-shrink-0 px-1 py-1 border-2 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-xs ${
-                        bookingItem.quantity === "" ? "border-blue-500 animate-pulse" : "border-gray-400"
-                      }`}
-                      min="1"
-                      required
-                    />
-                    {bookingItems.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeBookingItem(index)}
-                        className="w-6 h-6 flex-shrink-0 flex items-center justify-center text-red-600 hover:text-white hover:bg-red-600 border border-red-600 rounded transition-colors"
-                        title="Remove item"
+                        }}
+                        value={bookingItem.itemId}
+                        onChange={(e) => {
+                          // Prevent selecting the "Select" option
+                          if (e.target.value !== "") {
+                            updateBookingItem(index, "itemId", e.target.value);
+                            setItemsError("");
+                          }
+                        }}
+                        className="flex-1 min-w-0 px-1 py-1 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-xs truncate"
+                        required
                       >
-                        <X className="w-3 h-3" />
-                      </button>
+                        <option value="" disabled>Select Item</option>
+                        {items
+                          .filter((item) =>
+                            // Show current item OR items not already selected in other rows
+                            item.id === bookingItem.itemId ||
+                            !bookingItems.some((ri, i) => i !== index && ri.itemId === item.id)
+                          )
+                          .map((item) => {
+                            const available = item.available ?? item.totalQuantity;
+                            const isOverbooked = available < 0;
+                            return (
+                              <option key={item.id} value={item.id} disabled={isOverbooked || available === 0}>
+                                {item.name} ({available} remaining{isOverbooked ? ' ⚠️ OVERBOOKED' : available === 0 ? ' - NONE AVAILABLE' : ''})
+                              </option>
+                            );
+                          })
+                        }
+                      </select>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={bookingItem.quantity}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          // Only allow digits
+                          const numericValue = val.replace(/[^0-9]/g, '');
+
+                          // Update booking items with validation
+                          const updatedItems = [...bookingItems];
+                          if (numericValue === "") {
+                            updatedItems[index] = { ...bookingItem, quantity: "", quantityError: "" };
+                          } else {
+                            const numVal = parseInt(numericValue);
+                            if (numVal > 0) {
+                              updatedItems[index] = { ...bookingItem, quantity: numVal, quantityError: "" };
+                            } else {
+                              updatedItems[index] = { ...bookingItem, quantity: "", quantityError: "Qty must be greater than 0" };
+                            }
+                          }
+                          setBookingItems(updatedItems);
+                          setItemsError("");
+                        }}
+                        onKeyPress={(e) => {
+                          // Prevent non-numeric characters from being typed
+                          if (!/[0-9]/.test(e.key)) {
+                            e.preventDefault();
+                            // Show error message briefly
+                            const updatedItems = [...bookingItems];
+                            updatedItems[index] = { ...bookingItem, quantityError: "Only numbers allowed" };
+                            setBookingItems(updatedItems);
+
+                            // Clear error after 2 seconds
+                            setTimeout(() => {
+                              const items = [...bookingItems];
+                              items[index] = { ...items[index], quantityError: "" };
+                              setBookingItems(items);
+                            }, 2000);
+                          }
+                        }}
+                        placeholder="Qty"
+                        className={`w-14 flex-shrink-0 px-1 py-1 border-2 rounded focus:ring-2 ${
+                          bookingItem.quantityError
+                            ? "border-red-500 ring-2 ring-red-500/40"
+                            : bookingItem.quantity === ""
+                              ? "border-blue-500 animate-pulse"
+                              : "border-gray-400"
+                        } focus:ring-blue-500 outline-none text-black font-semibold text-xs`}
+                        required
+                      />
+                      {bookingItems.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeBookingItem(index)}
+                          className="w-6 h-6 flex-shrink-0 flex items-center justify-center text-red-600 hover:text-white hover:bg-red-600 border border-red-600 rounded transition-colors"
+                          title="Remove item"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                    {bookingItem.quantityError && (
+                      <p className="text-[10px] font-semibold text-red-600 ml-1">
+                        {bookingItem.quantityError}
+                      </p>
                     )}
                   </div>
                 ))}
@@ -1010,13 +1046,13 @@ export default function AddBookingModal({
                         type="button"
                         onClick={addBookingItem}
                         disabled={!isLastItemComplete}
-                        className={`text-[10px] flex items-center gap-1 ${
+                        className={`text-xs px-3 py-1.5 rounded-lg font-semibold shadow-md transition-all flex items-center gap-1 ${
                           isLastItemComplete
-                            ? "text-blue-600 hover:underline cursor-pointer"
-                            : "text-gray-400 cursor-not-allowed"
+                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 cursor-pointer"
+                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
                         }`}
                       >
-                        <Plus className="w-3 h-3" /> Add item to rent
+                        <Plus className="w-4 h-4" /> Add item to rent
                       </button>
                     );
                   })()
@@ -1103,13 +1139,13 @@ export default function AddBookingModal({
                         }
                       }}
                       disabled={usageStats?.customers && usageStats.customers.current >= usageStats.customers.limit}
-                      className={`text-xs ${
+                      className={`text-xs px-3 py-1.5 rounded-lg font-semibold shadow-md transition-all flex items-center gap-1 ${
                         usageStats?.customers && usageStats.customers.current >= usageStats.customers.limit
-                          ? 'text-gray-400 cursor-not-allowed'
-                          : 'text-blue-600 hover:underline'
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
                       }`}
                     >
-                      + Create new customer
+                      <Plus className="w-4 h-4" /> Create new customer
                     </button>
                     {usageStats?.customers && usageStats.customers.current >= usageStats.customers.limit && (
                       <p className="text-xs text-red-600 font-semibold mt-0.5">
