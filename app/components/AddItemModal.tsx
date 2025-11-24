@@ -1,14 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { X, Plus } from "lucide-react";
+import { X, Plus, ChevronDown, ChevronRight } from "lucide-react";
 import { toTitleCase } from "@/app/lib/validation";
 import { useSettings } from "@/app/hooks/useSettings";
+import NotesModal from "./NotesModal";
 
 interface AddItemModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  currentItemCount?: number;
+  maxItems?: number;
 }
 
 interface ItemForm {
@@ -24,6 +27,7 @@ interface ItemForm {
     price: string;
     notes: string;
   };
+  isCollapsed: boolean;
 }
 
 const createEmptyItem = (): ItemForm => ({
@@ -39,17 +43,25 @@ const createEmptyItem = (): ItemForm => ({
     price: "",
     notes: "",
   },
+  isCollapsed: false,
 });
 
 export default function AddItemModal({
   isOpen,
   onClose,
   onSuccess,
+  currentItemCount = 0,
+  maxItems = 15,
 }: AddItemModalProps) {
   const { settings } = useSettings();
   const [items, setItems] = useState<ItemForm[]>([createEmptyItem()]);
   const [loading, setLoading] = useState(false);
   const [globalError, setGlobalError] = useState("");
+  const [notesModalOpen, setNotesModalOpen] = useState(false);
+  const [editingNotesIndex, setEditingNotesIndex] = useState<number | null>(null);
+
+  const remainingSlots = maxItems - currentItemCount;
+  const maxItemsToAdd = Math.min(remainingSlots, remainingSlots);
 
   const validateItem = (item: ItemForm): boolean => {
     const errors = {
@@ -137,8 +149,14 @@ export default function AddItemModal({
   };
 
   const handleAddItem = () => {
-    if (items.length < 5) {
-      setItems([...items, createEmptyItem()]);
+    if (items.length < maxItemsToAdd) {
+      // Collapse the previous item
+      const newItems = [...items];
+      if (newItems.length > 0) {
+        newItems[newItems.length - 1] = { ...newItems[newItems.length - 1], isCollapsed: true };
+      }
+      newItems.push(createEmptyItem());
+      setItems(newItems);
     }
   };
 
@@ -147,7 +165,13 @@ export default function AddItemModal({
     setItems(newItems.length === 0 ? [createEmptyItem()] : newItems);
   };
 
-  const handleFieldChange = (index: number, field: keyof Omit<ItemForm, 'errors'>, value: string) => {
+  const toggleCollapse = (index: number) => {
+    const newItems = [...items];
+    newItems[index] = { ...newItems[index], isCollapsed: !newItems[index].isCollapsed };
+    setItems(newItems);
+  };
+
+  const handleFieldChange = (index: number, field: keyof Omit<ItemForm, 'errors' | 'isCollapsed'>, value: string) => {
     const newItems = [...items];
     newItems[index] = {
       ...newItems[index],
@@ -214,7 +238,7 @@ export default function AddItemModal({
     return null;
   }
 
-  const canAddMore = items.length < 5 && items[items.length - 1]?.name.trim() && items[items.length - 1]?.totalQuantity.trim();
+  const canAddMore = items.length < maxItemsToAdd && items[items.length - 1]?.name.trim() && items[items.length - 1]?.totalQuantity.trim();
 
   return (
     <>
@@ -228,7 +252,7 @@ export default function AddItemModal({
             <div className="flex-1">
               <h3 className="text-lg font-bold text-black">Add New Items</h3>
               <p className="text-[10px] font-bold text-purple-600 mt-0.5">
-                Maximum 5 items only ({items.length}/5)
+                You can add {remainingSlots} more item{remainingSlots !== 1 ? 's' : ''} ({items.length}/{remainingSlots} slots used)
               </p>
             </div>
             <button
@@ -250,139 +274,194 @@ export default function AddItemModal({
             )}
 
             {items.map((item, index) => (
-              <div key={index} className="border-2 border-gray-300 rounded-lg p-3 space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-gray-700">Item {index + 1}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveItem(index)}
-                    className="w-5 h-5 flex items-center justify-center text-red-600 hover:text-white hover:bg-red-600 border border-red-600 rounded transition-colors"
-                    title="Remove item"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-
-                {/* Item Name */}
-                <div>
-                  <label className="block text-xs font-semibold mb-1 text-black">
-                    Item Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={item.name}
-                    onChange={(e) => handleFieldChange(index, 'name', e.target.value)}
-                    maxLength={50}
-                    className={`w-full px-2 py-1.5 border-2 ${
-                      item.errors.name ? "border-red-500 ring-2 ring-red-500/40" : "border-gray-400"
-                    } rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm`}
-                    placeholder="Enter item name"
-                  />
-                  {item.errors.name && (
-                    <p className="mt-1 text-xs font-semibold text-red-600">{item.errors.name}</p>
-                  )}
-                </div>
-
-                {/* Unit and Quantity */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-xs font-semibold mb-1 text-black">
-                      Unit *
-                    </label>
-                    <input
-                      type="text"
-                      value={item.unit}
-                      onChange={(e) => {
-                        const value = e.target.value.toLowerCase().replace(/[^a-z\s]/g, '');
-                        handleFieldChange(index, 'unit', value);
-                      }}
-                      maxLength={16}
-                      className={`w-full px-2 py-1.5 border-2 ${
-                        item.errors.unit ? "border-red-500 ring-2 ring-red-500/40" : "border-gray-400"
-                      } rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm`}
-                      placeholder="pcs"
-                    />
-                    {item.errors.unit && (
-                      <p className="mt-1 text-xs font-semibold text-red-600">{item.errors.unit}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold mb-1 text-black">
-                      Quantity *
-                    </label>
-                    <input
-                      type="number"
-                      value={item.totalQuantity}
-                      onChange={(e) => handleFieldChange(index, 'totalQuantity', e.target.value)}
-                      min="0"
-                      max="100000"
-                      className={`w-full px-2 py-1.5 border-2 ${
-                        item.errors.totalQuantity ? "border-red-500 ring-2 ring-red-500/40" : "border-gray-400"
-                      } rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm`}
-                      placeholder="0"
-                    />
-                    {item.errors.totalQuantity && (
-                      <p className="mt-1 text-xs font-semibold text-red-600">{item.errors.totalQuantity}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Price */}
-                <div className="bg-green-50 border border-green-200 rounded-lg p-2">
-                  <label className="block text-xs font-semibold mb-1 text-green-800">
-                    Price for each item (Optional)
-                  </label>
-                  <div className="flex items-center gap-1">
-                    <div className="flex items-center justify-center h-9 px-2 bg-white border-2 border-gray-400 rounded-l">
-                      <span className="text-green-600 font-bold text-sm">
-                        {settings?.currencySymbol || "₦"}
+              <div key={index} className="border-2 border-gray-300 rounded-lg">
+                {item.isCollapsed ? (
+                  // Collapsed View
+                  <div className="p-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <button
+                        type="button"
+                        onClick={() => toggleCollapse(index)}
+                        className="flex-shrink-0"
+                      >
+                        <ChevronRight className="w-4 h-4 text-gray-600" />
+                      </button>
+                      <span className="text-sm font-bold text-gray-800 truncate">
+                        {item.name || `Item ${index + 1}`}
                       </span>
                     </div>
-                    <input
-                      type="text"
-                      value={item.price}
-                      onChange={(e) => handleFieldChange(index, 'price', e.target.value)}
-                      className={`flex-1 h-9 px-2 border-2 ${
-                        item.errors.price ? "border-red-500 ring-2 ring-red-500/40" : "border-gray-400"
-                      } rounded-r focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm`}
-                      placeholder="0.00"
-                    />
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => toggleCollapse(index)}
+                        className="text-xs font-semibold text-blue-600 hover:underline"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveItem(index)}
+                        className="w-5 h-5 flex items-center justify-center text-red-600 hover:text-white hover:bg-red-600 border border-red-600 rounded transition-colors"
+                        title="Remove item"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
                   </div>
-                  {item.errors.price && (
-                    <p className="mt-1 text-xs font-semibold text-red-600">{item.errors.price}</p>
-                  )}
-                </div>
+                ) : (
+                  // Expanded View
+                  <div className="p-3 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        {index < items.length - 1 && (
+                          <button
+                            type="button"
+                            onClick={() => toggleCollapse(index)}
+                            className="flex-shrink-0"
+                          >
+                            <ChevronDown className="w-4 h-4 text-gray-600" />
+                          </button>
+                        )}
+                        <span className="text-xs font-bold text-gray-700">Item {index + 1}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveItem(index)}
+                        className="w-5 h-5 flex items-center justify-center text-red-600 hover:text-white hover:bg-red-600 border border-red-600 rounded transition-colors"
+                        title="Remove item"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
 
-                {/* Notes */}
-                <div>
-                  <label className="block text-xs font-semibold mb-1 text-black">
-                    Notes (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={item.notes}
-                    onChange={(e) => handleFieldChange(index, 'notes', e.target.value)}
-                    maxLength={50}
-                    className={`w-full px-2 py-1.5 border-2 ${
-                      item.errors.notes ? "border-red-500 ring-2 ring-red-500/40" : "border-gray-400"
-                    } rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm`}
-                    placeholder="Optional notes"
-                  />
-                  <div className="flex justify-between items-center mt-1">
-                    {item.errors.notes ? (
-                      <p className="text-xs font-semibold text-red-600">{item.errors.notes}</p>
-                    ) : (
-                      <span></span>
-                    )}
-                    <span className="text-[9px] text-gray-600">{item.notes.length}/50</span>
+                    {/* Item Name */}
+                    <div>
+                      <label className="block text-xs font-semibold mb-1 text-black">
+                        Item Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={item.name}
+                        onChange={(e) => handleFieldChange(index, 'name', e.target.value)}
+                        maxLength={50}
+                        className={`w-full px-2 py-1.5 border-2 ${
+                          item.errors.name ? "border-red-500 ring-2 ring-red-500/40" : "border-gray-400"
+                        } rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm`}
+                        placeholder="Enter item name"
+                      />
+                      {item.errors.name && (
+                        <p className="mt-1 text-xs font-semibold text-red-600">{item.errors.name}</p>
+                      )}
+                    </div>
+
+                    {/* Unit and Quantity */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-xs font-semibold mb-1 text-black">
+                          Unit *
+                        </label>
+                        <input
+                          type="text"
+                          value={item.unit}
+                          onChange={(e) => {
+                            const value = e.target.value.toLowerCase().replace(/[^a-z\s]/g, '');
+                            handleFieldChange(index, 'unit', value);
+                          }}
+                          maxLength={16}
+                          className={`w-full px-2 py-1.5 border-2 ${
+                            item.errors.unit ? "border-red-500 ring-2 ring-red-500/40" : "border-gray-400"
+                          } rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm`}
+                          placeholder="pcs"
+                        />
+                        {item.errors.unit && (
+                          <p className="mt-1 text-xs font-semibold text-red-600">{item.errors.unit}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold mb-1 text-black">
+                          Quantity *
+                        </label>
+                        <input
+                          type="number"
+                          value={item.totalQuantity}
+                          onChange={(e) => handleFieldChange(index, 'totalQuantity', e.target.value)}
+                          min="0"
+                          max="100000"
+                          className={`w-full px-2 py-1.5 border-2 ${
+                            item.errors.totalQuantity ? "border-red-500 ring-2 ring-red-500/40" : "border-gray-400"
+                          } rounded focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm`}
+                          placeholder="0"
+                        />
+                        {item.errors.totalQuantity && (
+                          <p className="mt-1 text-xs font-semibold text-red-600">{item.errors.totalQuantity}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Price */}
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-2">
+                      <label className="block text-xs font-semibold mb-1 text-green-800">
+                        Price for each item (Optional)
+                      </label>
+                      <div className="flex items-center gap-1">
+                        <div className="flex items-center justify-center h-9 px-2 bg-white border-2 border-gray-400 rounded-l">
+                          <span className="text-green-600 font-bold text-sm">
+                            {settings?.currencySymbol || "₦"}
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          value={item.price}
+                          onChange={(e) => handleFieldChange(index, 'price', e.target.value)}
+                          className={`flex-1 h-9 px-2 border-2 ${
+                            item.errors.price ? "border-red-500 ring-2 ring-red-500/40" : "border-gray-400"
+                          } rounded-r focus:ring-2 focus:ring-blue-500 outline-none text-black font-semibold text-sm`}
+                          placeholder="0.00"
+                        />
+                      </div>
+                      {item.errors.price && (
+                        <p className="mt-1 text-xs font-semibold text-red-600">{item.errors.price}</p>
+                      )}
+                    </div>
+
+                    {/* Notes */}
+                    <div>
+                      <label className="block text-xs font-semibold mb-1 text-black">
+                        Notes (Optional)
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingNotesIndex(index);
+                          setNotesModalOpen(true);
+                        }}
+                        className={`w-full px-2 py-1.5 border-2 ${
+                          item.errors.notes ? "border-red-500 ring-2 ring-red-500/40" : "border-gray-400"
+                        } rounded focus:ring-2 focus:ring-blue-500 outline-none text-black text-sm text-left bg-gray-50 hover:bg-gray-100 transition-colors`}
+                      >
+                        {item.notes ? (
+                          <span className="font-medium">{item.notes.substring(0, 30)}{item.notes.length > 30 ? '...' : ''}</span>
+                        ) : (
+                          <span className="text-gray-500">Click to add notes</span>
+                        )}
+                      </button>
+                      <div className="flex justify-between items-center mt-1">
+                        {item.errors.notes ? (
+                          <p className="text-xs font-semibold text-red-600">{item.errors.notes}</p>
+                        ) : (
+                          <span></span>
+                        )}
+                        <span className="text-[9px] text-gray-600">{item.notes.length}/50</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             ))}
 
             {/* Add Another Item Button */}
-            {items.length < 5 && (
+            {items.length < maxItemsToAdd && (
               <button
                 type="button"
                 onClick={handleAddItem}
@@ -393,8 +472,16 @@ export default function AddItemModal({
                     : "border-gray-300 text-gray-400 cursor-not-allowed"
                 }`}
               >
-                <Plus className="w-4 h-4" /> Add another item (max 5)
+                <Plus className="w-4 h-4" /> Add another item (max {remainingSlots} slots)
               </button>
+            )}
+
+            {items.length >= maxItemsToAdd && (
+              <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-2">
+                <p className="text-xs font-semibold text-yellow-800 text-center">
+                  You've reached your item limit. You can add {remainingSlots} item{remainingSlots !== 1 ? 's' : ''} total.
+                </p>
+              </div>
             )}
           </form>
 
@@ -417,6 +504,27 @@ export default function AddItemModal({
           </div>
         </div>
       </div>
+
+      {/* Notes Modal */}
+      {editingNotesIndex !== null && (
+        <NotesModal
+          isOpen={notesModalOpen}
+          onClose={() => {
+            setNotesModalOpen(false);
+            setEditingNotesIndex(null);
+          }}
+          onSave={(newNotes) => {
+            if (editingNotesIndex !== null) {
+              handleFieldChange(editingNotesIndex, 'notes', newNotes);
+            }
+            setNotesModalOpen(false);
+            setEditingNotesIndex(null);
+          }}
+          initialNotes={items[editingNotesIndex]?.notes || ""}
+          title="Item Notes"
+          maxLength={50}
+        />
+      )}
     </>
   );
 }

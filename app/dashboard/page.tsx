@@ -303,7 +303,7 @@ export default function Home() {
           {/* Menu Items */}
           <nav className="flex-1 overflow-y-auto p-4">
             <div className="space-y-2">
-              {/* Add Item Button */}
+              {/* Add New Item Button */}
               <div>
                 <button
                   onClick={() => {
@@ -320,7 +320,7 @@ export default function Home() {
                   }`}
                 >
                   <Plus className="w-5 h-5" />
-                  Add Item
+                  Add New Item
                 </button>
                 {usageStats?.items && usageStats.items.current >= usageStats.items.limit && (
                   <p className="text-xs text-red-600 font-semibold mt-1 ml-1">
@@ -680,7 +680,7 @@ export default function Home() {
           {!itemsLoading && items.length === 0 && (
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-lg p-4 mb-4 text-center">
               <p className="text-lg font-bold text-gray-800">
-                📦 Welcome! Add an item to begin. Click the menu icon (☰) and Add Item
+                📦 Welcome! Add items to begin. Click the menu icon (☰) and Add New Items
               </p>
             </div>
           )}
@@ -710,6 +710,8 @@ export default function Home() {
         isOpen={isAddItemModalOpen}
         onClose={() => setIsAddItemModalOpen(false)}
         onSuccess={handleItemAdded}
+        currentItemCount={usageStats?.items?.current || items.length}
+        maxItems={usageStats?.items?.limit || 15}
       />
       <AddBookingModal
         isOpen={isAddBookingModalOpen}
