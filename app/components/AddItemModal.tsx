@@ -197,12 +197,13 @@ export default function AddItemModal({
 
     // Validate all items and track which ones have errors
     let allValid = true;
-    const itemsWithErrors: number[] = [];
+    const itemsWithErrors: { index: number; name: string }[] = [];
 
     for (let i = 0; i < items.length; i++) {
       if (!validateItem(items[i])) {
         allValid = false;
-        itemsWithErrors.push(i + 1); // +1 for display (Item 1, Item 2, etc.)
+        const itemName = items[i].name.trim() || `Item ${i + 1}`;
+        itemsWithErrors.push({ index: i, name: itemName });
       }
     }
 
@@ -210,17 +211,19 @@ export default function AddItemModal({
       // Auto-expand all items with errors
       const newItems = items.map((item, index) => ({
         ...item,
-        isCollapsed: !itemsWithErrors.includes(index + 1), // Expand items with errors
+        isCollapsed: !itemsWithErrors.some(err => err.index === index), // Expand items with errors
       }));
       setItems(newItems);
 
-      // Show specific error message
+      // Show specific error message with item names
+      const errorNames = itemsWithErrors.map(err => `"${err.name}"`).join(", ");
+
       if (itemsWithErrors.length === 1) {
-        setGlobalError(`Please fix errors in Item ${itemsWithErrors[0]}`);
+        setGlobalError(`Please fix the errors in ${errorNames}. Check the red-bordered fields below for details.`);
       } else if (itemsWithErrors.length === items.length) {
-        setGlobalError("Please fix errors in all items");
+        setGlobalError(`Please fix the errors in all items: ${errorNames}. Check the red-bordered fields below for details.`);
       } else {
-        setGlobalError(`Please fix errors in items: ${itemsWithErrors.join(", ")}`);
+        setGlobalError(`Please fix the errors in these items: ${errorNames}. Check the red-bordered fields below for details.`);
       }
       return;
     }
