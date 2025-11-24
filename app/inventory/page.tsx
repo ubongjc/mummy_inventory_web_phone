@@ -495,7 +495,7 @@ export default function InventoryPage() {
         {activeTab === "items" && (
           <div className="space-y-2">
             {/* Item Summary Button */}
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden border-4 border-purple-600">
               <button
                 onClick={() => setShowItemSummary(!showItemSummary)}
                 className="w-full px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded hover:from-blue-700 hover:to-purple-700 font-semibold shadow-md transition-all flex items-center justify-center gap-2 text-sm"
