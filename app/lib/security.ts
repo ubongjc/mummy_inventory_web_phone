@@ -300,3 +300,41 @@ export function secureLog(message: string, data?: any) {
     }
   }
 }
+
+/**
+ * Sanitize error response based on environment
+ * In production: Return generic error message
+ * In development: Return detailed error information
+ *
+ * @param error - The error object
+ * @param genericMessage - Generic message to show in production
+ * @param detailsForDev - Additional details to show in development (optional)
+ * @returns Object with error message and optional details
+ */
+export function sanitizeErrorResponse(
+  error: any,
+  genericMessage: string = "An error occurred",
+  detailsForDev?: Record<string, any>
+): Record<string, any> {
+  // Always log the actual error securely
+  secureLog(`[ERROR] ${genericMessage}`, {
+    message: error?.message,
+    stack: error?.stack,
+    ...detailsForDev,
+  });
+
+  // In development, return detailed error information
+  if (process.env.NODE_ENV === "development") {
+    return {
+      error: genericMessage,
+      details: error?.message || "Unknown error",
+      stack: error?.stack,
+      ...detailsForDev,
+    };
+  }
+
+  // In production, return only the generic message
+  return {
+    error: genericMessage,
+  };
+}

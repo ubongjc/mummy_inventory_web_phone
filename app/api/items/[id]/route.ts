@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth.config";
 import { prisma } from "@/app/lib/prisma";
 import { updateItemSchema } from "@/app/lib/validation";
-import { secureLog } from "@/app/lib/security";
+import { secureLog, sanitizeErrorResponse } from "@/app/lib/security";
 
 export async function PATCH(
   request: NextRequest,
@@ -90,7 +90,6 @@ export async function PATCH(
 
     return NextResponse.json(item);
   } catch (error: any) {
-    secureLog("[ERROR] Failed to update item", { error: error.message });
     if (error.name === "ZodError") {
       return NextResponse.json(
         { error: "Invalid input", details: error.errors },
@@ -98,7 +97,7 @@ export async function PATCH(
       );
     }
     return NextResponse.json(
-      { error: "Failed to update item" },
+      sanitizeErrorResponse(error, "Failed to update item"),
       { status: 500 }
     );
   }
@@ -156,7 +155,6 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    secureLog("[ERROR] Failed to delete item", { error: error.message });
     if (error.code === 'P2025') {
       return NextResponse.json(
         { error: "Item not found" },
@@ -164,7 +162,7 @@ export async function DELETE(
       );
     }
     return NextResponse.json(
-      { error: error.message || "Failed to delete item" },
+      sanitizeErrorResponse(error, "Failed to delete item"),
       { status: 500 }
     );
   }

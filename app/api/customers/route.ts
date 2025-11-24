@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth.config";
 import { prisma } from "@/app/lib/prisma";
 import { createCustomerSchema } from "@/app/lib/validation";
-import { secureLog } from "@/app/lib/security";
+import { secureLog, sanitizeErrorResponse } from "@/app/lib/security";
 import { checkCustomerLimit } from "@/app/lib/limits";
 
 export async function GET(request: NextRequest) {
@@ -31,9 +31,8 @@ export async function GET(request: NextRequest) {
     });
     return NextResponse.json(customers);
   } catch (error: any) {
-    secureLog("[ERROR] Failed to fetch customers", { error: error.message });
     return NextResponse.json(
-      { error: "Failed to fetch customers" },
+      sanitizeErrorResponse(error, "Failed to fetch customers"),
       { status: 500 }
     );
   }
@@ -117,7 +116,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(customer, { status: 201 });
   } catch (error: any) {
-    secureLog("[ERROR] Failed to create customer", { error: error.message });
     if (error.name === "ZodError") {
       return NextResponse.json(
         { error: "Invalid input", details: error.errors },
@@ -125,7 +123,7 @@ export async function POST(request: NextRequest) {
       );
     }
     return NextResponse.json(
-      { error: "Failed to create customer" },
+      sanitizeErrorResponse(error, "Failed to create customer"),
       { status: 500 }
     );
   }

@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth.config";
 import { prisma } from "@/app/lib/prisma";
 import { createItemSchema } from "@/app/lib/validation";
-import { secureLog } from "@/app/lib/security";
+import { secureLog, sanitizeErrorResponse } from "@/app/lib/security";
 import { checkItemLimit } from "@/app/lib/limits";
 
 export async function GET(request: NextRequest) {
@@ -29,9 +29,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(items);
   } catch (error: any) {
     console.error("[ERROR] Failed to fetch items:", error);
-    secureLog("[ERROR] Failed to fetch items", { error: error.message, stack: error.stack });
     return NextResponse.json(
-      { error: "Failed to fetch items", details: error.message },
+      sanitizeErrorResponse(error, "Failed to fetch items"),
       { status: 500 }
     );
   }
@@ -94,7 +93,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(item, { status: 201 });
   } catch (error: any) {
-    secureLog("[ERROR] Failed to create item", { error: error.message });
     if (error.name === "ZodError") {
       return NextResponse.json(
         { error: "Invalid input", details: error.errors },
@@ -112,7 +110,7 @@ export async function POST(request: NextRequest) {
       );
     }
     return NextResponse.json(
-      { error: "Failed to create item" },
+      sanitizeErrorResponse(error, "Failed to create item"),
       { status: 500 }
     );
   }

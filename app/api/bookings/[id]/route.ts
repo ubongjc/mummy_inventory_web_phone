@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth.config";
 import { prisma } from "@/app/lib/prisma";
 import { toUTCMidnight } from "@/app/lib/dates";
-import { secureLog } from "@/app/lib/security";
+import { secureLog, sanitizeErrorResponse } from "@/app/lib/security";
 
 export async function DELETE(
   request: NextRequest,
@@ -46,7 +46,6 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    secureLog("[ERROR] Failed to delete booking", { error: error.message });
     if (error.code === 'P2025') {
       return NextResponse.json(
         { error: "Booking not found" },
@@ -54,7 +53,7 @@ export async function DELETE(
       );
     }
     return NextResponse.json(
-      { error: error.message || "Failed to delete booking" },
+      sanitizeErrorResponse(error, "Failed to delete booking"),
       { status: 500 }
     );
   }
@@ -123,9 +122,8 @@ export async function PATCH(
 
     return NextResponse.json(booking);
   } catch (error: any) {
-    secureLog("[ERROR] Failed to update booking (PATCH)", { error: error.message });
     return NextResponse.json(
-      { error: "Failed to update booking" },
+      sanitizeErrorResponse(error, "Failed to update booking"),
       { status: 500 }
     );
   }
@@ -342,9 +340,8 @@ export async function PUT(
 
     return NextResponse.json(booking);
   } catch (error: any) {
-    secureLog("[ERROR] Failed to update booking (PUT)", { error: error.message });
     return NextResponse.json(
-      { error: "Failed to update booking" },
+      sanitizeErrorResponse(error, "Failed to update booking"),
       { status: 500 }
     );
   }

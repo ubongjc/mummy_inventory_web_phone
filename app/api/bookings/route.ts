@@ -6,7 +6,7 @@ import { createBookingSchema } from "@/app/lib/validation";
 import { toUTCMidnight } from "@/app/lib/dates";
 import { getRandomBookingColor } from "@/app/lib/colors";
 import { toUtcDateOnly, toYmd, addDays } from "@/app/lib/dateUtils";
-import { secureLog, applyRateLimit, RateLimitPresets } from "@/app/lib/security";
+import { secureLog, applyRateLimit, RateLimitPresets, sanitizeErrorResponse } from "@/app/lib/security";
 import { checkActiveBookingLimit, checkMonthlyBookingLimit, getBookingHistoryCutoff } from "@/app/lib/limits";
 
 export async function GET(request: NextRequest) {
@@ -130,9 +130,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(bookings);
   } catch (error: any) {
     console.error("[ERROR] Failed to fetch bookings:", error);
-    secureLog("[ERROR] Failed to fetch bookings", { error: error.message, stack: error.stack });
     return NextResponse.json(
-      { error: "Failed to fetch bookings", details: error.message },
+      sanitizeErrorResponse(error, "Failed to fetch bookings"),
       { status: 500 }
     );
   }
@@ -226,84 +225,79 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check availability for each item (must belong to current user)
-    for (const bookingItem of validated.items) {
-      const item = await prisma.item.findUnique({
-        where: { id: bookingItem.itemId },
-      });
+    // Helper function to check availability (used inside transaction for atomicity)
+    const checkItemAvailability = async (tx: any) => {
+      for (const bookingItem of validated.items) {
+        const item = await tx.item.findUnique({
+          where: { id: bookingItem.itemId },
+        });
 
-      if (!item) {
-        return NextResponse.json(
-          { error: `Item ${bookingItem.itemId} not found` },
-          { status: 404 }
-        );
-      }
+        if (!item) {
+          throw new Error(`Item ${bookingItem.itemId} not found`);
+        }
 
-      // Verify item belongs to current user
-      if (item.userId !== session.user.id) {
-        return NextResponse.json(
-          { error: `Item ${item.name} does not belong to you` },
-          { status: 403 }
-        );
-      }
+        // Verify item belongs to current user
+        if (item.userId !== session.user.id) {
+          throw new Error(`Item ${item.name} does not belong to you`);
+        }
 
-      // Get all overlapping bookings for this item (only from current user)
-      const overlappingBookings = await prisma.booking.findMany({
-        where: {
-          AND: [
-            { userId: session.user.id },
-            { startDate: { lte: endDate } },
-            { endDate: { gte: startDate } },
-            { status: { in: ["CONFIRMED", "OUT"] } },
-          ],
-        },
-        include: {
-          items: {
-            where: {
-              itemId: bookingItem.itemId,
+        // Get all overlapping bookings for this item (only from current user)
+        const overlappingBookings = await tx.booking.findMany({
+          where: {
+            AND: [
+              { userId: session.user.id },
+              { startDate: { lte: endDate } },
+              { endDate: { gte: startDate } },
+              { status: { in: ["CONFIRMED", "OUT"] } },
+            ],
+          },
+          include: {
+            items: {
+              where: {
+                itemId: bookingItem.itemId,
+              },
             },
           },
-        },
-      });
+        });
 
-      // Check availability day-by-day
-      const currentDate = new Date(startDate);
-      const endDateCheck = new Date(endDate);
+        // Check availability day-by-day
+        const currentDate = new Date(startDate);
+        const endDateCheck = new Date(endDate);
 
-      while (currentDate <= endDateCheck) {
-        // Calculate reserved quantity on this specific day
-        const reservedOnDay = overlappingBookings.reduce((sum: number, booking: any) => {
-          const bookingStart = new Date(booking.startDate);
-          const bookingEnd = new Date(booking.endDate);
+        while (currentDate <= endDateCheck) {
+          // Calculate reserved quantity on this specific day
+          const reservedOnDay = overlappingBookings.reduce((sum: number, booking: any) => {
+            const bookingStart = new Date(booking.startDate);
+            const bookingEnd = new Date(booking.endDate);
 
-          // Check if this booking overlaps with current day
-          if (currentDate >= bookingStart && currentDate <= bookingEnd) {
-            return sum + booking.items.reduce((itemSum: number, item: any) => itemSum + item.quantity, 0);
-          }
-          return sum;
-        }, 0);
+            // Check if this booking overlaps with current day
+            if (currentDate >= bookingStart && currentDate <= bookingEnd) {
+              return sum + booking.items.reduce((itemSum: number, item: any) => itemSum + item.quantity, 0);
+            }
+            return sum;
+          }, 0);
 
-        const availableOnDay = item.totalQuantity - reservedOnDay;
+          const availableOnDay = item.totalQuantity - reservedOnDay;
 
-        if (availableOnDay < bookingItem.quantity) {
-          return NextResponse.json(
-            {
-              error: "Insufficient availability",
+          if (availableOnDay < bookingItem.quantity) {
+            const error: any = new Error("Insufficient availability");
+            error.statusCode = 409;
+            error.details = {
               itemName: item.name,
               date: currentDate.toISOString().split('T')[0],
               requested: bookingItem.quantity,
               available: availableOnDay,
               reserved: reservedOnDay,
               total: item.totalQuantity,
-            },
-            { status: 409 }
-          );
-        }
+            };
+            throw error;
+          }
 
-        // Move to next day
-        currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+          // Move to next day
+          currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+        }
       }
-    }
+    };
 
     // Verify customer belongs to current user
     const customer = await prisma.customer.findUnique({
@@ -345,56 +339,72 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create booking with random color
-    const booking = await prisma.booking.create({
-      data: {
-        userId: session.user.id, // Always set to current user
-        customerId: validated.customerId,
-        startDate,
-        endDate,
-        status: validated.status || "CONFIRMED",
-        reference: validated.reference,
-        notes: validated.notes,
-        color: getRandomBookingColor(),
-        totalPrice: validated.totalPrice,
-        advancePayment: validated.advancePayment,
-        paymentDueDate: validated.paymentDueDate ? toUTCMidnight(validated.paymentDueDate) : undefined,
-        items: {
-          create: validated.items.map((item) => ({
-            itemId: item.itemId,
-            quantity: item.quantity,
-          })),
-        },
-        payments: validated.initialPayments ? {
-          create: validated.initialPayments.map((payment) => ({
-            amount: payment.amount,
-            paymentDate: toUTCMidnight(payment.paymentDate),
-            notes: payment.notes,
-          })),
-        } : undefined,
-      },
-      include: {
-        customer: true,
-        items: {
-          include: {
-            item: true,
+    // Create booking inside transaction to prevent race conditions
+    // This ensures availability is checked and booking is created atomically
+    const booking = await prisma.$transaction(async (tx) => {
+      // Re-check availability inside transaction to prevent double-booking
+      await checkItemAvailability(tx);
+
+      // Create booking with random color
+      return await tx.booking.create({
+        data: {
+          userId: session.user.id, // Always set to current user
+          customerId: validated.customerId,
+          startDate,
+          endDate,
+          status: validated.status || "CONFIRMED",
+          reference: validated.reference,
+          notes: validated.notes,
+          color: getRandomBookingColor(),
+          totalPrice: validated.totalPrice,
+          advancePayment: validated.advancePayment,
+          paymentDueDate: validated.paymentDueDate ? toUTCMidnight(validated.paymentDueDate) : undefined,
+          items: {
+            create: validated.items.map((item) => ({
+              itemId: item.itemId,
+              quantity: item.quantity,
+            })),
           },
+          payments: validated.initialPayments ? {
+            create: validated.initialPayments.map((payment) => ({
+              amount: payment.amount,
+              paymentDate: toUTCMidnight(payment.paymentDate),
+              notes: payment.notes,
+            })),
+          } : undefined,
         },
-        payments: true,
-      },
+        include: {
+          customer: true,
+          items: {
+            include: {
+              item: true,
+            },
+          },
+          payments: true,
+        },
+      });
     });
 
     return NextResponse.json(booking, { status: 201 });
   } catch (error: any) {
-    secureLog("[ERROR] Failed to create booking", { error: error.message });
+    // Handle custom errors from availability check (thrown inside transaction)
+    if (error.statusCode === 409 && error.details) {
+      return NextResponse.json(
+        { error: error.message, ...error.details },
+        { status: 409 }
+      );
+    }
+
     if (error.name === "ZodError") {
       return NextResponse.json(
         { error: "Invalid input", details: error.errors },
         { status: 400 }
       );
     }
+
+    // Generic error - sanitize for production
     return NextResponse.json(
-      { error: "Failed to create booking" },
+      sanitizeErrorResponse(error, "Failed to create booking"),
       { status: 500 }
     );
   }

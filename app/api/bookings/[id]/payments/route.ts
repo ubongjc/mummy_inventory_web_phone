@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth.config";
 import { prisma } from "@/app/lib/prisma";
-import { secureLog } from "@/app/lib/security";
+import { secureLog, sanitizeErrorResponse } from "@/app/lib/security";
 import { Decimal } from "@prisma/client/runtime/library";
 
 export async function POST(
@@ -86,9 +86,8 @@ export async function POST(
 
     return NextResponse.json(payment, { status: 201 });
   } catch (error: any) {
-    secureLog("[ERROR] Failed to create payment", { error: error.message });
     return NextResponse.json(
-      { error: "Failed to create payment" },
+      sanitizeErrorResponse(error, "Failed to create payment"),
       { status: 500 }
     );
   }
