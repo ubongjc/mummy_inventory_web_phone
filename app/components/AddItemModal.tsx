@@ -279,7 +279,7 @@ export default function AddItemModal({
             <div className="flex-1">
               <h3 className="text-lg font-bold text-black">Add New Items</h3>
               <p className="text-[10px] font-bold text-purple-600 mt-0.5">
-                You can add {remainingSlots} more item{remainingSlots !== 1 ? 's' : ''} ({items.length}/{remainingSlots} slots used)
+                You can add {remainingSlots} more item{remainingSlots !== 1 ? 's' : ''} ({items.length}/{remainingSlots} slots used) • Free Plan Limit
               </p>
             </div>
             <button
@@ -489,18 +489,27 @@ export default function AddItemModal({
 
             {/* Add Another Item Button */}
             {items.length < maxItemsToAdd && (
-              <button
-                type="button"
-                onClick={handleAddItem}
-                disabled={!canAddMore}
-                className={`w-full text-xs flex items-center justify-center gap-1 py-2 border-2 border-dashed rounded-lg transition-all ${
-                  canAddMore
-                    ? "border-blue-400 text-blue-600 hover:bg-blue-50 font-semibold"
-                    : "border-gray-300 text-gray-400 cursor-not-allowed"
-                }`}
-              >
-                <Plus className="w-4 h-4" /> Add another item (max {remainingSlots} slots)
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={handleAddItem}
+                  disabled={!canAddMore}
+                  className={`w-full text-xs flex items-center justify-center gap-1 py-2 border-2 border-dashed rounded-lg transition-all ${
+                    canAddMore
+                      ? "border-blue-400 text-blue-600 hover:bg-blue-50 font-semibold"
+                      : "border-gray-300 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  <Plus className="w-4 h-4" /> Add another item (max {remainingSlots} slots)
+                </button>
+                {!canAddMore && (
+                  <div className="bg-orange-50 border border-orange-300 rounded-lg p-2 mt-2">
+                    <p className="text-xs font-semibold text-orange-800 text-center">
+                      Please fill in the Item Name and Quantity fields above to add another item
+                    </p>
+                  </div>
+                )}
+              </>
             )}
 
             {items.length >= maxItemsToAdd && (
