@@ -63,7 +63,7 @@ export default function AddItemModal({
   const remainingSlots = maxItems - currentItemCount;
   const maxItemsToAdd = Math.min(remainingSlots, remainingSlots);
 
-  const validateItem = (item: ItemForm): boolean => {
+  const validateItem = (item: ItemForm, updateState: boolean = true): { isValid: boolean; errors: ItemForm['errors'] } => {
     const errors = {
       name: "",
       unit: "",
@@ -115,6 +115,9 @@ export default function AddItemModal({
       } else if (qty > 100000) {
         errors.totalQuantity = "*Quantity cannot exceed 100,000";
         isValid = false;
+      } else if (!Number.isInteger(qty)) {
+        errors.totalQuantity = "*Quantity must be a whole number";
+        isValid = false;
       }
     }
 
@@ -123,6 +126,9 @@ export default function AddItemModal({
       const price = parseFloat(item.price);
       if (isNaN(price)) {
         errors.price = "*Enter a valid price";
+        isValid = false;
+      } else if (price < 0) {
+        errors.price = "*Price cannot be negative";
         isValid = false;
       } else if (!/^\d+(\.\d{1,2})?$/.test(item.price)) {
         errors.price = "*Max 2 decimal places";
@@ -139,21 +145,31 @@ export default function AddItemModal({
       isValid = false;
     }
 
-    // Update item errors
-    const newItems = [...items];
-    const index = items.indexOf(item);
-    newItems[index] = { ...item, errors };
-    setItems(newItems);
+    // Update item errors in state if requested
+    if (updateState) {
+      const newItems = [...items];
+      const index = items.indexOf(item);
+      newItems[index] = { ...item, errors };
+      setItems(newItems);
+    }
 
-    return isValid;
+    return { isValid, errors };
   };
 
   const handleAddItem = () => {
     if (items.length < maxItemsToAdd) {
       // Validate the current last item before adding a new one
       const lastItem = items[items.length - 1];
-      if (!validateItem(lastItem)) {
-        setGlobalError(`Please fix errors in Item ${items.length} before adding another item`);
+      const validation = validateItem(lastItem, false);
+
+      if (!validation.isValid) {
+        // Update the item with errors
+        const newItems = [...items];
+        newItems[newItems.length - 1] = { ...lastItem, errors: validation.errors };
+        setItems(newItems);
+
+        const itemName = lastItem.name.trim() || `Item ${items.length}`;
+        setGlobalError(`Please fix errors in "${itemName}" before adding another item. Check red-bordered fields for details.`);
         return;
       }
 
@@ -195,25 +211,27 @@ export default function AddItemModal({
     e.preventDefault();
     setGlobalError("");
 
-    // Validate all items and track which ones have errors
+    // Validate all items synchronously and track which ones have errors
     let allValid = true;
     const itemsWithErrors: { index: number; name: string }[] = [];
+    const updatedItems = items.map((item, i) => {
+      const validation = validateItem(item, false);
 
-    for (let i = 0; i < items.length; i++) {
-      if (!validateItem(items[i])) {
+      if (!validation.isValid) {
         allValid = false;
-        const itemName = items[i].name.trim() || `Item ${i + 1}`;
+        const itemName = item.name.trim() || `Item ${i + 1}`;
         itemsWithErrors.push({ index: i, name: itemName });
+        // Return item with errors and expanded state
+        return { ...item, errors: validation.errors, isCollapsed: false };
       }
-    }
+
+      // Valid items remain collapsed if they were already collapsed
+      return { ...item, errors: validation.errors };
+    });
 
     if (!allValid) {
-      // Auto-expand all items with errors
-      const newItems = items.map((item, index) => ({
-        ...item,
-        isCollapsed: !itemsWithErrors.some(err => err.index === index), // Expand items with errors
-      }));
-      setItems(newItems);
+      // Update all items at once with errors and expansion states
+      setItems(updatedItems);
 
       // Show specific error message with item names
       const errorNames = itemsWithErrors.map(err => `"${err.name}"`).join(", ");
@@ -282,7 +300,10 @@ export default function AddItemModal({
             <div className="flex-1">
               <h3 className="text-lg font-bold text-black">Add New Items</h3>
               <p className="text-[10px] font-bold text-purple-600 mt-0.5">
-                You can add {remainingSlots} more item{remainingSlots !== 1 ? 's' : ''} ({items.length}/{remainingSlots} slots used) • Free Plan Limit
+                You can add {remainingSlots} more item{remainingSlots !== 1 ? 's' : ''} ({items.length}/{remainingSlots} slots used)
+              </p>
+              <p className="text-[10px] font-bold text-red-600 mt-0.5">
+                Free Plan Limit (15 items max)
               </p>
             </div>
             <button
@@ -324,17 +345,17 @@ export default function AddItemModal({
                       <button
                         type="button"
                         onClick={() => toggleCollapse(index)}
-                        className="text-xs font-semibold text-blue-600 hover:underline"
+                        className="px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-md"
                       >
                         Edit
                       </button>
                       <button
                         type="button"
                         onClick={() => handleRemoveItem(index)}
-                        className="w-5 h-5 flex items-center justify-center text-red-600 hover:text-white hover:bg-red-600 border border-red-600 rounded transition-colors"
+                        className="w-7 h-7 flex items-center justify-center text-red-600 hover:text-white hover:bg-red-600 border border-red-600 rounded transition-colors"
                         title="Remove item"
                       >
-                        <X className="w-3 h-3" />
+                        <X className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
