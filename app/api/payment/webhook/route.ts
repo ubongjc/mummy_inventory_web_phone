@@ -1,6 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createPaystackService } from '@/app/lib/paystack';
 import { prisma } from '@/app/lib/prisma';
+import { z } from 'zod';
+
+// Webhook payload validation schemas
+const webhookCustomerSchema = z.object({
+  email: z.string().email(),
+  customer_code: z.string().optional(),
+});
+
+const webhookMetadataSchema = z.object({
+  userId: z.string().cuid('Invalid user ID format'),
+});
+
+const webhookDataSchema = z.object({
+  reference: z.string().min(1, 'Reference is required'),
+  amount: z.number().positive('Amount must be positive'),
+  customer: webhookCustomerSchema,
+  metadata: webhookMetadataSchema.optional(),
+});
 
 export async function POST(req: NextRequest) {
   try {
@@ -68,7 +86,9 @@ export async function POST(req: NextRequest) {
 
 async function handleSuccessfulPayment(data: any) {
   try {
-    const { reference, amount, customer, metadata } = data;
+    // Validate webhook payload
+    const validated = webhookDataSchema.parse(data);
+    const { reference, amount, customer, metadata } = validated;
 
     console.log('Payment successful:', {
       reference,
@@ -77,7 +97,7 @@ async function handleSuccessfulPayment(data: any) {
       metadata,
     });
 
-    // Update user's premium status
+    // Update user's premium status (metadata.userId is already validated by Zod)
     if (metadata?.userId) {
       await prisma.subscription.upsert({
         where: { userId: metadata.userId },

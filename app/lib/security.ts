@@ -54,9 +54,19 @@ export function cleanupRateLimits() {
   }
 }
 
-// Cleanup every 5 minutes
-if (typeof window === "undefined") {
-  setInterval(cleanupRateLimits, 5 * 60 * 1000);
+// Cleanup interval management (prevent memory leaks)
+let cleanupInterval: NodeJS.Timeout | null = null;
+
+// Start cleanup interval (only once)
+if (typeof window === "undefined" && !cleanupInterval) {
+  cleanupInterval = setInterval(cleanupRateLimits, 60 * 1000); // Every 1 minute
+  // Ensure cleanup on process termination
+  process.on('beforeExit', () => {
+    if (cleanupInterval) {
+      clearInterval(cleanupInterval);
+      cleanupInterval = null;
+    }
+  });
 }
 
 /**
@@ -146,18 +156,17 @@ export function getClientIp(request: NextRequest): string {
 
 /**
  * Sanitize string input to prevent XSS
+ * Strategy: Encode all special characters instead of removing tags
+ * This prevents any HTML/JavaScript execution while preserving the text content
  */
 export function sanitizeString(input: string): string {
   if (typeof input !== "string") {
     return "";
   }
 
-  // Remove HTML tags
-  let sanitized = input.replace(/<[^>]*>/g, "");
-
-  // Encode special characters
-  sanitized = sanitized
-    .replace(/&/g, "&amp;")
+  // Encode special characters in correct order (& must be first!)
+  let sanitized = input
+    .replace(/&/g, "&amp;")   // Must be first to avoid double-encoding
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")

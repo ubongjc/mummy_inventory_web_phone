@@ -3,6 +3,14 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/app/lib/prisma";
 import { verifyPassword } from "@/app/lib/auth";
 
+// Validate NEXTAUTH_SECRET at startup
+if (!process.env.NEXTAUTH_SECRET || process.env.NEXTAUTH_SECRET.length < 32) {
+  throw new Error(
+    'NEXTAUTH_SECRET must be set and at least 32 characters long. ' +
+    'Generate one with: openssl rand -base64 32'
+  );
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -89,6 +97,17 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
     maxAge: 60 * 60, // 1 hour
+  },
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production'
+      }
+    }
   },
   secret: process.env.NEXTAUTH_SECRET,
 };

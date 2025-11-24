@@ -33,62 +33,64 @@ export async function POST(request: NextRequest) {
       select: { id: true, email: true, firstName: true },
     });
 
-    // Always return success to prevent email enumeration
-    // Don't reveal whether the email exists or not
-    if (!user) {
-      secureLog('[AUTH] Password reset requested for non-existent email', { email });
-      // Wait a bit to make timing attacks harder
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return NextResponse.json({
-        message: 'If an account with that email exists, we sent a password reset link.',
-      });
-    }
-
-    // Generate secure random token
+    // Generate token regardless of whether user exists (for timing consistency)
     const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
 
-    // Invalidate any existing unused reset tokens for this user
-    await prisma.passwordReset.updateMany({
-      where: {
-        userId: user.id,
-        used: false,
-        expiresAt: { gt: new Date() },
-      },
-      data: {
-        used: true,
-      },
-    });
-
-    // Create new password reset token
-    await prisma.passwordReset.create({
-      data: {
-        userId: user.id,
-        token,
-        expiresAt,
-        used: false,
-      },
-    });
-
-    // Send password reset email
-    try {
-      await sendPasswordResetEmail(user.email, token);
-      secureLog('[AUTH] Password reset email sent', { userId: user.id, email: user.email });
-    } catch (emailError) {
-      console.error('[AUTH] Failed to send password reset email:', emailError);
-      secureLog('[ERROR] Password reset email failed', {
-        userId: user.id,
-        error: (emailError as Error).message,
-      });
-      // Still return success to user but log the error
-      return NextResponse.json(
-        {
-          error: 'Failed to send password reset email. Please try again or contact support.',
+    // Process password reset only if user exists
+    if (user) {
+      // Invalidate any existing unused reset tokens for this user
+      await prisma.passwordReset.updateMany({
+        where: {
+          userId: user.id,
+          used: false,
+          expiresAt: { gt: new Date() },
         },
-        { status: 500 }
-      );
+        data: {
+          used: true,
+        },
+      });
+
+      // Create new password reset token
+      await prisma.passwordReset.create({
+        data: {
+          userId: user.id,
+          token,
+          expiresAt,
+          used: false,
+        },
+      });
+
+      // Send password reset email
+      try {
+        await sendPasswordResetEmail(user.email, token);
+        secureLog('[AUTH] Password reset email sent', { userId: user.id, email: user.email });
+      } catch (emailError) {
+        console.error('[AUTH] Failed to send password reset email:', emailError);
+        secureLog('[ERROR] Password reset email failed', {
+          userId: user.id,
+          error: (emailError as Error).message,
+        });
+        // Still return success to user but log the error
+        // Add jittered delay before returning to maintain timing consistency
+        await new Promise((resolve) => setTimeout(resolve, 800 + Math.random() * 400));
+        return NextResponse.json(
+          {
+            error: 'Failed to send password reset email. Please try again or contact support.',
+          },
+          { status: 500 }
+        );
+      }
+    } else {
+      // User doesn't exist - log but don't reveal
+      secureLog('[AUTH] Password reset requested for non-existent email', { email });
     }
 
+    // Add randomized delay (800-1200ms) to prevent timing attacks
+    // This makes it harder to determine if a user exists based on response time
+    await new Promise((resolve) => setTimeout(resolve, 800 + Math.random() * 400));
+
+    // Always return the same success message
     return NextResponse.json({
       message: 'If an account with that email exists, we sent a password reset link.',
     });

@@ -25,11 +25,31 @@ export default withAuth(
     // CSRF protection for state-changing requests
     if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
       const origin = req.headers.get('origin');
+      const referer = req.headers.get('referer');
       const host = req.headers.get('host');
 
-      // Check if request is from same origin
-      if (origin && !origin.includes(host || '')) {
-        return NextResponse.json({ error: 'CSRF check failed' }, { status: 403 });
+      // Skip CSRF check for webhook endpoints (they use signature validation)
+      if (path.startsWith('/api/payment/webhook')) {
+        return NextResponse.next();
+      }
+
+      // Require either origin or referer header
+      if (!origin && !referer) {
+        return NextResponse.json({ error: 'Missing origin/referer header' }, { status: 403 });
+      }
+
+      // Parse and compare hosts properly (exact match, not substring)
+      try {
+        const originHost = origin ? new URL(origin).host : null;
+        const refererHost = referer ? new URL(referer).host : null;
+
+        // At least one must match the server host
+        if (originHost !== host && refererHost !== host) {
+          return NextResponse.json({ error: 'CSRF check failed' }, { status: 403 });
+        }
+      } catch (error) {
+        // Invalid URL in origin/referer header
+        return NextResponse.json({ error: 'Invalid origin/referer header' }, { status: 403 });
       }
     }
 
