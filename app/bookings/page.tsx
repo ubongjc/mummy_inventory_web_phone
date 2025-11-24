@@ -823,16 +823,6 @@ export default function BookingsPage() {
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsDeleteModalOpen(true)}
-                disabled={bookings.length === 0}
-                className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white rounded-lg font-semibold transition-all shadow-md text-[10px] disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Delete all bookings"
-              >
-                <Trash2 className="w-3 h-3" />
-                <span className="hidden sm:inline">Delete All</span>
-              </button>
-
               <div className="relative">
                 <button
                   onClick={() => setIsDefaultFiltersOpen(!isDefaultFiltersOpen)}
@@ -938,6 +928,16 @@ export default function BookingsPage() {
                 </>
               )}
               </div>
+
+              <button
+                onClick={() => setIsDeleteModalOpen(true)}
+                disabled={bookings.length === 0}
+                className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white rounded-lg font-semibold transition-all shadow-md text-[10px] disabled:opacity-50 disabled:cursor-not-allowed h-full"
+                title="Delete all bookings"
+              >
+                <Trash2 className="w-3 h-3" />
+                <span className="hidden sm:inline">Delete All</span>
+              </button>
             </div>
           </div>
         </div>
