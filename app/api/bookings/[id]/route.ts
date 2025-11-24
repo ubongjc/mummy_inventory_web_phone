@@ -317,7 +317,9 @@ export async function PUT(
         notes: body.notes,
         totalPrice: body.totalPrice,
         advancePayment: body.advancePayment,
-        paymentDueDate: body.paymentDueDate ? toUTCMidnight(body.paymentDueDate) : null,
+        paymentDueDate: 'paymentDueDate' in body
+          ? (body.paymentDueDate ? toUTCMidnight(body.paymentDueDate) : null)
+          : undefined, // undefined means don't update this field
         items: {
           create: body.items.map((item: any) => ({
             itemId: item.itemId,

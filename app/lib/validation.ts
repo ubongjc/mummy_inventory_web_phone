@@ -33,6 +33,10 @@ export const createItemSchema = z.object({
     .max(50, "Notes must be 50 characters or less")
     .transform(normalizeText)
     .optional(),
+  photos: z.array(z.string().url("Invalid photo URL"))
+    .max(10, "Cannot have more than 10 photos per item")
+    .optional()
+    .default([]),
 });
 
 export const updateItemSchema = createItemSchema.partial();
