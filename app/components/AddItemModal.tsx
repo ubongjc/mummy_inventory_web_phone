@@ -150,6 +150,16 @@ export default function AddItemModal({
 
   const handleAddItem = () => {
     if (items.length < maxItemsToAdd) {
+      // Validate the current last item before adding a new one
+      const lastItem = items[items.length - 1];
+      if (!validateItem(lastItem)) {
+        setGlobalError(`Please fix errors in Item ${items.length} before adding another item`);
+        return;
+      }
+
+      // Clear any previous errors
+      setGlobalError("");
+
       // Collapse the previous item
       const newItems = [...items];
       if (newItems.length > 0) {
@@ -185,16 +195,33 @@ export default function AddItemModal({
     e.preventDefault();
     setGlobalError("");
 
-    // Validate all items
+    // Validate all items and track which ones have errors
     let allValid = true;
-    for (const item of items) {
-      if (!validateItem(item)) {
+    const itemsWithErrors: number[] = [];
+
+    for (let i = 0; i < items.length; i++) {
+      if (!validateItem(items[i])) {
         allValid = false;
+        itemsWithErrors.push(i + 1); // +1 for display (Item 1, Item 2, etc.)
       }
     }
 
     if (!allValid) {
-      setGlobalError("Please fix all errors before submitting");
+      // Auto-expand all items with errors
+      const newItems = items.map((item, index) => ({
+        ...item,
+        isCollapsed: !itemsWithErrors.includes(index + 1), // Expand items with errors
+      }));
+      setItems(newItems);
+
+      // Show specific error message
+      if (itemsWithErrors.length === 1) {
+        setGlobalError(`Please fix errors in Item ${itemsWithErrors[0]}`);
+      } else if (itemsWithErrors.length === items.length) {
+        setGlobalError("Please fix errors in all items");
+      } else {
+        setGlobalError(`Please fix errors in items: ${itemsWithErrors.join(", ")}`);
+      }
       return;
     }
 
