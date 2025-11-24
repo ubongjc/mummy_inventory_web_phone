@@ -826,13 +826,10 @@ export default function BookingsPage() {
               <div className="relative">
                 <button
                   onClick={() => setIsDefaultFiltersOpen(!isDefaultFiltersOpen)}
-                  className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-semibold transition-all shadow-md text-[10px]"
+                  className="flex items-center justify-center p-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-semibold transition-all shadow-md"
+                  title="Default Filters"
                 >
-                  <Settings className="w-3 h-3" />
-                  <span className="flex flex-col items-center leading-tight">
-                    <span>DEFAULT</span>
-                    <span>FILTERS</span>
-                  </span>
+                  <Settings className="w-4 h-4" />
                 </button>
 
               {/* Dropdown Menu */}
@@ -932,14 +929,10 @@ export default function BookingsPage() {
               <button
                 onClick={() => setIsDeleteModalOpen(true)}
                 disabled={bookings.length === 0}
-                className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white rounded-lg font-semibold transition-all shadow-md text-[10px] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center p-2 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white rounded-lg font-semibold transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Delete all bookings"
               >
-                <Trash2 className="w-3 h-3" />
-                <span className="flex flex-col items-center leading-tight">
-                  <span>DELETE</span>
-                  <span>ALL</span>
-                </span>
+                <Trash2 className="w-4 h-4" />
               </button>
             </div>
           </div>
