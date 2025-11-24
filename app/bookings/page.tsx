@@ -932,11 +932,14 @@ export default function BookingsPage() {
               <button
                 onClick={() => setIsDeleteModalOpen(true)}
                 disabled={bookings.length === 0}
-                className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white rounded-lg font-semibold transition-all shadow-md text-[10px] disabled:opacity-50 disabled:cursor-not-allowed h-full"
+                className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white rounded-lg font-semibold transition-all shadow-md text-[10px] disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Delete all bookings"
               >
                 <Trash2 className="w-3 h-3" />
-                <span className="hidden sm:inline">Delete All</span>
+                <span className="flex flex-col items-center leading-tight">
+                  <span>DELETE</span>
+                  <span>ALL</span>
+                </span>
               </button>
             </div>
           </div>
