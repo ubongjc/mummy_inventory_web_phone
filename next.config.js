@@ -82,11 +82,12 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live", // Added Vercel domains
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "font-src 'self' data:",
-              "connect-src 'self' https://api.paystack.co https://vercel.live https://*.vercel.live", // Added Vercel domains
+              "connect-src 'self' https://api.paystack.co https://vercel.live https://*.vercel.live",
+              "frame-src https://vercel.live", // Added for Vercel Live feedback
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",
