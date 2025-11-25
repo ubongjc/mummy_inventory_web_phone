@@ -11,6 +11,7 @@ interface AddItemModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  onOpenBooking?: () => void;
   currentItemCount?: number;
   maxItems?: number;
 }
@@ -51,6 +52,7 @@ export default function AddItemModal({
   isOpen,
   onClose,
   onSuccess,
+  onOpenBooking,
   currentItemCount = 0,
   maxItems = 15,
 }: AddItemModalProps) {
@@ -330,13 +332,15 @@ export default function AddItemModal({
                 View All Items
               </Link>
 
-              <Link
-                href="/dashboard?openBooking=true"
-                className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 font-semibold text-center block transition-all shadow-md"
-                onClick={handleCloseSuccess}
+              <button
+                onClick={() => {
+                  handleCloseSuccess();
+                  onOpenBooking?.();
+                }}
+                className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 font-semibold text-center transition-all shadow-md"
               >
                 Add a New Booking
-              </Link>
+              </button>
 
               <button
                 onClick={handleCloseSuccess}

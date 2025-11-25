@@ -97,6 +97,7 @@ export default function AddBookingModal({
     address: "",
     totalPrice: "",
     advancePayment: "",
+    paymentDueDate: "",
   });
 
   // Usage stats for plan limits
@@ -629,14 +630,14 @@ export default function AddBookingModal({
 
   const validateTotalPrice = (value: string): string => {
     if (value === "") {
-      return "";
+      return "Total price is required";
     }
     const numValue = parseFloat(value);
     if (isNaN(numValue)) {
       return "Please enter a valid number";
     }
-    if (numValue < 0) {
-      return "Total price cannot be negative";
+    if (numValue <= 0) {
+      return "Total price must be greater than 0";
     }
     if (numValue > 100000000) {
       return "Total price cannot exceed 100,000,000 Naira";
@@ -659,6 +660,13 @@ export default function AddBookingModal({
     }
     if (totalValue > 0 && advanceValue > totalValue) {
       return "Advance payment cannot exceed total price";
+    }
+    return "";
+  };
+
+  const validatePaymentDueDate = (value: string): string => {
+    if (value === "") {
+      return "Payment due date is required";
     }
     return "";
   };
@@ -718,6 +726,26 @@ export default function AddBookingModal({
     // Validate return date is not before start date
     if (endDate < startDate) {
       setError("Return date cannot be before start date");
+      setLoading(false);
+      isSubmitting.current = false;
+      return;
+    }
+
+    // Validate total price
+    const totalPriceError = validateTotalPrice(totalPrice);
+    if (totalPriceError) {
+      setErrors((prev) => ({ ...prev, totalPrice: totalPriceError }));
+      setError("Please enter a valid total price");
+      setLoading(false);
+      isSubmitting.current = false;
+      return;
+    }
+
+    // Validate payment due date
+    const dueDateError = validatePaymentDueDate(paymentDueDate);
+    if (dueDateError) {
+      setErrors((prev) => ({ ...prev, paymentDueDate: dueDateError }));
+      setError("Please select a payment due date");
       setLoading(false);
       isSubmitting.current = false;
       return;
@@ -1293,7 +1321,7 @@ export default function AddBookingModal({
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col min-w-0">
                     <label className="block text-xs font-bold mb-1 text-green-800">
-                      Total
+                      Total *
                     </label>
                     <div className="flex items-center min-w-0">
                       <div className="flex items-center justify-center h-10 px-2 bg-white border-2 border-gray-400 border-r-0 rounded-l flex-shrink-0">
@@ -1367,10 +1395,20 @@ export default function AddBookingModal({
                 <div className="flex flex-col min-w-0">
                   <DatePicker
                     value={paymentDueDate}
-                    onChange={(date) => setPaymentDueDate(date)}
-                    label="Due Date"
+                    onChange={(date) => {
+                      setPaymentDueDate(date);
+                      const error = validatePaymentDueDate(date);
+                      setErrors((prev) => ({ ...prev, paymentDueDate: error }));
+                    }}
+                    label="Due Date *"
                     minDate={endDate || undefined}
+                    error={errors.paymentDueDate}
                   />
+                  {errors.paymentDueDate && (
+                    <div className="mt-1 bg-red-50 border border-red-200 rounded p-1">
+                      <p className="text-xs text-red-700 font-medium">{errors.paymentDueDate}</p>
+                    </div>
+                  )}
                   <p className="text-[10px] text-gray-600 mt-0.5">
                     Must be on or after the return date of the booking
                   </p>

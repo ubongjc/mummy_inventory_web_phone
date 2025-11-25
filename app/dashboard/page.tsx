@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useSearchParams } from 'next/navigation';
 import Calendar from '../components/Calendar';
 import DayDrawer from '../components/DayDrawer';
 import AddItemModal from '../components/AddItemModal';
@@ -54,20 +53,7 @@ interface Settings {
   businessName: string | null;
 }
 
-// Component to handle URL parameters
-function SearchParamsHandler({ onOpenBooking }: { onOpenBooking: () => void }) {
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    if (searchParams.get('openBooking') === 'true') {
-      onOpenBooking();
-    }
-  }, [searchParams, onOpenBooking]);
-
-  return null;
-}
-
-function DashboardContent() {
+export default function Home() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
@@ -724,6 +710,7 @@ function DashboardContent() {
         isOpen={isAddItemModalOpen}
         onClose={() => setIsAddItemModalOpen(false)}
         onSuccess={handleItemAdded}
+        onOpenBooking={() => setIsAddBookingModalOpen(true)}
         currentItemCount={usageStats?.items?.current || items.length}
         maxItems={usageStats?.items?.limit || 15}
       />
@@ -736,16 +723,6 @@ function DashboardContent() {
         isOpen={isCheckAvailabilityOpen}
         onClose={() => setIsCheckAvailabilityOpen(false)}
       />
-
-      {/* Search Params Handler */}
-      <Suspense fallback={null}>
-        <SearchParamsHandler onOpenBooking={() => setIsAddBookingModalOpen(true)} />
-      </Suspense>
     </div>
   );
-}
-
-// Main export with Suspense boundary
-export default function Home() {
-  return <DashboardContent />;
 }
