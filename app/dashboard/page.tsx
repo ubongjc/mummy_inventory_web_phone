@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
@@ -54,7 +54,20 @@ interface Settings {
   businessName: string | null;
 }
 
-export default function Home() {
+// Component to handle URL parameters
+function SearchParamsHandler({ onOpenBooking }: { onOpenBooking: () => void }) {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('openBooking') === 'true') {
+      onOpenBooking();
+    }
+  }, [searchParams, onOpenBooking]);
+
+  return null;
+}
+
+function DashboardContent() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
@@ -78,9 +91,6 @@ export default function Home() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [usageStats, setUsageStats] = useState<any | null>(null);
-
-  // Get URL search parameters
-  const searchParams = useSearchParams();
 
   // Enable 5-minute inactivity timeout
   useInactivityTimeout(5);
@@ -117,13 +127,6 @@ export default function Home() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
-
-  // Auto-open booking modal if URL parameter is present
-  useEffect(() => {
-    if (searchParams.get('openBooking') === 'true') {
-      setIsAddBookingModalOpen(true);
-    }
-  }, [searchParams]);
 
   const fetchItems = async () => {
     try {
@@ -733,6 +736,16 @@ export default function Home() {
         isOpen={isCheckAvailabilityOpen}
         onClose={() => setIsCheckAvailabilityOpen(false)}
       />
+
+      {/* Search Params Handler */}
+      <Suspense fallback={null}>
+        <SearchParamsHandler onOpenBooking={() => setIsAddBookingModalOpen(true)} />
+      </Suspense>
     </div>
   );
+}
+
+// Main export with Suspense boundary
+export default function Home() {
+  return <DashboardContent />;
 }
