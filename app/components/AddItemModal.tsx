@@ -274,10 +274,8 @@ export default function AddItemModal({
         }
       }
 
-      // Show success popup
+      // Show success popup (don't call onSuccess yet - wait for user to close popup)
       setItemsCreatedCount(items.length);
-      setItems([createEmptyItem()]);
-      onSuccess();
       setShowSuccess(true);
     } catch (err: any) {
       setGlobalError(err.message);
@@ -289,6 +287,8 @@ export default function AddItemModal({
   const handleCloseSuccess = () => {
     setShowSuccess(false);
     setItemsCreatedCount(0);
+    setItems([createEmptyItem()]);
+    onSuccess(); // Refresh parent component now
     onClose();
   };
 
