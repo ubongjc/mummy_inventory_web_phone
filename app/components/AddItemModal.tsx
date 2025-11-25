@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { X, Plus, ChevronDown, ChevronRight } from "lucide-react";
 import { toTitleCase } from "@/app/lib/validation";
 import { useSettings } from "@/app/hooks/useSettings";
@@ -59,6 +60,8 @@ export default function AddItemModal({
   const [globalError, setGlobalError] = useState("");
   const [notesModalOpen, setNotesModalOpen] = useState(false);
   const [editingNotesIndex, setEditingNotesIndex] = useState<number | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [itemsCreatedCount, setItemsCreatedCount] = useState(0);
 
   const remainingSlots = maxItems - currentItemCount;
   const maxItemsToAdd = Math.min(remainingSlots, remainingSlots);
@@ -271,10 +274,11 @@ export default function AddItemModal({
         }
       }
 
-      // Reset and close
+      // Show success popup
+      setItemsCreatedCount(items.length);
       setItems([createEmptyItem()]);
       onSuccess();
-      onClose();
+      setShowSuccess(true);
     } catch (err: any) {
       setGlobalError(err.message);
     } finally {
@@ -282,11 +286,70 @@ export default function AddItemModal({
     }
   };
 
+  const handleCloseSuccess = () => {
+    setShowSuccess(false);
+    setItemsCreatedCount(0);
+    onClose();
+  };
+
   if (!isOpen) {
     return null;
   }
 
   const canAddMore = items.length < maxItemsToAdd && items[items.length - 1]?.name.trim() && items[items.length - 1]?.totalQuantity.trim();
+
+  // Show success popup if items were created
+  if (showSuccess) {
+    return (
+      <>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50" />
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 p-6">
+            {/* Success Header */}
+            <div className="text-center mb-6">
+              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-black mb-2">
+                Items Added Successfully!
+              </h2>
+              <p className="text-sm text-gray-600">
+                {itemsCreatedCount} item{itemsCreatedCount !== 1 ? 's' : ''} ha{itemsCreatedCount !== 1 ? 've' : 's'} been added to your inventory
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              <Link
+                href="/inventory"
+                className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 font-semibold text-center block transition-all shadow-md"
+                onClick={handleCloseSuccess}
+              >
+                View All Items
+              </Link>
+
+              <Link
+                href="/dashboard"
+                className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 font-semibold text-center block transition-all shadow-md"
+                onClick={handleCloseSuccess}
+              >
+                Add a New Booking
+              </Link>
+
+              <button
+                onClick={handleCloseSuccess}
+                className="w-full px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition-all shadow-md"
+              >
+                Close & Return to Calendar
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
