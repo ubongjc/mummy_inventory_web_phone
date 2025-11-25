@@ -39,24 +39,22 @@ export async function GET(request: NextRequest) {
 
       whereClause = {
         AND: [
-          ...(isAdmin ? [] : [{ userId: session.user.id }]),
+          { userId: session.user.id },
           { startDate: { lte: endDate } },
           { endDate: { gte: startDate } },
           { status: { in: ["CONFIRMED", "OUT"] } },
         ],
       };
     } else {
-      // Apply booking history limit for non-admin users when not fetching calendar view
-      if (!isAdmin) {
-        const historyCutoff = await getBookingHistoryCutoff(session.user.id);
-        if (historyCutoff) {
-          whereClause = {
-            AND: [
-              { userId: session.user.id },
-              { createdAt: { gte: historyCutoff } },
-            ],
-          };
-        }
+      // Apply booking history limit for all users when not fetching calendar view
+      const historyCutoff = await getBookingHistoryCutoff(session.user.id);
+      if (historyCutoff) {
+        whereClause = {
+          AND: [
+            { userId: session.user.id },
+            { createdAt: { gte: historyCutoff } },
+          ],
+        };
       }
     }
 
