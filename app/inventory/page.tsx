@@ -235,13 +235,20 @@ export default function InventoryPage() {
     try {
       const response = await fetch(`/api/items/${id}`, { method: "DELETE" });
       if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error || "Failed to delete item");
+        // Parse JSON error response for user-friendly message
+        try {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to delete item");
+        } catch (parseError) {
+          // If JSON parsing fails, fall back to text
+          const errorText = await response.text();
+          throw new Error(errorText || "Failed to delete item");
+        }
       }
       await fetchItems();
     } catch (error: any) {
       console.error("Error deleting item:", error);
-      alert(`Failed to delete item: ${error.message}`);
+      alert(error.message);
     }
   };
 
@@ -249,13 +256,20 @@ export default function InventoryPage() {
     try {
       const response = await fetch(`/api/customers/${id}`, { method: "DELETE" });
       if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error || "Failed to delete customer");
+        // Parse JSON error response for user-friendly message
+        try {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to delete customer");
+        } catch (parseError) {
+          // If JSON parsing fails, fall back to text
+          const errorText = await response.text();
+          throw new Error(errorText || "Failed to delete customer");
+        }
       }
       await fetchCustomers();
     } catch (error: any) {
       console.error("Error deleting customer:", error);
-      alert(`Failed to delete customer: ${error.message}`);
+      alert(error.message);
     }
   };
 

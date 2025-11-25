@@ -110,16 +110,41 @@ export async function DELETE(
     }
 
     // Check if customer has bookings (only count current user's bookings)
-    const customerBookings = await prisma.booking.count({
+    const customerBookings = await prisma.booking.findMany({
       where: {
         customerId: id,
         userId: session.user.id
+      },
+      include: {
+        items: {
+          include: {
+            item: {
+              select: {
+                name: true
+              }
+            }
+          }
+        }
       }
     });
 
-    if (customerBookings > 0) {
+    if (customerBookings.length > 0) {
+      // Format booking details with dates and item names
+      const bookingDetails = customerBookings.map(booking => {
+        const endDate = new Date(booking.endDate);
+        const formattedDate = endDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+        const itemNames = booking.items.map(bi => bi.item.name).join(', ');
+        return `• ${itemNames} (ends ${formattedDate})`;
+      }).join('\n');
+
+      const errorMessage = `Cannot delete customer with ${customerBookings.length} existing booking${customerBookings.length > 1 ? 's' : ''}:\n\n${bookingDetails}\n\nDelete these bookings first.`;
+
       return NextResponse.json(
-        { error: `Cannot delete customer with ${customerBookings} existing booking${customerBookings > 1 ? 's' : ''}. Delete the bookings first.` },
+        { error: errorMessage },
         { status: 400 }
       );
     }

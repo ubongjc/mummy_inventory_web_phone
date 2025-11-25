@@ -139,7 +139,7 @@ export async function DELETE(
     }
 
     // Check if item is used in any active bookings (CONFIRMED or OUT status only)
-    const activeItemBookings = await prisma.bookingItem.count({
+    const activeBookings = await prisma.bookingItem.findMany({
       where: {
         itemId: id,
         booking: {
@@ -148,12 +148,43 @@ export async function DELETE(
             in: ["CONFIRMED", "OUT"]
           }
         }
-      }
+      },
+      include: {
+        booking: {
+          include: {
+            customer: {
+              select: {
+                firstName: true,
+                lastName: true,
+                name: true
+              }
+            }
+          }
+        }
+      },
+      distinct: ['bookingId']
     });
 
-    if (activeItemBookings > 0) {
+    if (activeBookings.length > 0) {
+      // Format booking details with customer names and end dates
+      const bookingDetails = activeBookings.map(item => {
+        const customer = item.booking.customer;
+        const customerName = customer.firstName
+          ? `${customer.firstName} ${customer.lastName || ''}`.trim()
+          : customer.name;
+        const endDate = new Date(item.booking.endDate);
+        const formattedDate = endDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+        return `• ${customerName} (ends ${formattedDate})`;
+      }).join('\n');
+
+      const errorMessage = `Cannot delete item. It is being used in ${activeBookings.length} active booking${activeBookings.length > 1 ? 's' : ''}:\n\n${bookingDetails}\n\nComplete or cancel these bookings first.`;
+
       return NextResponse.json(
-        { error: `Cannot delete item that is used in ${activeItemBookings} active booking${activeItemBookings > 1 ? 's' : ''} (CONFIRMED or OUT). Complete or cancel the bookings first.` },
+        { error: errorMessage },
         { status: 400 }
       );
     }
