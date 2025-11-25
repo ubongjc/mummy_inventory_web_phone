@@ -14,16 +14,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if admin
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true }
-    });
-
-    const isAdmin = user?.role === 'admin';
-
+    // Always filter by userId - admins should only see their own data
     const items = await prisma.item.findMany({
-      where: isAdmin ? {} : { userId: session.user.id },
+      where: { userId: session.user.id },
       orderBy: { name: "asc" },
     });
     return NextResponse.json(items);

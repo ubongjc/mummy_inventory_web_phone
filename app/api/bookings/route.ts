@@ -26,19 +26,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if admin
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true }
-    });
-
-    const isAdmin = user?.role === 'admin';
-
     const { searchParams } = new URL(request.url);
     const start = searchParams.get("start");
     const end = searchParams.get("end");
 
-    let whereClause: any = isAdmin ? {} : { userId: session.user.id };
+    // Always filter by userId - admins should only see their own data
+    let whereClause: any = { userId: session.user.id };
 
     if (start && end) {
       const startDate = toUTCMidnight(start);
